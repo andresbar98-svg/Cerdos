@@ -12,7 +12,7 @@
 :root{--bg:#1b1613;--s1:#251e1a;--s2:#30272a;--line:#40343a;--tx:#f3e9e2;--mu:#a8978f;--ac:#e8a07a;--ok:#7fd1a0;--wa:#f0c36a;--er:#ef7b7b;--r:14px}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;background:var(--bg);color:var(--tx);font-family:"Segoe UI",system-ui,-apple-system,Roboto,sans-serif;font-size:15px}
-body{padding-bottom:calc(76px + env(safe-area-inset-bottom))}
+body{padding-bottom:env(safe-area-inset-bottom)}
 header{position:sticky;top:0;z-index:20;background:var(--bg);border-bottom:1px solid var(--line);padding:calc(10px + env(safe-area-inset-top)) 14px 10px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px}
 #proyBar{width:100%;display:flex;gap:8px;align-items:center}#proyBar select{flex:1;padding:8px 10px;font-size:14px;font-weight:600}#proyBar .sm{padding:9px 11px;font-size:14px}
 #proyInfo{width:100%;margin:0;font-size:11.5px;line-height:1.3}
@@ -56,13 +56,15 @@ button{font-family:inherit;cursor:pointer}
 .stock{display:grid;grid-template-columns:1fr auto auto auto;gap:6px 10px;font-size:13px;align-items:center}
 .stock .h{color:var(--mu);font-size:11px}.stock .n{text-align:right;font-variant-numeric:tabular-nums}
 .bar{height:6px;background:var(--s2);border-radius:4px;overflow:hidden;margin:6px 0 12px}.bar i{display:block;height:100%;background:var(--ac)}
-nav{position:fixed;bottom:0;left:0;right:0;background:var(--s1);border-top:1px solid var(--line);display:flex;padding-bottom:env(safe-area-inset-bottom);z-index:20}
-nav button{flex:1;background:none;border:0;color:var(--mu);padding:9px 1px 8px;font-size:10.5px;display:flex;flex-direction:column;align-items:center;gap:3px}
-nav button b{font-size:19px;line-height:1}nav button.act{color:var(--ac);font-weight:700}
+nav{width:100%;order:9;display:flex;gap:6px;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scroll-behavior:smooth;scroll-snap-type:x proximity;scrollbar-width:none;margin:2px -14px -2px;padding:4px 14px 2px;width:calc(100% + 28px)}
+nav::-webkit-scrollbar{display:none}
+nav button{flex:1 0 auto;min-width:58px;scroll-snap-align:center;background:var(--s2);border:1px solid var(--line);border-radius:12px;color:var(--mu);padding:6px 10px 5px;font-size:11px;display:flex;flex-direction:column;align-items:center;gap:2px;white-space:nowrap;transition:background .15s,color .15s,border-color .15s}
+nav button b{font-size:18px;line-height:1}
+nav button.act{background:linear-gradient(135deg,#f0a35a,#f0c36a);border-color:#f0c36a;color:#2a1a12;font-weight:700;box-shadow:0 2px 10px rgba(240,195,106,.28)}
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.72);display:none;align-items:flex-end;justify-content:center;z-index:50;padding:0}
 .modal.open{display:flex}
 .sheet{background:var(--bg);width:100%;max-width:520px;max-height:92vh;overflow:auto;border-radius:20px 20px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom))}
-.toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:var(--s2);border:1px solid var(--ac);padding:10px 16px;border-radius:20px;font-size:13px;z-index:99;display:none;max-width:90%;text-align:center}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--s2);border:1px solid var(--ac);padding:10px 16px;border-radius:20px;font-size:13px;z-index:99;display:none;max-width:90%;text-align:center}
 .empty{color:var(--mu);font-size:13px;text-align:center;padding:14px 0}
 .warn{background:#3a2a1c;border:1px solid var(--wa);color:var(--wa);padding:10px;border-radius:10px;font-size:12.5px;margin-bottom:14px;display:none}
 .item{background:var(--s2);border:1px solid var(--line);border-radius:12px;padding:10px 12px 12px;margin-top:12px}
@@ -120,6 +122,11 @@ nav button b{font-size:19px;line-height:1}nav button.act{color:var(--ac);font-we
 .chk{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--tx);margin:14px 0 0}.chk input{width:20px;height:20px;accent-color:var(--ac)}
 .fila{display:grid;grid-template-columns:30px 90px 1fr;gap:8px;align-items:center;margin-top:8px}.fila span{color:var(--mu);font-size:12px}
 .tag.ar{color:var(--mu);border-color:var(--line)}
+.tag.cerdo{color:#f0c36a;border-color:#f0c36a;margin-left:4px}
+.vfil{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:12px 0 0;padding:2px 0 4px}.vfil::-webkit-scrollbar{display:none}
+.vfil button{flex:0 0 auto;background:var(--s1);border:1px solid var(--line);color:var(--mu);border-radius:20px;padding:8px 14px;font-size:13px;white-space:nowrap}
+.vfil button.act{background:linear-gradient(135deg,#f0a35a,#f0c36a);border-color:#f0c36a;color:#2a1a12;font-weight:700}
+.req{color:var(--er)}
 @media (prefers-reduced-motion:no-preference){.sheet{animation:up .22s ease-out}@keyframes up{from{transform:translateY(30px);opacity:0}}}
 input[readonly]{opacity:.7}
 #crumbs{flex:1;display:flex;align-items:center;gap:6px;min-width:0;overflow-x:auto;scrollbar-width:none}#crumbs::-webkit-scrollbar{display:none}
@@ -147,6 +154,14 @@ input[readonly]{opacity:.7}
   </div>
   <div id="proyBar"><div id="crumbs"></div><button class="sm" id="btnProy" onclick="abrirProyecto('editar',proyActivo)" aria-label="Detalles del lote">⚙️</button></div>
   <div class="sub" id="proyInfo"></div>
+  <nav id="nav">
+    <button data-t="inversion"><b>💰</b>Inversión</button>
+    <button data-t="preventa"><b>📝</b>Preventa</button>
+    <button data-t="sacrificio"><b>🔪</b>Despiece</button>
+    <button data-t="ventas"><b>🛒</b>Ventas</button>
+    <button data-t="deudores"><b>🧾</b>Clientes</button>
+    <button data-t="resumen"><b>📊</b>Balance</button>
+  </nav>
 </header>
 
 <main>
@@ -189,14 +204,16 @@ input[readonly]{opacity:.7}
 <!-- ============ VENTAS ============ -->
 <section id="ventas">
   <button class="btn verde nuevo-btn" onclick="abrirNuevo('mVenta')">➕ Nueva Venta</button>
+  <div class="vfil" id="vFiltro"></div>
 
-  <div class="card" style="margin-top:14px"><h3>Historial de ventas</h3><div id="ultVentas"></div></div>
+  <div class="card" style="margin-top:14px"><h3>Historial de ventas</h3><div class="sub" id="vFiltroInfo" style="margin:-4px 0 8px"></div><div id="ultVentas"></div></div>
 </section>
 
 <!-- ============ DEUDORES ============ -->
 <section id="deudores">
   <h2 style="margin-bottom:10px">Clientes y comprobantes</h2>
   <div class="chips"><button class="chip act" data-f="todos">Todos</button><button class="chip" data-f="pagados">Pagados</button><button class="chip" data-f="deudores">Deudores</button></div>
+  <div class="vfil" id="cFiltroCerdo" style="margin:0 0 12px"></div>
   <div class="kpi" style="margin-bottom:12px"><span id="dLbl">Por cobrar</span><b id="dTot" class="wa-c">$0</b></div>
   <div id="listaClientes"></div>
 </section>
@@ -204,6 +221,9 @@ input[readonly]{opacity:.7}
 <!-- ============ RESUMEN ============ -->
 <section id="resumen">
   <h2 id="rProy" style="margin-bottom:10px">Balance</h2>
+  <div class="vfil" id="bFiltroCerdo" style="margin:0 0 12px"></div>
+  <div id="rCerdo" style="display:none"></div>
+  <div id="rLote">
   <div class="kpis">
     <div class="kpi"><span>Total invertido</span><b id="rInv">$0</b></div>
     <div class="kpi"><span>Total recaudado</span><b id="rRec" class="pos">$0</b></div>
@@ -213,19 +233,12 @@ input[readonly]{opacity:.7}
     <div class="kpi"><span>Utilidad en caja hoy</span><b id="rCaja">$0</b></div>
     <div class="kpi"><span>Cerdos sacrificados</span><b id="rNum">0</b></div>
   </div>
+  </div>
   <h3>Rendimiento por cerdo</h3><div id="rendimiento"></div>
   <h3 style="margin-top:22px">Histórico por año y proyecto</h3><div id="histProy"></div>
 </section>
 </main>
 
-<nav id="nav">
-  <button data-t="inversion"><b>💰</b>Inversión</button>
-  <button data-t="preventa"><b>📝</b>Preventa</button>
-  <button data-t="sacrificio"><b>🔪</b>Despiece</button>
-  <button data-t="ventas"><b>🛒</b>Ventas</button>
-  <button data-t="deudores"><b>🧾</b>Clientes</button>
-  <button data-t="resumen"><b>📊</b>Balance</button>
-</nav>
 
 <div class="modal" id="modal"><div class="sheet" id="sheet"></div></div>
 
@@ -244,7 +257,8 @@ input[readonly]{opacity:.7}
 
 <div class="modal" id="mVenta"><div class="sheet">
   <div class="mh"><h2>➕ Nueva venta</h2><button class="sm" onclick="cerrarForm('mVenta')">Cerrar</button></div>
-<p class="sub">Puedes agregar varios cortes en la misma venta; cada uno descuenta del inventario.</p>
+<p class="sub">Puedes agregar varios cortes en la misma venta; cada uno descuenta del inventario del cerdo elegido.</p>
+    <label>Seleccionar Cerdo <span class="req">*</span></label><select id="vCerdo" onchange="setCerdoVenta(this.value)"></select>
     <div class="g2"><div><label>Cliente (vecino)</label><input id="vCliente" placeholder="Nombre"></div>
     <div><label>Teléfono</label><input type="tel" inputmode="tel" id="vTel" placeholder="3001234567"></div></div>
     <div id="vItems"></div>
@@ -410,7 +424,7 @@ function initFB(){
   escuchar("ventas_cerdos",snap=>{R.ventas=snap.docs.map(d=>({id:d.id,...d.data()}));});
   escuchar("preventas_cerdos",snap=>{R.preventas=snap.docs.map(d=>({id:d.id,...d.data()}));});
   escuchar("proyectos_cerdos",snap=>{ /* lotes y carpetas de año (tipo:"anio") comparten colección */
-    const t=snap.docs.map(d=>({id:d.id,...d.data()}));R.proyectos=t.filter(x=>x.tipo!=="anio");R.anios=t.filter(x=>x.tipo==="anio");});
+    const t=snap.docs.map(d=>({id:d.id,...d.data()}));R.proyectos=t.filter(x=>x.tipo!=="anio");R.anios=t.filter(x=>x.tipo==="anio");if(!snap.metadata.fromCache) proyOK=true;});
 }
 function escuchar(col,fn){
   db.collection(col).onSnapshot({includeMetadataChanges:true},snap=>{
@@ -452,10 +466,11 @@ const estado = v => saldo(v)<=0 ? "Pagado" : abonado(v)>0 ? "Abonado" : "Pendien
 const TABS=["inversion","preventa","sacrificio","ventas","deudores","resumen"];
 function irA(t){
   if(!TABS.includes(t)) t="inversion";
-  ultimaTab=t; if(vista!=="app"){ try{localStorage.setItem("cc_tab",t);}catch(e){} return; }
+  ultimaTab=t; if(vista!=="app"){ guardarNav(); return; }
   TABS.forEach(x=>$(x).classList.toggle("act",x===t));
   document.querySelectorAll("#nav button").forEach(b=>b.classList.toggle("act",b.dataset.t===t));
-  try{localStorage.setItem("cc_tab",t);}catch(e){}
+  guardarNav();
+  { const nv=$("nav"), ab=nv.querySelector("button.act"); if(ab&&nv.scrollWidth>nv.clientWidth) nv.scrollTo({left:ab.offsetLeft-(nv.clientWidth-ab.offsetWidth)/2,behavior:"smooth"}); }
   if(location.hash!=="#"+t) history.replaceState(null,"","#"+t);
   window.scrollTo(0,0);
 }
@@ -472,7 +487,7 @@ function cerrarForm(id){$(id).classList.remove("open");}
 function abrirNuevo(id){
   if(id==="mEncargo"){ if(!$("pFechaSac").value){ $("pFechaSac").value=hoy(); try{fechaManual();}catch(e){} } renderPItems(); }
   else if(id==="mSacrificio"){ if(!$("cFecha").value) $("cFecha").value=hoy(); try{llenarCNombre();infoFechaSac();}catch(e){} sumarCortes(); }
-  else { renderItems(); }
+  else { if(id==="mVenta"&&vFiltroCerdo&&!vCerdoSel) vCerdoSel=vFiltroCerdo; renderItems(); }
   $(id).classList.add("open"); $(id).querySelector(".sheet").scrollTop=0;
 }
 document.querySelectorAll(".modal").forEach(m=>m.addEventListener("click",e=>{if(e.target===m)m.classList.remove("open");}));
@@ -762,6 +777,8 @@ function borrarCerdo(id){
 
 /* ===== Ventas (varios cortes por venta) ===== */
 let carrito=[{cerdoId:"",corte:"carne",cant:0,precio:0}];
+let vCerdoSel="", vFiltroCerdo=""; /* cerdo elegido en Nueva Venta (obligatorio) y filtro del historial */
+function setCerdoVenta(v){ vCerdoSel=v; renderItems(); }
 function agregarItem(){
   const u=carrito[carrito.length-1]||{};
   carrito.push({cerdoId:u.cerdoId||"",corte:CORTES[carrito.length%CORTES.length][0],cant:0,precio:0});
@@ -779,11 +796,13 @@ function refrescarItems(){
 }
 function renderItems(){
   const cs=[...D.cerdos].sort((a,b)=>(a.creado||0)-(b.creado||0));
-  carrito.forEach(it=>{ if(!cs.some(c=>c.id===it.cerdoId)) it.cerdoId=cs[0]?.id||""; });
+  if(!cs.some(c=>c.id===vCerdoSel)) vCerdoSel="";
+  carrito.forEach(it=>{ it.cerdoId=vCerdoSel; });
+  { const h='<option value="">— Selecciona un cerdo —</option>'+cs.map(x=>`<option value="${x.id}"${x.id===vCerdoSel?" selected":""}>🐷 ${esc(x.nombre)}${x.arete?" · Arete "+esc(x.arete):""}</option>`).join("");
+    const sel=$("vCerdo"); if(sel.innerHTML!==h) sel.innerHTML=h; sel.value=vCerdoSel; }
   $("vItems").innerHTML=carrito.map((it,i)=>{
     const c=cs.find(x=>x.id===it.cerdoId);
     return `<div class="item"><div class="ih"><b>Corte ${i+1}</b>${carrito.length>1?`<button class="sm del" onclick="quitarItem(${i})">Quitar</button>`:""}</div>
-    <label>Cerdo</label><select onchange="setItem(${i},'cerdoId',this.value,true)">${cs.length?cs.map(x=>`<option value="${x.id}"${x.id===it.cerdoId?" selected":""}>${esc(x.nombre)}${x.arete?" · Arete "+esc(x.arete):""}</option>`).join(""):'<option value="">— Registra un cerdo primero —</option>'}</select>
     <label>Corte</label><select onchange="setItem(${i},'corte',this.value,true)">${CORTES.map(([k,n])=>`<option value="${k}"${k===it.corte?" selected":""}>${c?nomFila(c,k,n):n}${c?` (${peso(dispCorte(c,k))} lb disp.)`:""}</option>`).join("")}</select>
     ${(it.corte==="otros"||it.desc)?`<label>Descripción en el comprobante (opcional)</label><input value="${esc(it.desc||"")}" placeholder="${esc(c?.otrosDesc||"Ej: Cabeza, Papada, Asadura")}" oninput="carrito[${i}].desc=this.value">`:""}
     <div class="g2"><div><label>Cantidad (lb)</label><input type="number" inputmode="decimal" step="0.01" value="${it.cant||""}" oninput="setItem(${i},'cant',this.value)"></div>
@@ -807,6 +826,8 @@ function avisoStock(pares){ /* pares: [{c, k, cant, disp}] ya agrupados por cerd
 function guardarVenta(){
   const cliente=$("vCliente").value.trim();
   if(!cliente) return toast("Ingresa el nombre del cliente");
+  if(!vCerdoSel||!D.cerdos.some(x=>x.id===vCerdoSel)) return toast("Selecciona el cerdo de la venta");
+  carrito.forEach(it=>{ it.cerdoId=vCerdoSel; });
   const pedido={};
   for(const it of carrito){
     const c=D.cerdos.find(x=>x.id===it.cerdoId);
@@ -821,14 +842,27 @@ function guardarVenta(){
   if(e==="Abonado"&&ab<=0) return toast("Ingresa el valor abonado");
   const f=hoy();
   guardarDoc("ventas_cerdos",{cliente,telefono:$("vTel").value.trim(),items,total,abonado:ab,abonos:ab>0?[{fecha:f,valor:ab}]:[],fecha:f,creado:Date.now(),...(fechasSacItems(items).length===1?{fechaSacrificio:fechasSacItems(items)[0]}:{})}).then(ok=>{
-    if(ok){["vAbono","vCliente","vTel"].forEach(i=>$(i).value="");$("vEstado").value="Pagado";carrito=[{cerdoId:carrito[0].cerdoId,corte:"carne",cant:0,precio:0}];renderItems();cerrarForm("mVenta");toast("Venta registrada"+aviso);if(ventaDesde){guardarDoc("preventas_cerdos",{estado:"Despachado"},ventaDesde);ventaDesde=null;}}
+    if(ok){["vAbono","vCliente","vTel"].forEach(i=>$(i).value="");$("vEstado").value="Pagado";vCerdoSel="";carrito=[{cerdoId:"",corte:"carne",cant:0,precio:0}];renderItems();cerrarForm("mVenta");toast("Venta registrada"+aviso);if(ventaDesde){guardarDoc("preventas_cerdos",{estado:"Despachado"},ventaDesde);ventaDesde=null;}}
   });
 }
 const resumenItems = v => itemsDe(v).map(i=>`${esc(nomItem(i))} ${peso(i.cantidad)} lb`).join(" · ");
-const lineaVenta = v => `<div class="row" onclick="recibo('${v.id}')" style="cursor:pointer"><div>${esc(v.cliente)} <span class="tag ${estado(v)}">${estado(v)}</span><small>${resumenItems(v)}</small></div><div class="num">${money(v.total)}${saldo(v)>0?`<small class="neg">debe ${money(saldo(v))}</small>`:""}<button class="sm" style="display:block;margin:6px 0 0 auto" onclick="event.stopPropagation();editarVenta('${v.id}')">✏️ Editar</button></div></div>`;
+const cerdosDeVenta = v => { const m=new Map(); itemsDe(v).forEach(i=>{ if(!i.cerdoId) return; const c=D.cerdos.find(x=>x.id===i.cerdoId); if(!m.has(i.cerdoId)) m.set(i.cerdoId,c?c.nombre:(i.cerdoNombre||"Cerdo")); }); return [...m.values()]; };
+const tagsCerdo = v => { const n=cerdosDeVenta(v); return (n.length?n:["Sin cerdo"]).map(x=>`<span class="tag cerdo">🏷️ ${esc(x)}</span>`).join(""); };
+const lineaVenta = v => `<div class="row" onclick="recibo('${v.id}')" style="cursor:pointer"><div>${esc(v.cliente)} <span class="tag ${estado(v)}">${estado(v)}</span>${tagsCerdo(v)}<small>${resumenItems(v)}</small></div><div class="num">${money(v.total)}${saldo(v)>0?`<small class="neg">debe ${money(saldo(v))}</small>`:""}<button class="sm" style="display:block;margin:6px 0 0 auto" onclick="event.stopPropagation();editarVenta('${v.id}')">✏️ Editar</button></div></div>`;
+function setFiltroVenta(id){ vFiltroCerdo=id||""; renderVentas(); }
 function renderVentas(){
-  const u=[...D.ventas].sort((a,b)=>(b.creado||0)-(a.creado||0));
-  $("ultVentas").innerHTML=u.length?u.map(lineaVenta).join(""):'<div class="empty">Sin ventas todavía.</div>';
+  const cs=[...D.cerdos].sort((a,b)=>(a.creado||0)-(b.creado||0));
+  if(vFiltroCerdo&&!cs.some(c=>c.id===vFiltroCerdo)) vFiltroCerdo="";
+  const fb=$("vFiltro");
+  fb.innerHTML=`<button class="${vFiltroCerdo?"":"act"}" onclick="setFiltroVenta('')">Todos</button>`+cs.map(c=>`<button class="${c.id===vFiltroCerdo?"act":""}" onclick="setFiltroVenta('${esc(c.id)}')">🐷 ${esc(c.nombre)}</button>`).join("");
+  fb.style.display=cs.length?"":"none";
+  let u=[...D.ventas].sort((a,b)=>(b.creado||0)-(a.creado||0));
+  if(vFiltroCerdo) u=u.filter(v=>itemsDe(v).some(i=>i.cerdoId===vFiltroCerdo));
+  const info=$("vFiltroInfo");
+  if(vFiltroCerdo){ const c=cs.find(x=>x.id===vFiltroCerdo), tot=u.reduce((a,v)=>a+itemsDe(v).filter(i=>i.cerdoId===vFiltroCerdo).reduce((b,i)=>b+(i.subtotal!=null?i.subtotal:Math.round((i.cantidad||0)*(i.precio||0))),0),0);
+    info.textContent=u.length+(u.length===1?" venta":" ventas")+" de "+c.nombre+" · "+money(tot); info.style.display=""; }
+  else info.style.display="none";
+  $("ultVentas").innerHTML=u.length?u.map(lineaVenta).join(""):'<div class="empty">'+(vFiltroCerdo?"Este cerdo aún no tiene ventas.":"Sin ventas todavía.")+'</div>';
 }
 
 /* ===== Editar venta (cliente, cortes, libras, precios, abonos y estado) ===== */
@@ -915,21 +949,48 @@ function evGuardar(){
 
 /* ===== Clientes / deudores ===== */
 let filtro="todos";
+let cFiltroCerdo="", bFiltroCerdo=""; /* filtro por cerdo en Clientes y en Balance */
 document.querySelectorAll(".chip").forEach(b=>b.onclick=()=>{filtro=b.dataset.f;document.querySelectorAll(".chip").forEach(x=>x.classList.toggle("act",x===b));renderDeudores();});
+/* ---- Filtro por cerdo (Clientes y Balance) ---- */
+const cerdosOrden = () => [...D.cerdos].sort((a,b)=>(a.creado||0)-(b.creado||0));
+const subItem = i => i.subtotal!=null ? i.subtotal : Math.round((i.cantidad||0)*(i.precio||0));
+/* Parte de una venta que corresponde a un cerdo. El abono/saldo se reparte en proporción al valor de sus cortes. */
+function ventaCerdo(v,cid){
+  const its=itemsDe(v), all=its.reduce((a,i)=>a+subItem(i),0), mine=its.filter(i=>i.cerdoId===cid);
+  const t=mine.reduce((a,i)=>a+subItem(i),0), sh=all>0?t/all:0;
+  const sal=Math.min(t,Math.round(saldo(v)*sh));
+  return {items:mine,total:t,saldo:sal,abonado:t-sal,mixta:mine.length<its.length};
+}
+function fichasCerdo(elId,sel,fn,txtTodos,lista){
+  const ls=lista||cerdosOrden().map(c=>({key:c.id,nombre:c.nombre})), el=$(elId);
+  el.innerHTML=`<button class="${sel?"":"act"}" onclick="${fn}('')">${txtTodos}</button>`+ls.map(c=>`<button class="${c.key===sel?"act":""}" onclick="${fn}('${esc(c.key)}')">🐷 ${esc(c.nombre)}</button>`).join("");
+  el.style.display=ls.length?"":"none";
+}
+function setFiltroClientes(id){ cFiltroCerdo=id||""; renderDeudores(); }
+function setFiltroBalance(id){ bFiltroCerdo=id||""; renderResumen(); }
 function tarjetaVenta(v){
-  const s=saldo(v),est=estado(v),fs=fechasSacVenta(v);
-  const its=itemsDe(v).map(i=>`<div class="tkl"><span>${esc(nomItem(i))}<em>${peso(i.cantidad)} lb × ${money(i.precio)}</em></span><b>${money(Math.round((i.cantidad||0)*(i.precio||0)))}</b></div>`).join("");
+  const fc=cFiltroCerdo, p=fc?ventaCerdo(v,fc):null, cz=fc?D.cerdos.find(x=>x.id===fc):null;
+  const s=p?p.saldo:saldo(v), est=p?(s<=0?"Pagado":p.abonado>0?"Abonado":"Pendiente"):estado(v), fs=fechasSacVenta(v);
+  const its=(p?p.items:itemsDe(v)).map(i=>`<div class="tkl"><span>${esc(nomItem(i))}<em>${peso(i.cantidad)} lb × ${money(i.precio)}</em></span><b>${money(Math.round((i.cantidad||0)*(i.precio||0)))}</b></div>`).join("");
+  const tot=p?p.total:v.total, ab=p?p.abonado:abonado(v);
+  const nota=p&&p.mixta?`<div class="sub" style="margin:6px 0 0">Esta venta incluye también otros cerdos; aquí solo se cuenta la parte de ${esc(cz?cz.nombre:"este cerdo")}.</div>`:"";
   return `<div class="tk"><div class="tkh" onclick="recibo('${v.id}')"><div><b>${esc(v.cliente)}</b><small>${fechaTxt(v.fecha)}${v.telefono?" · "+esc(v.telefono):""}${fs.length?" · Sacrificio "+fs.map(fechaTxt).join(" / "):""}</small></div><span class="tag ${est}">${est}</span></div>
-  ${its}
-  <div class="tkt"><div><span>Total</span><b>${money(v.total)}</b></div><div><span>Abonado</span><b>${money(abonado(v))}</b></div><div><span>Saldo</span><b class="${s>0?"neg":"pos"}">${s>0?money(s):"Pagado ✓"}</b></div></div>
-  <div class="tka"><button class="wa" onclick="enviarWA('${v.id}')">Compartir por WhatsApp</button><button onclick="recibo('${v.id}')">${s>0?"Abonar":"Ver"}</button><button onclick="editarVenta('${v.id}')">✏️ Editar</button></div></div>`;
+  ${its}${nota}
+  <div class="tkt"><div><span>Total</span><b>${money(tot)}</b></div><div><span>Abonado</span><b>${money(ab)}</b></div><div><span>Saldo</span><b class="${s>0?"neg":"pos"}">${s>0?money(s):"Pagado ✓"}</b></div></div>
+  <div class="tka"><button class="wa" onclick="enviarWA('${v.id}')">Compartir por WhatsApp</button><button onclick="recibo('${v.id}')">${saldo(v)>0?"Abonar":"Ver"}</button><button onclick="editarVenta('${v.id}')">✏️ Editar</button></div></div>`;
 }
 function renderDeudores(){
+  const cs=cerdosOrden();
+  if(cFiltroCerdo&&!cs.some(c=>c.id===cFiltroCerdo)) cFiltroCerdo="";
+  fichasCerdo("cFiltroCerdo",cFiltroCerdo,"setFiltroClientes","Todos los cerdos");
+  const cz=cFiltroCerdo?cs.find(c=>c.id===cFiltroCerdo):null;
+  const m=v=>cFiltroCerdo?ventaCerdo(v,cFiltroCerdo):{total:v.total||0,abonado:abonado(v),saldo:saldo(v)};
   let l=[...D.ventas].sort((a,b)=>(b.creado||0)-(a.creado||0));
-  if(filtro==="pagados") l=l.filter(v=>saldo(v)<=0); if(filtro==="deudores") l=l.filter(v=>saldo(v)>0);
-  $("dLbl").textContent=filtro==="pagados"?"Total cobrado en esta lista":filtro==="deudores"?"Por cobrar (deudores)":"Total vendido en esta lista";
-  $("dTot").textContent=money(l.reduce((a,v)=>a+(filtro==="pagados"?abonado(v):filtro==="deudores"?saldo(v):v.total||0),0));
-  $("listaClientes").innerHTML=l.length?l.map(tarjetaVenta).join(""):'<div class="card empty">No hay ventas en esta lista.</div>';
+  if(cFiltroCerdo) l=l.filter(v=>itemsDe(v).some(i=>i.cerdoId===cFiltroCerdo));
+  if(filtro==="pagados") l=l.filter(v=>m(v).saldo<=0); if(filtro==="deudores") l=l.filter(v=>m(v).saldo>0);
+  $("dLbl").textContent=(filtro==="pagados"?"Total cobrado en esta lista":filtro==="deudores"?"Por cobrar (deudores)":"Total vendido en esta lista")+(cz?" · "+cz.nombre:"");
+  $("dTot").textContent=money(l.reduce((a,v)=>{const x=m(v);return a+(filtro==="pagados"?x.abonado:filtro==="deudores"?x.saldo:x.total);},0));
+  $("listaClientes").innerHTML=l.length?l.map(tarjetaVenta).join(""):'<div class="card empty">'+(cz?"No hay ventas en esta lista para "+esc(cz.nombre)+".":"No hay ventas en esta lista.")+'</div>';
 }
 
 /* ===== Comprobante ===== */
@@ -1337,22 +1398,83 @@ function panelPVSac(){
 }
 
 /* ===== Resumen ===== */
+/* Plantel del lote: todos los cerdos (sacrificados o aún en ceba) en orden. c = registro de despiece si ya fue sacrificado */
+function plantelCerdos(){
+  const base=cerdosBase(), usados=new Set(), out=[], sac=cerdosOrden();
+  const meta=base.map(t=>sac.find(x=>(!!norm(t.nombre)&&norm(x.nombre)===norm(t.nombre))||(!!norm(t.arete)&&norm(x.arete)===norm(t.arete)))||null);
+  meta.forEach(c=>{ if(c) usados.add(c.id); });
+  base.forEach((t,i)=>{
+    let c=meta[i];
+    if(!c&&!norm(t.nombre)){ c=sac.find(x=>!usados.has(x.id))||null; if(c) usados.add(c.id); }
+    out.push({key:c?c.id:"v:"+(t.nombre||"Cerdo #"+(i+1)),nombre:c?c.nombre:(t.nombre||"Cerdo #"+(i+1)),arete:c?c.arete:t.arete,c,idx:i});
+  });
+  sac.filter(c=>!usados.has(c.id)).forEach(c=>out.push({key:c.id,nombre:c.nombre,arete:c.arete,c,idx:-1}));
+  return out;
+}
+/* Un cerdo está activo en una fecha si aún no había sido sacrificado (el día del sacrificio todavía cuenta) */
+const activoEn = (e,f) => !(e.c&&e.c.fecha&&f) || f<=e.c.fecha;
+/* Inversión asignada: costo de su lechón + su cuota de cada compra de alimento (en partes iguales entre los cerdos activos ese día,
+   sin sumar las compras posteriores a su sacrificio) */
+function inversionCerdo(e,pl){
+  pl=pl||plantelCerdos();
+  const costos=[]; [...D.lotes].sort((a,b)=>(a.fecha||"").localeCompare(b.fecha||"")||(a.creado||0)-(b.creado||0))
+    .forEach(l=>{const n=l.cantidad||0; for(let i=0;i<n;i++) costos.push(((l.valor||0)+(l.flete||0))/n);});
+  const lechon=(e.idx>=0&&e.idx<costos.length)?costos[e.idx]:totLech()/Math.max(pl.length,1);
+  let alim=0,suma=0,excl=0;
+  D.insumos.forEach(x=>{
+    const m=(x.costo||0)+(x.flete||0);
+    if(!activoEn(e,x.fecha)){ excl++; return; }
+    const n=pl.filter(q=>activoEn(q,x.fecha)).length||1;
+    alim+=m/n; suma++;
+  });
+  return {lechon:Math.round(lechon),alimento:Math.round(alim),total:Math.round(lechon)+Math.round(alim),compras:suma,excluidas:excl};
+}
+const pct1 = n => (Math.round(n*10)/10).toLocaleString("es-CO",{minimumFractionDigits:1,maximumFractionDigits:1})+"%";
 function renderResumen(){
-  { const p=proyActual(); $("rProy").textContent=p?"Balance · "+nomProy(p):"Balance"; }
+  const csAll=cerdosOrden(), pl=plantelCerdos();
+  if(bFiltroCerdo&&!pl.some(e=>e.key===bFiltroCerdo)) bFiltroCerdo="";
+  fichasCerdo("bFiltroCerdo",bFiltroCerdo,"setFiltroBalance","Lote Completo",pl.map(e=>({key:e.key,nombre:e.nombre})));
+  const ez=bFiltroCerdo?pl.find(e=>e.key===bFiltroCerdo):null, cz=ez?ez.c:null;
+  { const p=proyActual(); $("rProy").textContent=(p?"Balance · "+nomProy(p):"Balance")+(ez?" · "+ez.nombre:""); }
   const inv=totLech()+totIns(),ven=D.ventas.reduce((a,v)=>a+(v.total||0),0),rec=D.ventas.reduce((a,v)=>a+abonado(v),0),cob=D.ventas.reduce((a,v)=>a+saldo(v),0);
   $("rInv").textContent=money(inv);$("rRec").textContent=money(rec);$("rCob").textContent=money(cob);$("rVen").textContent=money(ven);
   const u=ven-inv,c=rec-inv;
   $("rUtil").textContent=money(u);$("rUtil").className=u>=0?"pos":"neg";
   $("rCaja").textContent=money(c);$("rCaja").className=c>=0?"pos":"neg";
   $("rNum").textContent=D.cerdos.length;
-  const cs=[...D.cerdos].sort((a,b)=>(a.creado||0)-(b.creado||0));
+  $("rLote").style.display=ez?"none":"";
+  const bx=$("rCerdo");
+  if(ez){
+    const iv=inversionCerdo(ez,pl);
+    let vt=0,cb=0,pd=0; if(cz) D.ventas.forEach(v=>{ if(itemsDe(v).some(i=>i.cerdoId===cz.id)){const x=ventaCerdo(v,cz.id);vt+=x.total;cb+=x.abonado;pd+=x.saldo;} });
+    const gan=vt-iv.total, caja=cb-iv.total, rent=iv.total>0?gan/iv.total*100:null;
+    const sacF=cz&&cz.fecha;
+    const leyenda=cz
+      ? (sacF?`<b>Alimento e insumos congelados a la fecha de sacrificio (${fechaTxt(sacF)})</b>`:`<b>Alimento e insumos repartidos entre los cerdos vivos de cada compra</b>`)
+        +`<br><small>Cada compra se divide en partes iguales entre los cerdos activos ese día.${iv.excluidas?` ${iv.excluidas===1?"1 compra posterior al sacrificio no se suma":iv.excluidas+" compras posteriores al sacrificio no se suman"}.`:""}</small>`
+      : `<b>Aún en ceba: el alimento se sigue sumando proporcionalmente hasta su día de sacrificio</b><br><small>Cada compra se divide en partes iguales entre los cerdos vivos ese día. Llevas ${iv.compras} ${iv.compras===1?"compra":"compras"} de alimento asignadas.</small>`;
+    bx.innerHTML=`<div class="kpis">
+      <div class="kpi big"><span>Inversión asignada a ${esc(ez.nombre)}</span><b>${money(iv.total)}</b></div>
+      <div class="kpi"><span>Costo del lechón</span><b>${money(iv.lechon)}</b></div>
+      <div class="kpi"><span>Alimento e insumos</span><b>${money(iv.alimento)}</b></div>
+      <div class="kpi big"><span>Total ventas del cerdo (cobrado + pendiente)</span><b>${money(vt)}</b></div>
+      <div class="kpi"><span>Cobrado</span><b class="pos">${money(cb)}</b></div>
+      <div class="kpi"><span>Por cobrar</span><b class="wa-c">${money(pd)}</b></div>
+      <div class="kpi big"><span>Ganancia neta del cerdo (ventas − inversión)</span><b class="${gan>=0?"pos":"neg"}">${money(gan)}</b></div>
+      <div class="kpi"><span>Rentabilidad individual</span><b class="${gan>=0?"pos":"neg"}">${rent==null?"—":pct1(rent)}</b></div>
+      <div class="kpi"><span>Ganancia en caja hoy</span><b class="${caja>=0?"pos":"neg"}">${money(caja)}</b></div>
+    </div>
+    <div class="okbox" style="padding:10px 12px;border-radius:12px;margin:-4px 0 14px;font-size:13px">${leyenda}</div>`;
+    bx.style.display="";
+  } else { bx.innerHTML=""; bx.style.display="none"; }
+  const cs=ez?(cz?[cz]:[]):csAll;
   $("rendimiento").innerHTML=cs.length?cs.map(c=>{
     const vend=CORTES.reduce((a,[k])=>a+vendidoCorte(c.id,k),0),disp=CORTES.reduce((a,[k])=>a+dispCorte(c,k),0),pct=c.canal?Math.min(100,vend/c.canal*100):0;
     const monto=D.ventas.reduce((a,v)=>a+itemsDe(v).filter(i=>i.cerdoId===c.id).reduce((b,i)=>b+(i.cantidad||0)*(i.precio||0),0),0);
     return `<div class="card"><b>${esc(c.nombre)}</b>${c.arete?` <span class="tag ar">Arete ${esc(c.arete)}</span>`:""}<div class="sub" style="margin:2px 0 0">Canal: ${peso(kgDe(c))} kg (${peso(c.canal)} lb) · Vendido: ${peso(vend)} · En congelador: ${peso(disp)} · Ventas: ${money(monto)}</div>
     <div class="bar"><i style="width:${pct}%"></i></div>
     <div class="stock"><span class="h">Corte</span><span class="h n">Inicial</span><span class="h n">Vendido</span><span class="h n">Disp.</span>${CORTES.map(([k,n])=>`<span>${nomFila(c,k,n)}</span><span class="n">${peso(initCorte(c,k))}</span><span class="n">${peso(vendidoCorte(c.id,k))}</span><span class="n">${peso(dispCorte(c,k))}</span>`).join("")}</div></div>`;
-  }).join(""):'<div class="card empty">Registra un sacrificio para ver el rendimiento.</div>';
+  }).join(""):(ez?'<div class="card empty">Este cerdo aún está en ceba: todavía no tiene despiece registrado.</div>':'<div class="card empty">Registra un sacrificio para ver el rendimiento.</div>');
 }
 
 /* ===== Proyectos / Lotes de ceba ===== */
@@ -1362,14 +1484,30 @@ const anioProy = p => p.anio||(p.fechaInicio||"").slice(0,4)||"—";
 const nomProy = p => anioProy(p)+" - "+p.nombre+(p.estado==="Finalizado"?" (Finalizado)":"");
 function filtrarProyecto(){
   const ps=proyectosOrdenados(), pref=proyActivo||(()=>{try{return localStorage.getItem("cc_proy");}catch(e){return null;}})();
-  if(ps.some(p=>p.id===pref)) proyActivo=pref;
-  else if(!ps.some(p=>p.id===proyActivo)){ const f=[...ps].reverse().find(p=>p.estado!=="Finalizado")||ps[ps.length-1]; proyActivo=f?f.id:null; }
+  if(ps.length||proyOK){
+    const existe=ps.some(p=>p.id===pref);
+    if(existe) proyActivo=pref;
+    else if(!ps.some(p=>p.id===proyActivo)){
+      if(vista==="app"){ /* el lote guardado ya no existe: volver a la lista de lotes del año */
+        vista="lotes"; TABS.forEach(x=>$(x).classList.remove("act")); document.querySelectorAll("#nav button").forEach(b=>b.classList.remove("act"));
+      }
+      const f=[...ps].reverse().find(p=>p.estado!=="Finalizado")||ps[ps.length-1]; proyActivo=f?f.id:null; guardarNav();
+    }
+  }
   const f=o=>pidDe(o)===proyActivo;
   D.lotes=R.lotes.filter(f);D.insumos=R.insumos.filter(f);D.cerdos=R.cerdos.filter(f);D.ventas=R.ventas.filter(f);D.preventas=R.preventas.filter(f);
   renderProyectoUI();
 }
 /* ===== Navegación por carpetas: Años > Lotes > (app del lote) ===== */
-let vista="anios", anioVista=String(new Date().getFullYear()), ultimaTab="inversion"; /* al abrir: selección de año */
+let vista="anios", anioVista=String(new Date().getFullYear()), ultimaTab="inversion", proyOK=false;
+/* Persistencia de navegación: vista (anios | lotes | app), año y pestaña se guardan en localStorage y se restauran al recargar */
+function guardarNav(){ try{ localStorage.setItem("cc_vista",vista); localStorage.setItem("cc_anio",String(anioVista)); localStorage.setItem("cc_tab",ultimaTab); if(proyActivo) localStorage.setItem("cc_proy",proyActivo); }catch(e){} }
+(function restaurarNav(){ try{
+  const v=localStorage.getItem("cc_vista"), a=localStorage.getItem("cc_anio"), t=localStorage.getItem("cc_tab"), pr=localStorage.getItem("cc_proy");
+  if(a&&/^\d{4}$/.test(a)) anioVista=a;
+  if(t&&TABS.includes(t)) ultimaTab=t;
+  if(v==="app") vista=pr?"app":"lotes"; else if(v==="lotes"||v==="anios") vista=v;
+}catch(e){} })();
 function renderProyectoUI(){
   const p=proyActual(),app=vista==="app";
   let h=`<button class="cr${vista==="anios"?" act":""}" onclick="mostrarInicio('anios')" aria-label="Carpetas de años">🗂️${vista==="anios"?" Años":""}</button>`;
@@ -1404,13 +1542,13 @@ function renderInicio(){
 function mostrarInicio(v,a){
   vista=v; if(a) anioVista=String(a); cerrar();
   TABS.forEach(x=>$(x).classList.remove("act")); document.querySelectorAll("#nav button").forEach(b=>b.classList.remove("act"));
-  renderAll(); window.scrollTo(0,0);
+  guardarNav(); renderAll(); window.scrollTo(0,0);
 }
 function abrirLote(id,tab){
   const p=R.proyectos.find(x=>x.id===id); if(!p) return;
   proyActivo=id; try{localStorage.setItem("cc_proy",id);}catch(e){}
   anioVista=String(anioProy(p)); vista="app";
-  resetFormsProyecto(); renderAll(); irA(tab||ultimaTab);
+  resetFormsProyecto(); renderAll(); irA(tab||ultimaTab); guardarNav();
 }
 function terminarLote(id){
   const p=R.proyectos.find(x=>x.id===id); if(!p) return;
@@ -1481,7 +1619,7 @@ function resetFormsProyecto(){
   cerrar();cerrarForm("mLote");cerrarForm("mInsumo");cerrarForm("mEncargo");cerrarForm("mVenta");cerrarForm("mSacrificio");cerrarForm("mEditCerdo");ev=null;cv=null;ventaDesde=null;
   $("pCerdo").value="";$("cNombre").value="";$("cArete").value="";$("cArete").readOnly=false;
   fechaAuto=false;fechaSacAuto=false;$("pFechaSac").value=hoy();$("cFecha").value=hoy();
-  carrito=[{cerdoId:"",corte:"carne",cant:0,precio:0}];pcarrito=[{corte:"carne",desc:"",cant:0}];renderPItems();
+  vCerdoSel="";vFiltroCerdo="";cFiltroCerdo="";bFiltroCerdo="";carrito=[{cerdoId:"",corte:"carne",cant:0,precio:0}];pcarrito=[{corte:"carne",desc:"",cant:0}];renderPItems();
 }
 function cambiarProyecto(v){ if(v&&v!==proyActivo) abrirLote(v); }
 let pyEdit=null, pyAnio=null, pyNombreManual=false;
@@ -1595,7 +1733,7 @@ window.addEventListener("online",net);window.addEventListener("offline",net);net
 buildCortesForm();
 renderPItems();
 $("cArete").addEventListener("input",()=>{infoAreteSac();panelPVSac();});
-irA(location.hash.slice(1)||localStorage.getItem("cc_tab")||"inversion");
+irA(location.hash.slice(1)||ultimaTab||"inversion");
 initFB(); renderAll();
 if("serviceWorker" in navigator && location.protocol.startsWith("http")) navigator.serviceWorker.register("sw.js").catch(()=>{});
 </script>
