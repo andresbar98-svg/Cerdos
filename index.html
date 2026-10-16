@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1b1613">
+<title>Control Ceba Cerdos</title>
+<link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22Control%20Ceba%20Cerdos%22%2C%22short_name%22%3A%22Ceba%20Cerdos%22%2C%22start_url%22%3A%22.%2Findex.html%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%231b1613%22%2C%22theme_color%22%3A%22%231b1613%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%2C%253Csvg%2520xmlns%3D%2527http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%2527%2520viewBox%3D%25270%25200%2520100%2520100%2527%253E%253Crect%2520width%3D%2527100%2527%2520height%3D%2527100%2527%2520rx%3D%252722%2527%2520fill%3D%2527%2523e8a07a%2527%2F%253E%253Ctext%2520y%3D%2527.75em%2527%2520x%3D%2527.12em%2527%2520font-size%3D%252772%2527%253E%25F0%259F%2590%2597%253C%2Ftext%253E%253C%2Fsvg%253E%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%2C%22purpose%22%3A%22any%22%7D%5D%7D">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🐖%3C/text%3E%3C/svg%3E">
+<style>
+:root{--bg:#1b1613;--s1:#251e1a;--s2:#30272a;--line:#40343a;--tx:#f3e9e2;--mu:#a8978f;--ac:#e8a07a;--ok:#7fd1a0;--wa:#f0c36a;--er:#ef7b7b;--r:14px}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--tx);font-family:"Segoe UI",system-ui,-apple-system,Roboto,sans-serif;font-size:15px}
+body{padding-bottom:calc(76px + env(safe-area-inset-bottom))}
+header{position:sticky;top:0;z-index:20;background:var(--bg);border-bottom:1px solid var(--line);padding:calc(10px + env(safe-area-inset-top)) 14px 10px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+header h1{font-size:17px;margin:0;font-family:Georgia,"Times New Roman",serif;letter-spacing:.2px}
+.leds{display:flex;gap:10px;font-size:11px;color:var(--mu)}
+.led{display:flex;align-items:center;gap:5px}
+.led i{width:8px;height:8px;border-radius:50%;background:var(--er);box-shadow:0 0 6px var(--er)}
+.led.on i{background:var(--ok);box-shadow:0 0 6px var(--ok)}
+.led.wait i{background:var(--wa);box-shadow:0 0 6px var(--wa)}
+main{padding:14px;max-width:640px;margin:auto}
+section{display:none}section.act{display:block}
+.card{background:var(--s1);border:1px solid var(--line);border-radius:var(--r);padding:14px;margin-bottom:14px}
+h2{font-family:Georgia,serif;font-size:19px;margin:0 0 4px}
+h3{font-size:14px;margin:0 0 10px;color:var(--ac)}
+.sub{color:var(--mu);font-size:12.5px;margin:0 0 12px}
+label{display:block;font-size:12px;color:var(--mu);margin:10px 0 4px}
+input,select{width:100%;background:var(--s2);color:var(--tx);border:1px solid var(--line);border-radius:10px;padding:11px;font-size:16px;font-family:inherit}
+input:focus,select:focus,button:focus-visible{outline:2px solid var(--ac);outline-offset:1px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+button{font-family:inherit;cursor:pointer}
+.btn{width:100%;margin-top:14px;background:var(--ac);color:#2a1a12;border:0;border-radius:10px;padding:13px;font-size:15px;font-weight:700}
+.btn.sec{background:var(--s2);color:var(--tx);border:1px solid var(--line)}
+.btn.wa{background:#2fae62;color:#fff}
+.sm{background:none;border:1px solid var(--line);color:var(--mu);border-radius:8px;padding:5px 9px;font-size:12px}
+.sm.del{color:var(--er)}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.row:last-child{border:0}
+.row small{display:block;color:var(--mu);font-size:12px;margin-top:2px}
+.num{font-variant-numeric:tabular-nums;font-weight:600;text-align:right;white-space:nowrap}
+.kpis{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.kpi{background:var(--s1);border:1px solid var(--line);border-radius:var(--r);padding:12px}
+.kpi span{font-size:12px;color:var(--mu)}.kpi b{display:block;font-size:19px;margin-top:4px;font-variant-numeric:tabular-nums}
+.kpi.big{grid-column:1/-1;border-color:var(--ac)}.kpi.big b{font-size:25px}
+.pos{color:var(--ok)}.neg{color:var(--er)}.wa-c{color:var(--wa)}
+.tag{display:inline-block;font-size:11px;border-radius:20px;padding:2px 9px;border:1px solid}
+.tag.Pagado{color:var(--ok);border-color:var(--ok)}.tag.Abonado{color:var(--wa);border-color:var(--wa)}.tag.Pendiente{color:var(--er);border-color:var(--er)}
+.chips{display:flex;gap:8px;margin-bottom:12px}
+.chip,.pchip{flex:1;background:var(--s1);border:1px solid var(--line);color:var(--mu);border-radius:20px;padding:9px;font-size:13px}
+.chip.act,.pchip.act{background:var(--ac);color:#2a1a12;border-color:var(--ac);font-weight:700}
+.stock{display:grid;grid-template-columns:1fr auto auto auto;gap:6px 10px;font-size:13px;align-items:center}
+.stock .h{color:var(--mu);font-size:11px}.stock .n{text-align:right;font-variant-numeric:tabular-nums}
+.bar{height:6px;background:var(--s2);border-radius:4px;overflow:hidden;margin:6px 0 12px}.bar i{display:block;height:100%;background:var(--ac)}
+nav{position:fixed;bottom:0;left:0;right:0;background:var(--s1);border-top:1px solid var(--line);display:flex;padding-bottom:env(safe-area-inset-bottom);z-index:20}
+nav button{flex:1;background:none;border:0;color:var(--mu);padding:9px 1px 8px;font-size:10.5px;display:flex;flex-direction:column;align-items:center;gap:3px}
+nav button b{font-size:19px;line-height:1}nav button.act{color:var(--ac);font-weight:700}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.72);display:none;align-items:flex-end;justify-content:center;z-index:50;padding:0}
+.modal.open{display:flex}
+.sheet{background:var(--bg);width:100%;max-width:520px;max-height:92vh;overflow:auto;border-radius:20px 20px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom))}
+.rec{background:#f6efe8;color:#2b211c;border-radius:12px;padding:18px;border:2px dashed #c9b3a3}
+.rec h4{margin:0;font-family:Georgia,serif;font-size:18px;text-align:center}
+.rec .c{text-align:center;font-size:12px;color:#7a655a;margin-bottom:10px}
+.rec .l{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #e0d2c6;font-size:14px;gap:10px}
+.rec .l span:first-child{color:#7a655a}.rec .l b{text-align:right}
+.rec .t{font-size:17px}.rec .s{color:#b3261e}.rec .s.z{color:#1d7a43}
+.toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:var(--s2);border:1px solid var(--ac);padding:10px 16px;border-radius:20px;font-size:13px;z-index:99;display:none;max-width:90%;text-align:center}
+.empty{color:var(--mu);font-size:13px;text-align:center;padding:14px 0}
+.warn{background:#3a2a1c;border:1px solid var(--wa);color:var(--wa);padding:10px;border-radius:10px;font-size:12.5px;margin-bottom:14px;display:none}
+.item{background:var(--s2);border:1px solid var(--line);border-radius:12px;padding:10px 12px 12px;margin-top:12px}
+.item select,.item input{background:var(--s1)}
+.ih{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--ac)}
+.btn.add{background:none;border:1px dashed var(--ac);color:var(--ac)}
+.vc{margin-bottom:16px}.vc .acts{display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:8px}.vc .acts .btn{margin-top:0;padding:11px}
+.rec .it{padding:6px 0;border-bottom:1px solid #e0d2c6;font-size:14px}.rec .it div{display:flex;justify-content:space-between;gap:10px}.rec .it small{color:#7a655a;font-size:12px}
+.tag.Apartado{color:var(--wa);border-color:var(--wa)}.tag.Despachado{color:var(--ok);border-color:var(--ok)}
+.stock.s5{grid-template-columns:1fr auto auto auto auto}
+.alerta,.okbox{border-radius:12px;padding:10px 12px;font-size:13px;margin-bottom:14px;line-height:1.55}
+.alerta{background:#3b1f1f;border:1px solid var(--er);color:#ffb4b4}.okbox{background:#1d3328;border:1px solid var(--ok);color:#a9e6c3}
+#pvSac .alerta,#pvSac .okbox{margin:12px 0 0}
+.pv .it2{display:flex;justify-content:space-between;padding:6px 0;font-size:14px;border-bottom:1px solid var(--line)}
+.pv .acts2{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}.pv .acts2 .sm{flex:1;padding:9px 6px;font-size:12.5px;white-space:nowrap}
+@media (prefers-reduced-motion:no-preference){.sheet{animation:up .22s ease-out}@keyframes up{from{transform:translateY(30px);opacity:0}}}
+</style>
+</head>
+<body>
+<header>
+  <h1>🐖 Control Ceba Cerdos</h1>
+  <div class="leds">
+    <div class="led" id="ledNet"><i></i><span>Sin red</span></div>
+    <div class="led wait" id="ledCloud"><i></i><span>Conectando...</span></div>
+  </div>
+</header>
+
+<main>
+<div class="warn" id="warn"></div>
+
+<!-- ============ INVERSIÓN ============ -->
+<section id="inversion">
+  <div class="kpis"><div class="kpi big"><span>Inversión total (lechones + insumos)</span><b id="invTotal">$0</b></div>
+    <div class="kpi"><span>Lechones</span><b id="invLech">$0</b></div><div class="kpi"><span>Alimento e insumos</span><b id="invIns">$0</b></div></div>
+
+  <div class="card"><h2>Comprar lechones</h2><p class="sub">Registra cada lote que llega a la finca.</p>
+    <label>Fecha</label><input type="date" id="lFecha">
+    <div class="g2"><div><label>Cantidad de cerdos</label><input type="number" inputmode="numeric" id="lCant" min="1"></div>
+    <div><label>Peso inicial promedio (<span class="u"></span>)</label><input type="number" inputmode="decimal" id="lPeso" step="0.1"></div></div>
+    <label>Valor total de la compra ($)</label><input class="money" inputmode="numeric" id="lValor" placeholder="0">
+    <button class="btn" onclick="guardarLote()">Guardar lote</button></div>
+  <div class="card"><h3>Lotes registrados</h3><div id="listaLotes"></div></div>
+
+  <div class="card"><h2>Alimento e insumos</h2><p class="sub">Concentrado, maíz, medicinas, fletes.</p>
+    <label>Fecha</label><input type="date" id="iFecha">
+    <label>Concepto</label><select id="iConcepto"><option>Concentrado</option><option>Maíz</option><option>Medicinas</option><option>Fletes</option><option>Otro</option></select>
+    <div class="g2"><div><label>Bultos / cantidad</label><input type="number" inputmode="decimal" id="iBultos" step="0.1"></div>
+    <div><label>Costo pagado ($)</label><input class="money" inputmode="numeric" id="iCosto" placeholder="0"></div></div>
+    <button class="btn" onclick="guardarInsumo()">Guardar gasto</button></div>
+  <div class="card"><h3>Gastos registrados</h3><div id="listaIns"></div></div>
+</section>
+
+<!-- ============ PREVENTA ============ -->
+<section id="preventa">
+  <div id="pvAlerta"></div>
+  <div class="card"><h2>Nuevo encargo</h2><p class="sub">Anota lo que los vecinos apartan antes del sacrificio. Cantidades en libras (lb).</p>
+    <div class="g2"><div><label>Cliente (vecino)</label><input id="pCliente" placeholder="Nombre"></div>
+    <div><label>Teléfono</label><input type="tel" inputmode="tel" id="pTel" placeholder="3001234567"></div></div>
+    <label>Cerdo asignado (opcional)</label><input id="pCerdo" list="dlCerdos" placeholder="Ej: Cerdo #1"><datalist id="dlCerdos"></datalist>
+    <div id="pItems"></div>
+    <button class="btn add" onclick="agregarPItem()">+ Agregar otro corte</button>
+    <label>Estado del pedido</label><select id="pEstado"><option value="Apartado">Apartado / Preventa</option><option value="Despachado">Despachado / Entregado</option></select>
+    <button class="btn" onclick="guardarPreventa()">Guardar encargo</button></div>
+  <div class="card"><h3>Cobertura: apartado vs. carne disponible</h3><div id="pCobertura"></div></div>
+  <div class="chips"><button class="pchip act" data-f="apartado">Apartados</button><button class="pchip" data-f="despachado">Despachados</button><button class="pchip" data-f="todos">Todos</button></div>
+  <div id="listaPreventas"></div>
+</section>
+
+<!-- ============ SACRIFICIO ============ -->
+<section id="sacrificio">
+  <div class="card"><h2>Registrar sacrificio</h2><p class="sub">Un registro por cada cerdo. Canal en kilos (kg) y cortes en libras (lb de 500 g).</p>
+    <div class="g2"><div><label>Nombre / número</label><input id="cNombre" placeholder="Cerdo #1"></div>
+    <div><label>Fecha</label><input type="date" id="cFecha"></div></div>
+    <label>Peso total en canal (kg)</label><input type="number" inputmode="decimal" id="cCanal" step="0.01">
+    <div class="sub" style="margin:6px 0 0">Equivale a <b id="canalLb">0</b> lb (1 kg = 2 lb)</div>
+    <h3 style="margin-top:16px">Pesaje inicial por corte (en libras, lb)</h3><div id="cortesForm"></div>
+    <div class="sub" style="margin:10px 0 0">Suma de cortes: <b id="sumCortes">0</b> lb · Diferencia vs canal: <b id="difCanal">0</b></div>
+    <div id="pvSac"></div>
+    <button class="btn" onclick="guardarCerdo()">Guardar cerdo</button></div>
+  <h3>Inventario de cortes en tiempo real</h3><div id="inventario"></div>
+</section>
+
+<!-- ============ VENTAS ============ -->
+<section id="ventas">
+  <div class="card"><h2>Nueva venta</h2><p class="sub">Puedes agregar varios cortes en la misma venta; cada uno descuenta del inventario.</p>
+    <div class="g2"><div><label>Cliente (vecino)</label><input id="vCliente" placeholder="Nombre"></div>
+    <div><label>Teléfono</label><input type="tel" inputmode="tel" id="vTel" placeholder="3001234567"></div></div>
+    <div id="vItems"></div>
+    <button class="btn add" onclick="agregarItem()">+ Agregar otro corte</button>
+    <div class="kpi" style="margin-top:12px"><span>Total venta</span><b id="vTotal">$0</b></div>
+    <label>Estado de pago</label><select id="vEstado" onchange="calcVenta()"><option>Pagado</option><option>Abonado</option><option>Pendiente</option></select>
+    <div id="vAbonoBox" style="display:none"><label>Valor abonado ($)</label><input class="money" inputmode="numeric" id="vAbono" oninput="calcVenta()" placeholder="0"></div>
+    <div class="sub" style="margin:8px 0 0">Saldo pendiente: <b id="vSaldo" class="neg">$0</b></div>
+    <button class="btn" onclick="guardarVenta()">Registrar venta</button></div>
+  <div class="card"><h3>Últimas ventas</h3><div id="ultVentas"></div></div>
+</section>
+
+<!-- ============ DEUDORES ============ -->
+<section id="deudores">
+  <h2 style="margin-bottom:10px">Clientes y comprobantes</h2>
+  <div class="chips"><button class="chip act" data-f="todos">Todos</button><button class="chip" data-f="pagados">Pagados</button><button class="chip" data-f="deudores">Deudores</button></div>
+  <div class="kpi" style="margin-bottom:12px"><span id="dLbl">Por cobrar</span><b id="dTot" class="wa-c">$0</b></div>
+  <div id="listaClientes"></div>
+</section>
+
+<!-- ============ RESUMEN ============ -->
+<section id="resumen">
+  <div class="kpis">
+    <div class="kpi"><span>Total invertido</span><b id="rInv">$0</b></div>
+    <div class="kpi"><span>Total recaudado</span><b id="rRec" class="pos">$0</b></div>
+    <div class="kpi"><span>Por cobrar</span><b id="rCob" class="wa-c">$0</b></div>
+    <div class="kpi"><span>Ventas totales</span><b id="rVen">$0</b></div>
+    <div class="kpi big"><span>Utilidad proyectada (ventas − inversión)</span><b id="rUtil">$0</b></div>
+    <div class="kpi"><span>Utilidad en caja hoy</span><b id="rCaja">$0</b></div>
+    <div class="kpi"><span>Cerdos sacrificados</span><b id="rNum">0</b></div>
+  </div>
+  <h3>Rendimiento por cerdo</h3><div id="rendimiento"></div>
+</section>
+</main>
+
+<nav id="nav">
+  <button data-t="inversion"><b>💰</b>Inversión</button>
+  <button data-t="preventa"><b>📝</b>Preventa</button>
+  <button data-t="sacrificio"><b>🔪</b>Despiece</button>
+  <button data-t="ventas"><b>🛒</b>Ventas</button>
+  <button data-t="deudores"><b>🧾</b>Clientes</button>
+  <button data-t="resumen"><b>📊</b>Balance</button>
+</nav>
+
+<div class="modal" id="modal"><div class="sheet" id="sheet"></div></div>
+<div class="toast" id="toast"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+/* ===== 1) CONFIGURACIÓN DE FIREBASE (proyecto cerdos-7c883) ===== */
+const firebaseConfig = {
+  apiKey: "AIzaSyAM_9_XFMlHyBn5tXIlnB6R3Vfpg0-fE3c",
+  authDomain: "cerdos-7c883.firebaseapp.com",
+  projectId: "cerdos-7c883",
+  storageBucket: "cerdos-7c883.firebasestorage.app",
+  messagingSenderId: "949673502392",
+  appId: "1:949673502392:web:673d0248fd1b49d6b7f64d",
+  measurementId: "G-0S8CHWDC9Y"
+};
+
+/* ===== Utilidades ===== */
+const $ = id => document.getElementById(id);
+const CORTES = [["pierna","Pierna"],["brazo","Brazo"],["lomo","Lomo / Chuleta"],["costilla","Costilla"],["tocino","Tocino / Papada"],["cabeza","Cabeza / Vísceras / Otros"]];
+const nomCorte = k => (CORTES.find(c=>c[0]===k)||[,k])[1];
+const esc = s => String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const hoy = () => { const d=new Date(); d.setMinutes(d.getMinutes()-d.getTimezoneOffset()); return d.toISOString().slice(0,10); };
+const money = n => "$" + Math.round(n||0).toLocaleString("es-CO");
+const peso = n => (Math.round((n||0)*100)/100).toLocaleString("es-CO",{maximumFractionDigits:2});
+const val = id => parseFloat($(id).value) || 0;
+const mval = id => parseInt(String($(id).value).replace(/\D/g,"")) || 0;
+const fechaTxt = f => f ? f.split("-").reverse().join("/") : "";
+let toastT; function toast(m){const t=$("toast");t.textContent=m;t.style.display="block";clearTimeout(toastT);toastT=setTimeout(()=>t.style.display="none",2600);}
+
+/* Cortes en libras de 500 g; peso en canal en kg (1 kg = 2 lb) */
+const UNIDAD = "lb";
+document.querySelectorAll(".u").forEach(e=>e.textContent=UNIDAD);
+
+/* Formato de miles en tiempo real */
+document.addEventListener("input",e=>{
+  if(!e.target.classList.contains("money")) return;
+  const d=e.target.value.replace(/\D/g,"");
+  e.target.value = d ? parseInt(d).toLocaleString("es-CO") : "";
+});
+
+/* ===== Firebase ===== */
+let db=null, D={lotes:[],insumos:[],cerdos:[],ventas:[],preventas:[]}, listos={};
+const configurado = !firebaseConfig.apiKey.startsWith("TU_");
+function cloud(estado,txt){const l=$("ledCloud");l.className="led "+estado;l.querySelector("span").textContent=txt;}
+function aviso(m){const w=$("warn");w.innerHTML=m;w.style.display="block";}
+
+function initFB(){
+  if(!configurado){ cloud("","Sin config"); aviso("⚠️ Falta pegar tu <b>firebaseConfig</b> en el código (sección 1 del script)."); return; }
+  try{
+    firebase.initializeApp(firebaseConfig);
+    db=firebase.firestore();
+    db.enablePersistence({synchronizeTabs:true}).catch(()=>{});
+  }catch(e){ cloud("","Error"); aviso("Error iniciando Firebase: "+esc(e.message)); return; }
+  escuchar("gastos_cerdos",snap=>{
+    D.lotes=[];D.insumos=[];
+    snap.forEach(d=>{const o={id:d.id,...d.data()};(o.tipo==="lote"?D.lotes:D.insumos).push(o);});
+  });
+  escuchar("cerdos",snap=>{D.cerdos=snap.docs.map(d=>({id:d.id,...d.data()}));});
+  escuchar("ventas_cerdos",snap=>{D.ventas=snap.docs.map(d=>({id:d.id,...d.data()}));});
+  escuchar("preventas_cerdos",snap=>{D.preventas=snap.docs.map(d=>({id:d.id,...d.data()}));});
+}
+function escuchar(col,fn){
+  db.collection(col).onSnapshot({includeMetadataChanges:true},snap=>{
+    fn(snap);
+    listos[col]=!snap.metadata.fromCache;
+    cloud(Object.values(listos).every(Boolean)&&Object.keys(listos).length===4?"on":"wait", Object.values(listos).every(Boolean)&&Object.keys(listos).length===4?"Nube OK":"Conectando...");
+    renderAll();
+  },err=>{
+    cloud("","Sin acceso");
+    aviso("No se pudo leer <b>"+col+"</b>: "+esc(err.code)+". Revisa las reglas de Firestore (ver instrucciones).");
+  });
+}
+async function guardarDoc(col,data,id){
+  if(!db){toast("Configura Firebase primero");return false;}
+  try{
+    const ref=id?db.collection(col).doc(id):db.collection(col).doc();
+    ref.set(data,{merge:true}).catch(e=>toast("Error nube: "+e.code)); /* no bloquea si estás sin red */
+    return true;
+  }catch(e){toast("Error: "+e.message);return false;}
+}
+function borrarDoc(col,id){ if(db&&confirm("¿Eliminar este registro?")) db.collection(col).doc(id).delete().catch(e=>toast("Error: "+e.code)); }
+
+/* ===== Cálculos ===== */
+const totLech = () => D.lotes.reduce((a,x)=>a+(x.valor||0),0);
+const totIns = () => D.insumos.reduce((a,x)=>a+(x.costo||0),0);
+const itemsDe = v => v.items || [{cerdoId:v.cerdoId,cerdoNombre:v.cerdoNombre,corte:v.corte,cantidad:v.cantidad,precio:v.precio}];
+const vendidoCorte = (cid,k) => D.ventas.reduce((a,v)=>a+itemsDe(v).filter(i=>i.cerdoId===cid&&i.corte===k).reduce((b,i)=>b+(i.cantidad||0),0),0);
+const kgDe = c => c.canalKg!=null ? c.canalKg : (c.canal||0)/2;
+const dispCorte = (c,k) => (c.cortes?.[k]||0) - vendidoCorte(c.id,k);
+const abonado = v => v.abonado||0;
+const saldo = v => Math.max(0,(v.total||0)-abonado(v));
+const estado = v => saldo(v)<=0 ? "Pagado" : abonado(v)>0 ? "Abonado" : "Pendiente";
+
+/* ===== Navegación persistente ===== */
+const TABS=["inversion","preventa","sacrificio","ventas","deudores","resumen"];
+function irA(t){
+  if(!TABS.includes(t)) t="inversion";
+  TABS.forEach(x=>$(x).classList.toggle("act",x===t));
+  document.querySelectorAll("#nav button").forEach(b=>b.classList.toggle("act",b.dataset.t===t));
+  try{localStorage.setItem("cc_tab",t);}catch(e){}
+  if(location.hash!=="#"+t) history.replaceState(null,"","#"+t);
+  window.scrollTo(0,0);
+}
+document.querySelectorAll("#nav button").forEach(b=>b.onclick=()=>irA(b.dataset.t));
+window.addEventListener("hashchange",()=>irA(location.hash.slice(1)));
+
+/* ===== Inversión ===== */
+function guardarLote(){
+  const o={tipo:"lote",fecha:$("lFecha").value,cantidad:val("lCant"),pesoProm:val("lPeso"),valor:mval("lValor"),creado:Date.now()};
+  if(!o.fecha||o.cantidad<=0||o.valor<=0) return toast("Completa fecha, cantidad y valor");
+  guardarDoc("gastos_cerdos",o).then(ok=>{if(ok){["lCant","lPeso","lValor"].forEach(i=>$(i).value="");toast("Lote guardado");}});
+}
+function guardarInsumo(){
+  const o={tipo:"insumo",fecha:$("iFecha").value,concepto:$("iConcepto").value,bultos:val("iBultos"),costo:mval("iCosto"),creado:Date.now()};
+  if(!o.fecha||o.costo<=0) return toast("Completa fecha y costo");
+  guardarDoc("gastos_cerdos",o).then(ok=>{if(ok){["iBultos","iCosto"].forEach(i=>$(i).value="");toast("Gasto guardado");}});
+}
+function renderInversion(){
+  $("invLech").textContent=money(totLech());$("invIns").textContent=money(totIns());$("invTotal").textContent=money(totLech()+totIns());
+  const ord=(a)=>[...a].sort((x,y)=>(y.fecha||"").localeCompare(x.fecha||"")||y.creado-x.creado);
+  $("listaLotes").innerHTML=D.lotes.length?ord(D.lotes).map(l=>`<div class="row"><div>${l.cantidad} cerdos · ${peso(l.pesoProm)} ${UNIDAD} prom.<small>${fechaTxt(l.fecha)}</small></div><div style="display:flex;gap:8px;align-items:center"><span class="num">${money(l.valor)}</span><button class="sm del" onclick="borrarDoc('gastos_cerdos','${l.id}')">✕</button></div></div>`).join(""):'<div class="empty">Aún no hay lotes. Registra la compra de tus lechones.</div>';
+  $("listaIns").innerHTML=D.insumos.length?ord(D.insumos).map(l=>`<div class="row"><div>${esc(l.concepto)}${l.bultos?" · "+peso(l.bultos)+" bultos":""}<small>${fechaTxt(l.fecha)}</small></div><div style="display:flex;gap:8px;align-items:center"><span class="num">${money(l.costo)}</span><button class="sm del" onclick="borrarDoc('gastos_cerdos','${l.id}')">✕</button></div></div>`).join(""):'<div class="empty">Aún no hay gastos de alimento o insumos.</div>';
+}
+
+/* ===== Sacrificio ===== */
+function buildCortesForm(){
+  $("cortesForm").innerHTML='<div class="g2">'+CORTES.map(([k,n])=>`<div><label>${n}</label><input type="number" inputmode="decimal" step="0.01" id="c_${k}" oninput="sumarCortes()"></div>`).join("")+"</div>";
+}
+function sumarCortes(){
+  const s=CORTES.reduce((a,[k])=>a+val("c_"+k),0),cl=val("cCanal")*2;
+  $("canalLb").textContent=peso(cl);$("sumCortes").textContent=peso(s);
+  const d=cl-s,e=$("difCanal");e.textContent=peso(d)+" lb";e.className=d<0?"neg":"";
+  panelPVSac();
+}
+$("cCanal").addEventListener("input",sumarCortes);
+function guardarCerdo(){
+  const nombre=$("cNombre").value.trim()||("Cerdo #"+(D.cerdos.length+1));
+  const canalKg=val("cCanal"); if(canalKg<=0) return toast("Ingresa el peso en canal (kg)");
+  const canal=canalKg*2;
+  const cortes={}; CORTES.forEach(([k])=>cortes[k]=val("c_"+k));
+  if(!Object.values(cortes).some(v=>v>0)) return toast("Ingresa al menos un corte");
+  guardarDoc("cerdos",{nombre,fecha:$("cFecha").value,canal,canalKg,cortes,creado:Date.now()}).then(ok=>{
+    if(ok){$("cNombre").value="";$("cCanal").value="";CORTES.forEach(([k])=>$("c_"+k).value="");sumarCortes();toast(nombre+" guardado"+(CORTES.some(([k])=>pvLb(pvDe(nombre),k)>cortes[k]+1e-9)?" ⚠️ Las preventas superan los cortes":""));}
+  });
+}
+function renderInventario(){
+  const cs=[...D.cerdos].sort((a,b)=>(a.creado||0)-(b.creado||0));
+  $("inventario").innerHTML=cs.length?cs.map(c=>{
+    const mine=pvDe(c.nombre),fal=faltantes(c);
+    return `<div class="card"><div class="row" style="padding-top:0"><div><b>${esc(c.nombre)}</b><small>${fechaTxt(c.fecha)} · canal ${peso(kgDe(c))} kg (${peso(c.canal)} lb)</small></div><button class="sm del" onclick="borrarCerdo('${c.id}')">✕</button></div>
+  <div class="stock s5"><span class="h">Corte</span><span class="h n">Inicial</span><span class="h n">Vendido</span><span class="h n">Disp.</span><span class="h n">Apart.</span>
+  ${CORTES.map(([k,n])=>{const d=dispCorte(c,k),a=pvLb(mine,k);return `<span>${n}</span><span class="n">${peso(c.cortes?.[k])}</span><span class="n">${peso(vendidoCorte(c.id,k))}</span><span class="n ${d<=0?"neg":"pos"}">${peso(d)}</span><span class="n ${a>d+1e-9?"neg":""}">${a?peso(a):"–"}</span>`}).join("")}</div>
+  ${fal.length?`<div class="alerta" style="margin:12px 0 0">⚠️ Falta carne para la preventa: ${fal.map(x=>`${x.n} (−${peso(x.ap-x.d)} lb)`).join(", ")}</div>`:""}</div>`}).join(""):'<div class="card empty">No hay cerdos sacrificados. Registra el primero arriba.</div>';
+}
+function borrarCerdo(id){
+  if(D.ventas.some(v=>itemsDe(v).some(i=>i.cerdoId===id))) return toast("Tiene ventas; elimínalas primero");
+  borrarDoc("cerdos",id);
+}
+
+/* ===== Ventas (varios cortes por venta) ===== */
+let carrito=[{cerdoId:"",corte:"pierna",cant:0,precio:0}];
+function agregarItem(){
+  const u=carrito[carrito.length-1]||{};
+  carrito.push({cerdoId:u.cerdoId||"",corte:CORTES[carrito.length%CORTES.length][0],cant:0,precio:0});
+  renderItems();
+}
+function quitarItem(i){carrito.splice(i,1);renderItems();}
+function setItem(i,k,v,re){
+  if(k==="cant") v=parseFloat(v)||0;
+  if(k==="precio") v=parseInt(String(v).replace(/\D/g,""))||0;
+  carrito[i][k]=v; re?renderItems():calcVenta();
+}
+function refrescarItems(){
+  const a=document.activeElement;
+  if(a&&a.tagName==="INPUT"&&$("vItems").contains(a)) calcVenta(); else renderItems();
+}
+function renderItems(){
+  const cs=[...D.cerdos].sort((a,b)=>(a.creado||0)-(b.creado||0));
+  carrito.forEach(it=>{ if(!cs.some(c=>c.id===it.cerdoId)) it.cerdoId=cs[0]?.id||""; });
+  $("vItems").innerHTML=carrito.map((it,i)=>{
+    const c=cs.find(x=>x.id===it.cerdoId);
+    return `<div class="item"><div class="ih"><b>Corte ${i+1}</b>${carrito.length>1?`<button class="sm del" onclick="quitarItem(${i})">Quitar</button>`:""}</div>
+    <label>Cerdo</label><select onchange="setItem(${i},'cerdoId',this.value,true)">${cs.length?cs.map(x=>`<option value="${x.id}"${x.id===it.cerdoId?" selected":""}>${esc(x.nombre)}</option>`).join(""):'<option value="">— Registra un cerdo primero —</option>'}</select>
+    <label>Corte</label><select onchange="setItem(${i},'corte',this.value,true)">${CORTES.map(([k,n])=>`<option value="${k}"${k===it.corte?" selected":""}>${n}${c?` (${peso(dispCorte(c,k))} lb disp.${pvLb(pvDe(c.nombre),k)>0?" · "+peso(pvLb(pvDe(c.nombre),k))+" apart.":""})`:""}</option>`).join("")}</select>
+    <div class="g2"><div><label>Cantidad (lb)</label><input type="number" inputmode="decimal" step="0.01" value="${it.cant||""}" oninput="setItem(${i},'cant',this.value)"></div>
+    <div><label>Precio por lb ($)</label><input class="money" inputmode="numeric" value="${it.precio?it.precio.toLocaleString("es-CO"):""}" oninput="setItem(${i},'precio',this.value)" placeholder="0"></div></div>
+    <div class="sub" style="margin:8px 0 0">Subtotal: <b id="sub${i}">$0</b></div></div>`;
+  }).join("");
+  calcVenta();
+}
+function calcVenta(){
+  carrito.forEach((it,i)=>{const e=$("sub"+i);if(e)e.textContent=money(it.cant*it.precio);});
+  const total=carrito.reduce((a,it)=>a+Math.round(it.cant*it.precio),0); $("vTotal").textContent=money(total);
+  const e=$("vEstado").value; $("vAbonoBox").style.display=e==="Abonado"?"block":"none";
+  const ab=e==="Pagado"?total:e==="Pendiente"?0:mval("vAbono");
+  const sd=Math.max(0,total-ab); const el=$("vSaldo"); el.textContent=money(sd); el.className=sd>0?"neg":"pos";
+}
+function guardarVenta(){
+  const cliente=$("vCliente").value.trim();
+  if(!cliente) return toast("Ingresa el nombre del cliente");
+  const pedido={};
+  for(const it of carrito){
+    const c=D.cerdos.find(x=>x.id===it.cerdoId);
+    if(!c) return toast("Selecciona un cerdo");
+    if(it.cant<=0||it.precio<=0) return toast("Completa cantidad y precio de cada corte");
+    const key=c.id+"|"+it.corte; pedido[key]=(pedido[key]||0)+it.cant;
+    if(pedido[key]>dispCorte(c,it.corte)+1e-9) return toast("No hay suficiente "+nomCorte(it.corte)+" de "+c.nombre);
+  }
+  const items=carrito.map(it=>{const c=D.cerdos.find(x=>x.id===it.cerdoId);return{cerdoId:c.id,cerdoNombre:c.nombre,corte:it.corte,cantidad:it.cant,precio:it.precio,subtotal:Math.round(it.cant*it.precio)};});
+  const total=items.reduce((a,i)=>a+i.subtotal,0),e=$("vEstado").value;
+  const ab=e==="Pagado"?total:e==="Pendiente"?0:Math.min(mval("vAbono"),total);
+  if(e==="Abonado"&&ab<=0) return toast("Ingresa el valor abonado");
+  const f=hoy();
+  guardarDoc("ventas_cerdos",{cliente,telefono:$("vTel").value.trim(),items,total,abonado:ab,abonos:ab>0?[{fecha:f,valor:ab}]:[],fecha:f,creado:Date.now()}).then(ok=>{
+    if(ok){["vAbono","vCliente","vTel"].forEach(i=>$(i).value="");$("vEstado").value="Pagado";carrito=[{cerdoId:carrito[0].cerdoId,corte:"pierna",cant:0,precio:0}];renderItems();toast("Venta registrada");if(ventaDesde){guardarDoc("preventas_cerdos",{estado:"Despachado"},ventaDesde);ventaDesde=null;}}
+  });
+}
+const resumenItems = v => itemsDe(v).map(i=>`${nomCorte(i.corte)} ${peso(i.cantidad)} lb`).join(" · ");
+const lineaVenta = v => `<div class="row" onclick="recibo('${v.id}')" style="cursor:pointer"><div>${esc(v.cliente)} <span class="tag ${estado(v)}">${estado(v)}</span><small>${resumenItems(v)}</small></div><div class="num">${money(v.total)}${saldo(v)>0?`<small class="neg">debe ${money(saldo(v))}</small>`:""}</div></div>`;
+function renderVentas(){
+  const u=[...D.ventas].sort((a,b)=>(b.creado||0)-(a.creado||0)).slice(0,8);
+  $("ultVentas").innerHTML=u.length?u.map(lineaVenta).join(""):'<div class="empty">Sin ventas todavía.</div>';
+}
+
+/* ===== Clientes / deudores ===== */
+let filtro="todos";
+document.querySelectorAll(".chip").forEach(b=>b.onclick=()=>{filtro=b.dataset.f;document.querySelectorAll(".chip").forEach(x=>x.classList.toggle("act",x===b));renderDeudores();});
+function tarjetaVenta(v){
+  return `<div class="vc">${reciboHTML(v)}<div class="acts"><button class="btn wa" onclick="enviarWA('${v.id}')">Compartir por WhatsApp</button><button class="btn sec" onclick="recibo('${v.id}')">${saldo(v)>0?"Abonar":"Ver"}</button></div></div>`;
+}
+function renderDeudores(){
+  let l=[...D.ventas].sort((a,b)=>(b.creado||0)-(a.creado||0));
+  if(filtro==="pagados") l=l.filter(v=>saldo(v)<=0); if(filtro==="deudores") l=l.filter(v=>saldo(v)>0);
+  $("dLbl").textContent=filtro==="pagados"?"Total cobrado en esta lista":filtro==="deudores"?"Por cobrar (deudores)":"Total vendido en esta lista";
+  $("dTot").textContent=money(l.reduce((a,v)=>a+(filtro==="pagados"?abonado(v):filtro==="deudores"?saldo(v):v.total||0),0));
+  $("listaClientes").innerHTML=l.length?l.map(tarjetaVenta).join(""):'<div class="card empty">No hay ventas en esta lista.</div>';
+}
+
+/* ===== Comprobante ===== */
+function reciboHTML(v){
+  const s=saldo(v);
+  return `<div class="rec"><h4>🐖 Comprobante de venta</h4><div class="c">Control Ceba Cerdos · ${fechaTxt(v.fecha)}</div>
+  <div class="l"><span>Cliente</span><b>${esc(v.cliente)}</b></div>
+  ${v.telefono?`<div class="l"><span>Teléfono</span><b>${esc(v.telefono)}</b></div>`:""}
+  ${itemsDe(v).map(i=>`<div class="it"><div><b>${nomCorte(i.corte)}</b><b>${money(Math.round((i.cantidad||0)*(i.precio||0)))}</b></div><small>${esc(i.cerdoNombre||"")} · ${peso(i.cantidad)} lb x ${money(i.precio)}</small></div>`).join("")}
+  <div class="l t"><span>Total</span><b>${money(v.total)}</b></div>
+  <div class="l"><span>Abonado</span><b>${money(abonado(v))}</b></div>
+  <div class="l t"><span>Saldo pendiente</span><b class="s ${s<=0?'z':''}">${s<=0?"PAGADO ✓":money(s)}</b></div>
+  ${(v.abonos||[]).length>1?`<div class="c" style="margin-top:8px">Abonos: ${v.abonos.map(a=>fechaTxt(a.fecha)+" "+money(a.valor)).join(" · ")}</div>`:""}</div>`;
+}
+function recibo(id){
+  const v=D.ventas.find(x=>x.id===id); if(!v) return;
+  const s=saldo(v);
+  $("sheet").innerHTML=reciboHTML(v)+`
+  ${s>0?`<label>Registrar nuevo abono ($)</label><div style="display:flex;gap:8px"><input class="money" inputmode="numeric" id="nAbono" placeholder="${peso(s)}"><button class="sm" style="background:var(--ac);color:#2a1a12;border:0;font-weight:700;font-size:14px;padding:0 16px" onclick="abonar('${v.id}')">Abonar</button></div>`:""}
+  <button class="btn wa" onclick="enviarWA('${v.id}')">Compartir por WhatsApp</button>
+  <button class="btn sec" onclick="cerrar()">Cerrar</button>
+  <button class="btn sec" style="color:var(--er)" onclick="borrarVenta('${v.id}')">Eliminar venta</button>`;
+  $("modal").classList.add("open");
+}
+function cerrar(){$("modal").classList.remove("open");}
+$("modal").addEventListener("click",e=>{if(e.target.id==="modal")cerrar();});
+function abonar(id){
+  const v=D.ventas.find(x=>x.id===id),m=mval("nAbono"); if(!v||m<=0) return toast("Ingresa el valor del abono");
+  const val_=Math.min(m,saldo(v)), nuevos=[...(v.abonos||[]),{fecha:hoy(),valor:val_}];
+  guardarDoc("ventas_cerdos",{abonado:abonado(v)+val_,abonos:nuevos},id).then(()=>{
+    v.abonado=abonado(v)+val_; v.abonos=nuevos; toast("Abono registrado"); recibo(id); renderAll();
+  });
+}
+function borrarVenta(id){ if(!db||!confirm("¿Eliminar esta venta? Los cortes vuelven al inventario.")) return; db.collection("ventas_cerdos").doc(id).delete().catch(e=>toast("Error: "+e.code)); cerrar(); }
+function textoWA(v){
+  const s=saldo(v);
+  const det=itemsDe(v).map(i=>`• ${nomCorte(i.corte)}: ${peso(i.cantidad)} lb x ${money(i.precio)} = ${money(Math.round((i.cantidad||0)*(i.precio||0)))}`).join("\n");
+  return `🐖 *Comprobante de venta*\nCliente: ${v.cliente}\nFecha: ${fechaTxt(v.fecha)}\n\n*Detalle:*\n${det}\n\n*Total: ${money(v.total)}*\nAbonado: ${money(abonado(v))}\n*Saldo pendiente: ${s<=0?"$0 (PAGADO ✓)":money(s)}*\n\n¡Gracias por su compra!`;
+}
+async function enviarWA(id){
+  const v=D.ventas.find(x=>x.id===id); if(!v) return;
+  const t=textoWA(v);
+  let tel=(v.telefono||"").replace(/\D/g,""); if(tel.length===10) tel="57"+tel;
+  if(!tel && navigator.share){ try{await navigator.share({text:t});}catch(e){} return; }
+  window.open((tel?`https://wa.me/${tel}`:"https://wa.me/")+"?text="+encodeURIComponent(t),"_blank");
+}
+
+/* ===== Preventa / Encargos ===== */
+const norm = s => String(s||"").trim().toLowerCase();
+const pvAbiertas = () => D.preventas.filter(p=>p.estado!=="Despachado");
+const pvLb = (arr,k) => arr.reduce((a,p)=>a+(p.items||[]).filter(i=>!k||i.corte===k).reduce((b,i)=>b+(i.cantidad||0),0),0);
+const pvDe = nombre => norm(nombre) ? pvAbiertas().filter(p=>norm(p.cerdo)===norm(nombre)) : [];
+const pvSin = () => pvAbiertas().filter(p=>!norm(p.cerdo));
+const faltantes = c => CORTES.map(([k,n])=>({k,n,ap:pvLb(pvDe(c.nombre),k),d:dispCorte(c,k)})).filter(x=>x.ap>x.d+1e-9);
+
+let pcarrito=[{corte:"pierna",cant:0}], pfiltro="apartado", ventaDesde=null;
+function agregarPItem(){pcarrito.push({corte:CORTES[pcarrito.length%CORTES.length][0],cant:0});renderPItems();}
+function quitarPItem(i){pcarrito.splice(i,1);renderPItems();}
+function renderPItems(){
+  $("pItems").innerHTML=pcarrito.map((it,i)=>`<div class="item"><div class="ih"><b>Corte ${i+1}</b>${pcarrito.length>1?`<button class="sm del" onclick="quitarPItem(${i})">Quitar</button>`:""}</div>
+  <div class="g2"><div><label>Corte</label><select onchange="pcarrito[${i}].corte=this.value">${CORTES.map(([k,n])=>`<option value="${k}"${k===it.corte?" selected":""}>${n}</option>`).join("")}</select></div>
+  <div><label>Cantidad (lb)</label><input type="number" inputmode="decimal" step="0.5" value="${it.cant||""}" oninput="pcarrito[${i}].cant=parseFloat(this.value)||0"></div></div></div>`).join("");
+}
+function guardarPreventa(){
+  const cliente=$("pCliente").value.trim();
+  if(!cliente) return toast("Ingresa el nombre del cliente");
+  const items=pcarrito.filter(i=>i.cant>0).map(i=>({corte:i.corte,cantidad:i.cant}));
+  if(!items.length) return toast("Agrega al menos un corte con cantidad");
+  guardarDoc("preventas_cerdos",{cliente,telefono:$("pTel").value.trim(),cerdo:$("pCerdo").value.trim(),items,estado:$("pEstado").value,fecha:hoy(),creado:Date.now()}).then(ok=>{
+    if(ok){["pCliente","pTel","pCerdo"].forEach(i=>$(i).value="");pcarrito=[{corte:"pierna",cant:0}];renderPItems();toast("Encargo guardado");}
+  });
+}
+function cambiarEstadoPV(id){
+  const p=D.preventas.find(x=>x.id===id); if(!p) return;
+  guardarDoc("preventas_cerdos",{estado:p.estado==="Despachado"?"Apartado":"Despachado"},id);
+}
+function asignarCerdoPV(id){
+  const p=D.preventas.find(x=>x.id===id); if(!p) return;
+  const n=prompt("¿A qué cerdo se asigna? (ej: Cerdo #1). Déjalo vacío para quitar la asignación.",p.cerdo||"");
+  if(n!==null) guardarDoc("preventas_cerdos",{cerdo:n.trim()},id);
+}
+function pasarAVenta(id){
+  const p=D.preventas.find(x=>x.id===id); if(!p) return;
+  const c=D.cerdos.find(x=>norm(x.nombre)===norm(p.cerdo))||D.cerdos[0];
+  carrito=(p.items||[]).map(i=>({cerdoId:c?.id||"",corte:i.corte,cant:i.cantidad,precio:0}));
+  ventaDesde=id; $("vCliente").value=p.cliente; $("vTel").value=p.telefono||"";
+  renderItems(); irA("ventas"); toast("Ingresa los precios y registra la venta");
+}
+document.querySelectorAll(".pchip").forEach(b=>b.onclick=()=>{pfiltro=b.dataset.f;document.querySelectorAll(".pchip").forEach(x=>x.classList.toggle("act",x===b));renderPreventas();});
+
+function panelCobertura(){
+  const ab=pvAbiertas(),al=[],cs=[...D.cerdos].sort((a,b)=>(a.creado||0)-(b.creado||0));
+  let h="";
+  cs.forEach(c=>{
+    const mine=pvDe(c.nombre),rows=CORTES.filter(([k])=>pvLb(mine,k)>0);
+    faltantes(c).forEach(x=>al.push(`${esc(c.nombre)}: faltan ${peso(x.ap-x.d)} lb de ${x.n} (apartadas ${peso(x.ap)}, disponibles ${peso(x.d)})`));
+    if(!rows.length) return;
+    h+=`<div style="margin-bottom:14px"><b>${esc(c.nombre)}</b> <small style="color:var(--mu)">· ${peso(pvLb(mine))} lb apartadas</small><div class="stock" style="margin-top:6px"><span class="h">Corte</span><span class="h n">Apart.</span><span class="h n">Disp.</span><span class="h n">Dif.</span>${rows.map(([k,n])=>{const a=pvLb(mine,k),d=dispCorte(c,k),df=d-a;return `<span>${n}</span><span class="n">${peso(a)}</span><span class="n">${peso(d)}</span><span class="n ${df<0?"neg":"pos"}">${df>0?"+":""}${peso(df)}</span>`}).join("")}</div></div>`;
+  });
+  const sin=pvSin();
+  if(sin.length){
+    const libre=k=>cs.reduce((a,c)=>a+Math.max(0,dispCorte(c,k)-pvLb(pvDe(c.nombre),k)),0);
+    const rows=CORTES.filter(([k])=>pvLb(sin,k)>0);
+    rows.forEach(([k,n])=>{if(cs.length&&pvLb(sin,k)>libre(k)+1e-9) al.push(`Sin asignar: faltan ${peso(pvLb(sin,k)-libre(k))} lb de ${n} (apartadas ${peso(pvLb(sin,k))}, libres ${peso(libre(k))})`);});
+    h+=`<div style="margin-bottom:14px"><b>Sin cerdo asignado</b> <small style="color:var(--mu)">· ${peso(pvLb(sin))} lb apartadas</small><div class="stock" style="margin-top:6px"><span class="h">Corte</span><span class="h n">Apart.</span><span class="h n">Libre</span><span class="h n"></span>${rows.map(([k,n])=>`<span>${n}</span><span class="n">${peso(pvLb(sin,k))}</span><span class="n">${cs.length?peso(libre(k)):"—"}</span><span></span>`).join("")}</div></div>`;
+  }
+  const esp={};
+  ab.forEach(p=>{const k=norm(p.cerdo); if(k&&!cs.some(c=>norm(c.nombre)===k)) (esp[k]=esp[k]||{n:p.cerdo.trim(),arr:[]}).arr.push(p);});
+  Object.values(esp).forEach(e=>h+=`<div class="row"><div><b>${esc(e.n)}</b><small>Esperando despiece</small></div><div class="num">${peso(pvLb(e.arr))} lb</div></div>`);
+  $("pCobertura").innerHTML=h||'<div class="empty">Aún no hay encargos abiertos.</div>';
+  $("pvAlerta").innerHTML=al.length?`<div class="alerta"><b>⚠️ Falta carne para la preventa</b><br>${al.join("<br>")}</div>`:(ab.length&&cs.length?'<div class="okbox">✓ Los cortes alcanzan para los encargos abiertos.</div>':"");
+}
+function renderPreventas(){
+  $("dlCerdos").innerHTML=[...new Set([...D.cerdos.map(c=>c.nombre),"Cerdo #"+(D.cerdos.length+1)])].map(n=>`<option value="${esc(n)}">`).join("");
+  panelCobertura();
+  let l=[...D.preventas].sort((a,b)=>(b.creado||0)-(a.creado||0));
+  if(pfiltro==="apartado") l=l.filter(p=>p.estado!=="Despachado"); else if(pfiltro==="despachado") l=l.filter(p=>p.estado==="Despachado");
+  $("listaPreventas").innerHTML=l.length?l.map(p=>{const d=p.estado==="Despachado";return `<div class="card pv"><div class="row" style="padding-top:0"><div><b>${esc(p.cliente)}</b> <span class="tag ${d?"Despachado":"Apartado"}">${d?"Despachado":"Apartado"}</span><small>${esc(p.telefono||"Sin teléfono")} · ${fechaTxt(p.fecha)} · ${p.cerdo?esc(p.cerdo):"Sin cerdo asignado"}</small></div><button class="sm del" onclick="borrarDoc('preventas_cerdos','${p.id}')">✕</button></div>
+  ${(p.items||[]).map(i=>`<div class="it2"><span>${nomCorte(i.corte)}</span><b>${peso(i.cantidad)} lb</b></div>`).join("")}
+  <div class="acts2"><button class="sm" onclick="cambiarEstadoPV('${p.id}')">${d?"Volver a apartado":"Marcar despachado"}</button><button class="sm" onclick="asignarCerdoPV('${p.id}')">Asignar cerdo</button>${d?"":`<button class="sm" onclick="pasarAVenta('${p.id}')">Pasar a venta</button>`}</div></div>`}).join(""):'<div class="card empty">No hay encargos en esta lista.</div>';
+}
+
+/* Aviso en vivo dentro del formulario de despiece */
+function panelPVSac(){
+  const nombre=$("cNombre").value.trim()||("Cerdo #"+(D.cerdos.length+1));
+  const mine=pvDe(nombre),tot=pvLb(mine),sin=pvLb(pvSin());
+  if(!tot&&!sin){$("pvSac").innerHTML="";return;}
+  const filas=CORTES.map(([k,n])=>({n,ap:pvLb(mine,k),ob:val("c_"+k)})).filter(x=>x.ap>0);
+  const falta=filas.some(x=>x.ap>x.ob+1e-9);
+  $("pvSac").innerHTML=`<div class="${falta?"alerta":"okbox"}"><b>Preventa de ${esc(nombre)}: ${peso(tot)} lb apartadas</b>`+
+    (filas.length?"<br>"+filas.map(x=>`${x.n}: apartado ${peso(x.ap)} / pesado ${peso(x.ob)} lb`+(x.ap>x.ob+1e-9?` ⚠️ faltan ${peso(x.ap-x.ob)}`:" ✓")).join("<br>"):"")+
+    (sin?`<br><small>Además hay ${peso(sin)} lb de encargos sin cerdo asignado.</small>`:"")+`</div>`;
+}
+
+/* ===== Resumen ===== */
+function renderResumen(){
+  const inv=totLech()+totIns(),ven=D.ventas.reduce((a,v)=>a+(v.total||0),0),rec=D.ventas.reduce((a,v)=>a+abonado(v),0),cob=D.ventas.reduce((a,v)=>a+saldo(v),0);
+  $("rInv").textContent=money(inv);$("rRec").textContent=money(rec);$("rCob").textContent=money(cob);$("rVen").textContent=money(ven);
+  const u=ven-inv,c=rec-inv;
+  $("rUtil").textContent=money(u);$("rUtil").className=u>=0?"pos":"neg";
+  $("rCaja").textContent=money(c);$("rCaja").className=c>=0?"pos":"neg";
+  $("rNum").textContent=D.cerdos.length;
+  const cs=[...D.cerdos].sort((a,b)=>(a.creado||0)-(b.creado||0));
+  $("rendimiento").innerHTML=cs.length?cs.map(c=>{
+    const vend=CORTES.reduce((a,[k])=>a+vendidoCorte(c.id,k),0),disp=CORTES.reduce((a,[k])=>a+dispCorte(c,k),0),pct=c.canal?Math.min(100,vend/c.canal*100):0;
+    const monto=D.ventas.reduce((a,v)=>a+itemsDe(v).filter(i=>i.cerdoId===c.id).reduce((b,i)=>b+(i.cantidad||0)*(i.precio||0),0),0);
+    return `<div class="card"><b>${esc(c.nombre)}</b><div class="sub" style="margin:2px 0 0">Canal: ${peso(kgDe(c))} kg (${peso(c.canal)} lb) · Vendido: ${peso(vend)} · En congelador: ${peso(disp)} · Ventas: ${money(monto)}</div>
+    <div class="bar"><i style="width:${pct}%"></i></div>
+    <div class="stock"><span class="h">Corte</span><span class="h n">Inicial</span><span class="h n">Vendido</span><span class="h n">Disp.</span>${CORTES.map(([k,n])=>`<span>${n}</span><span class="n">${peso(c.cortes?.[k])}</span><span class="n">${peso(vendidoCorte(c.id,k))}</span><span class="n">${peso(dispCorte(c,k))}</span>`).join("")}</div></div>`;
+  }).join(""):'<div class="card empty">Registra un sacrificio para ver el rendimiento.</div>';
+}
+
+function renderAll(){renderInversion();renderInventario();refrescarItems();renderVentas();renderDeudores();renderResumen();renderPreventas();panelPVSac();}
+
+/* ===== Arranque ===== */
+function net(){const on=navigator.onLine,l=$("ledNet");l.className="led "+(on?"on":"");l.querySelector("span").textContent=on?"En línea":"Sin red";}
+window.addEventListener("online",net);window.addEventListener("offline",net);net();
+["lFecha","iFecha","cFecha"].forEach(i=>$(i).value=hoy());
+buildCortesForm();
+renderPItems();
+$("cNombre").addEventListener("input",panelPVSac);
+irA(location.hash.slice(1)||localStorage.getItem("cc_tab")||"inversion");
+initFB(); renderAll();
+if("serviceWorker" in navigator && location.protocol.startsWith("http")) navigator.serviceWorker.register("sw.js").catch(()=>{});
+</script>
+</body>
+</html>
