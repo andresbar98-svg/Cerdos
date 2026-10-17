@@ -162,6 +162,9 @@ nav button.act{background:linear-gradient(135deg,#f0a35a,#f0c36a);border-color:#
 .req{color:var(--er)}
 @media (prefers-reduced-motion:no-preference){.sheet{animation:up .22s ease-out}@keyframes up{from{transform:translateY(30px);opacity:0}}}
 input[readonly]{opacity:.7}
+/* Casillas calculadas de Bore: mismo fondo oscuro marrón y bordes redondeados que los demás campos, texto blanco en negrita bien legible */
+#iArrobas,#iCostoB{background:var(--s2);color:#fff;-webkit-text-fill-color:#fff;opacity:1;font-weight:700;border:1px solid var(--line);border-radius:10px;caret-color:transparent}
+#iArrobas::placeholder,#iCostoB::placeholder{color:#a8978f;-webkit-text-fill-color:#a8978f;font-weight:400}
 #crumbs{flex:1;display:flex;align-items:center;gap:6px;min-width:0;overflow-x:auto;scrollbar-width:none}#crumbs::-webkit-scrollbar{display:none}
 .cr{flex:0 1 auto;background:var(--s2);border:1px solid var(--line);color:var(--tx);border-radius:20px;padding:7px 12px;font-size:13px;max-width:44vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .cr.act{border-color:var(--ac);color:var(--ac);font-weight:700}.sep{color:var(--mu);flex:0 0 auto}
@@ -381,14 +384,17 @@ input[readonly]{opacity:.7}
 <div class="modal" id="mInsumo"><div class="sheet">
   <div class="mh"><h2 id="iTitulo">Concentrado / Insumos</h2><button class="sm" onclick="cerrarForm('mInsumo')">Cerrar</button></div>
   <label>Fecha de compra</label><input type="date" id="iFecha">
-  <label>Concepto</label><select id="iConcepto" onchange="insumoCampos()"><option>Concentrado</option><option>Medicamento / Insumos</option><option>Maíz</option><option>Fletes</option><option>Otro</option></select>
+  <label>Concepto</label><select id="iConcepto" onchange="insumoCampos()"><option>Concentrado</option><option>Medicamento / Insumos</option><option>Bore</option><option>Fletes</option><option>Otro</option></select>
   <div id="iBoxConc"><label>Clase de concentrado</label><select id="iClase"><option>Inicio</option><option>Levante</option><option>Engorde</option></select></div>
   <div id="iBoxMed" style="display:none"><label>Medicamento o insumo</label><input id="iMed" placeholder="Ej: Ivermectina, Hierro, Antibiótico, Vitaminas" autocomplete="off">
   <label>Presentación (opcional)</label><input id="iUnidad" placeholder="Ej: frasco, caja, dosis" autocomplete="off"></div>
-  <div class="g2"><div><label id="iLblCant">Bultos</label><input type="number" inputmode="decimal" id="iBultos" step="0.1" oninput="calcInsumo()"></div>
-  <div><label>Valor por unidad ($)</label><input class="money" inputmode="numeric" id="iUnit" placeholder="0" oninput="calcInsumo('unit')"></div></div>
-  <label>Valor total pagado ($)</label><input class="money" inputmode="numeric" id="iCosto" placeholder="0" oninput="calcInsumo('total')">
-  <div class="sub" style="margin:6px 0 0">Escribe el valor por unidad o el total y el otro se calcula solo.</div>
+  <div class="g2"><div><label id="iLblCant">Bultos</label><input type="number" inputmode="decimal" id="iBultos" step="0.1" placeholder="" oninput="calcInsumo()"></div>
+  <div><label id="iLblUnit">Valor por unidad ($)</label><input class="money" inputmode="numeric" id="iUnit" placeholder="0" oninput="calcInsumo('unit')"></div></div>
+  <div id="iBoxBore2" style="display:none"><div class="g2"><div><label>Cantidad de arrobas (@)</label><input id="iArrobas" readonly inputmode="none" placeholder="0 @"></div>
+  <div><label>Precio total ($)</label><input id="iCostoB" readonly inputmode="none" placeholder="$0"></div></div>
+  <div class="sub" style="margin:6px 0 0">1 arroba (@) = 12,5 kg. Escribe los kilos y el valor por @: las arrobas y el precio total se calculan solos.</div></div>
+  <div id="iBoxTot"><label>Valor total pagado ($)</label><input class="money" inputmode="numeric" id="iCosto" placeholder="0" oninput="calcInsumo('total')">
+  <div class="sub" id="iHint" style="margin:6px 0 0">Escribe el valor por unidad o el total y el otro se calcula solo.</div></div>
   <label>Costo de traída / flete ($)</label><input class="money" inputmode="numeric" id="iFlete" placeholder="Opcional" oninput="totalInsumo()">
   <div class="kpi" style="margin-top:12px"><span>Inversión de esta compra (compra + flete)</span><b id="iTotalF">$0</b></div>
   <label>Proveedor / almacén</label><select id="iProvSel" onchange="insumoCampos()"><option value="">Seleccionar proveedor</option><option>Jaime Mogollón (Solla)</option><option>Johan Pardo (Finca)</option><option>Manuel Ovalle (Italcol)</option><option value="__otro">Otro</option></select>
@@ -637,8 +643,19 @@ function guardarLote(){
 }
 let loteEdit=null, insEdit=null;
 let lastEdI=null;
+const ARROBA_KG=12.5;
+/* Bore guardado con kilos: {kg, arr (arrobas), va (valor por @)} o null si es un registro viejo sin kilos */
+const boreInfo = x => { const kg=x&&x.kilos>0?x.kilos:0; return kg>0?{kg,arr:kg/ARROBA_KG,va:(x.costo||0)>0?(x.costo||0)/(kg/ARROBA_KG):0}:null; };
+const boreTxt = (kg,costo,va) => peso(kg)+" kg ("+(kg/ARROBA_KG).toLocaleString("es-CO",{maximumFractionDigits:3})+" @)"+(kg>0&&(va>0||costo>0)?" • "+money(va>0?va:costo/(kg/ARROBA_KG))+"/@":"");
 function calcInsumo(from){
   if(from) lastEdI=from;
+  /* Bore: kilos y valor por @ → arrobas = kg / 12,5 y precio total = (kg / 12,5) × valor por @ (todo se calcula solo) */
+  if($("iConcepto").value==="Bore"){
+    const kg=val("iBultos"), u=mval("iUnit"), tot=kg>0&&u>0?Math.round(kg*u/ARROBA_KG):0;
+    $("iArrobas").value=kg>0?(kg/ARROBA_KG).toLocaleString("es-CO",{maximumFractionDigits:3})+" @":"";
+    $("iCosto").value=tot>0?miles(tot):""; $("iCostoB").value=tot>0?"$"+miles(tot):"";
+    setTimeout(totalInsumo,0); return;
+  }
   const n=val("iBultos"),u=mval("iUnit"),t=mval("iCosto"),fmt=v=>v>0?miles(v):"";
   if(lastEdI==="unit") $("iCosto").value=n>0&&u>0?fmt(n*u):"";
   else if(lastEdI==="total") $("iUnit").value=n>0&&t>0?fmt(t/n):"";
@@ -646,47 +663,70 @@ function calcInsumo(from){
 }
 function totalInsumo(){ $("iTotalF").textContent=money(mval("iCosto")+mval("iFlete")); }
 const PROV_INS=["Jaime Mogollón (Solla)","Johan Pardo (Finca)","Manuel Ovalle (Italcol)"], C_MED="Medicamento / Insumos";
+/* Concepto normalizado: "Medicinas" → Medicamento / Insumos y el antiguo "Maíz" → Bore (los registros viejos se muestran como Bore) */
+const conceptoIns = x => x.concepto==="Medicinas"?C_MED:(x.concepto==="Maíz"?"Bore":(x.concepto||""));
+let ultConc="Concentrado";
 function insumoCampos(){
-  const c=$("iConcepto").value;
+  const c=$("iConcepto").value, esB=c==="Bore";
+  /* al pasar de/hacia Bore se limpian cantidad, precios y proveedor para no mezclar kilos con bultos */
+  if((ultConc==="Bore")!==esB){ ["iBultos","iUnit","iCosto","iArrobas","iCostoB","iProv"].forEach(i=>$(i).value=""); $("iProvSel").selectedIndex=0; lastEdI=null; totalInsumo(); }
+  ultConc=c;
   $("iBoxConc").style.display=c==="Concentrado"?"":"none";
   $("iBoxMed").style.display=c===C_MED?"":"none";
-  $("iLblCant").textContent=c==="Concentrado"?"Bultos":c===C_MED?"Cantidad":"Bultos / unidades";
-  $("iProv").style.display=$("iProvSel").value==="__otro"?"":"none";
+  $("iBoxBore2").style.display=esB?"":"none"; $("iBoxTot").style.display=esB?"none":"";
+  $("iLblCant").textContent=esB?"Kilos de bore (kg)":c==="Concentrado"?"Bultos":c===C_MED?"Cantidad":"Bultos / unidades";
+  $("iLblUnit").textContent=esB?"Valor por arroba @ ($)":"Valor por unidad ($)";
+  $("iBultos").placeholder=esB?"Ej: 132":""; $("iUnit").placeholder=esB?"Ej: 5.000":"0";
+  /* Proveedor: con Bore es un campo de texto libre en blanco; con las demás opciones, la lista con «Otro» */
+  $("iProvSel").style.display=esB?"none":"";
+  $("iProv").style.display=esB||$("iProvSel").value==="__otro"?"":"none";
+  $("iProv").placeholder=esB?"Escribe el nombre del proveedor o finca":"Nombre del proveedor o almacén (ej: Agropecuaria Suaita)";
+  if(lastEdI) calcInsumo();
 }
 function limpiarInsumo(){
   insEdit=null; $("iTitulo").textContent="Concentrado / Insumos"; $("iGuardar").textContent="Guardar gasto";
-  ["iBultos","iUnit","iCosto","iFlete","iProv","iMed","iUnidad"].forEach(i=>$(i).value=""); lastEdI=null;
+  ["iBultos","iUnit","iCosto","iFlete","iProv","iMed","iUnidad","iArrobas","iCostoB"].forEach(i=>$(i).value=""); lastEdI=null;
   $("iConcepto").selectedIndex=0; $("iClase").selectedIndex=0; $("iProvSel").selectedIndex=0; insumoCampos(); totalInsumo();
 }
 function editarInsumo(id){
   const l=D.insumos.find(x=>x.id===id); if(!l) return;
   limpiarInsumo(); insEdit=id;
   $("iTitulo").textContent="Editar gasto de insumos"; $("iGuardar").textContent="Guardar cambios";
-  const f=v=>v>0?miles(v):"", sel=$("iConcepto"), conc=l.concepto==="Medicinas"?C_MED:l.concepto;
+  const f=v=>v>0?miles(v):"", sel=$("iConcepto"), conc=conceptoIns(l);
   if(conc&&![...sel.options].some(o=>o.value===conc)) sel.add(new Option(conc,conc));
   $("iFecha").value=l.fecha||hoy(); sel.value=conc||sel.value; $("iBultos").value=l.bultos||"";
   if(l.claseConc) $("iClase").value=l.claseConc; $("iMed").value=l.detalle||""; $("iUnidad").value=l.unidad||"";
   const pr=(l.proveedor||"").trim();
   if(PROV_INS.includes(pr)) $("iProvSel").value=pr; else if(pr){ $("iProvSel").value="__otro"; $("iProv").value=pr; }
   $("iCosto").value=f(l.costo); $("iUnit").value=l.bultos>0?f(l.costo/l.bultos):""; lastEdI="total"; $("iFlete").value=f(l.flete);
+  ultConc=conc;
+  if(conc==="Bore"){
+    $("iBultos").value=l.kilos>0?l.kilos:""; $("iUnit").value=l.kilos>0?f(l.valorArroba>0?l.valorArroba:Math.round((l.costo||0)/(l.kilos/ARROBA_KG))):"";
+    $("iArrobas").value=l.kilos>0?(l.kilos/ARROBA_KG).toLocaleString("es-CO",{maximumFractionDigits:3})+" @":""; $("iCostoB").value=l.kilos>0&&l.costo>0?"$"+miles(l.costo):"";
+    $("iProvSel").selectedIndex=0; $("iProv").value=pr; lastEdI=null;
+  }
   insumoCampos(); totalInsumo(); $("mInsumo").classList.add("open");
 }
 function guardarInsumo(){
   const conc=$("iConcepto").value, esMed=conc===C_MED, esConc=conc==="Concentrado";
-  let prov=$("iProvSel").value; if(prov==="__otro") prov=$("iProv").value.trim();
-  const o={tipo:"insumo",fecha:$("iFecha").value,concepto:conc,claseConc:esConc?$("iClase").value:"",detalle:esMed?$("iMed").value.trim():"",unidad:esMed?$("iUnidad").value.trim():"",bultos:val("iBultos"),costo:mval("iCosto"),flete:mval("iFlete"),proveedor:prov};
+  let prov=$("iProvSel").value; if(prov==="__otro"||conc==="Bore") prov=$("iProv").value.trim();
+  const o={tipo:"insumo",fecha:$("iFecha").value,concepto:conc,claseConc:esConc?$("iClase").value:"",detalle:esMed?$("iMed").value.trim():"",unidad:esMed?$("iUnidad").value.trim():"",bultos:conc==="Bore"?0:val("iBultos"),kilos:conc==="Bore"?val("iBultos"):0,valorArroba:conc==="Bore"&&val("iBultos")>0?Math.round(mval("iCosto")/(val("iBultos")/ARROBA_KG)):0,costo:mval("iCosto"),flete:mval("iFlete"),proveedor:prov};
   if(!o.fecha||o.costo<=0) return toast("Completa fecha y valor pagado");
   if(esMed&&!o.detalle) return toast("Escribe el nombre del medicamento o insumo");
-  if($("iProvSel").value==="__otro"&&!o.proveedor) return toast("Escribe el nombre del proveedor");
+  if(conc==="Bore"&&!(o.kilos>0)) return toast("Escribe los kilos de bore");
+  if(conc==="Bore"&&!(mval("iUnit")>0)) return toast("Escribe el valor por arroba");
+  if(conc!=="Bore"&&$("iProvSel").value==="__otro"&&!o.proveedor) return toast("Escribe el nombre del proveedor");
   const id=insEdit; if(!id) o.creado=Date.now();
   guardarDoc("gastos_cerdos",o,id||undefined).then(ok=>{if(ok){limpiarInsumo();cerrarForm("mInsumo");toast(id?"Gasto actualizado":"Gasto guardado");}});
 }
 /* Título del gasto en el historial: tipo + detalle • cantidad • proveedor */
 function insumoTitulo(l){
-  const c=l.concepto==="Medicinas"?C_MED:(l.concepto||""), n=l.bultos||0, med=c===C_MED, p=[];
+  const c=conceptoIns(l), n=l.bultos||0, med=c===C_MED, p=[];
   p.push(esc(c==="Concentrado"&&l.claseConc?"Concentrado "+l.claseConc:med&&l.detalle?"Medicamento: "+l.detalle:c));
-  if(n>0) p.push(peso(n)+" "+esc(med?(l.unidad||(n===1?"unidad":"unidades")):(n===1?"bulto":"bultos")));
+  if(c==="Bore"&&l.kilos>0) p.push(esc(boreTxt(l.kilos,l.costo||0,l.valorArroba||0)));
+  else if(n>0) p.push(peso(n)+" "+esc(med?(l.unidad||(n===1?"unidad":"unidades")):(n===1?"bulto":"bultos")));
   if(l.proveedor) p.push(esc(l.proveedor));
+  if(c==="Bore"&&l.kilos>0) p.push("Total: "+money(l.costo||0));
   return p.join(" • ");
 }
 const invAb=new Set();
@@ -1740,11 +1780,12 @@ function datosInversion(){
     lech={n:1,kg:g.kg,valor:g.valor,flete:g.flete};
     D.insumos.forEach(x=>{ if(!activoEn(ez,x.fecha)) return; const n=pl.filter(q=>activoEn(q,x.fecha)).length||1; fr.push({x,f:1/n}); });
   }
-  const conc={},meds={},otros={}; let fleIns=0;
+  const conc={},meds={},otros={},bore={q:0,kg:0,costo:0}; let fleIns=0;
   fr.forEach(({x,f})=>{
-    const c=x.concepto==="Medicinas"?C_MED:(x.concepto||""), costo=(x.costo||0)*f, q=(x.bultos||0)*f; fleIns+=(x.flete||0)*f;
+    const c=conceptoIns(x), costo=(x.costo||0)*f, q=(x.bultos||0)*f; fleIns+=(x.flete||0)*f;
     if(c==="Concentrado"){ const k=x.claseConc||"Sin clase"; const o=conc[k]=conc[k]||{q:0,costo:0}; o.q+=q; o.costo+=costo; }
     else if(c==="Fletes"){ fleIns+=costo; }
+    else if(c==="Bore"){ bore.q+=q; bore.kg+=(x.kilos||0)*f; bore.costo+=costo; }
     else if(c===C_MED){ const nom=(x.detalle||"Medicamento / Insumos").trim(), un=(x.unidad||"").trim(), k=norm(nom)+"|"+norm(un); const o=meds[k]=meds[k]||{nom,un,q:0,costo:0}; o.q+=q; o.costo+=costo; }
     else { const k=c||"Otros"; const o=otros[k]=otros[k]||{nom:k,un:"bultos",q:0,costo:0}; o.q+=q; o.costo+=costo; }
   });
@@ -1757,6 +1798,10 @@ function datosInversion(){
     const filas=ks.map(k=>{ const o=conc[k]; return {k,q:o.q,v:R(o.costo),sub:o.q>0?peso(o.q)+" "+(o.q===1?"bulto":"bultos")+" × "+money(o.costo/o.q)+" c/u":""}; });
     const t=filas.reduce((a,x)=>a+x.v,0); total+=t;
     B.push(bSec("Concentrado · "+peso(filas.reduce((a,x)=>a+x.q,0))+" "+(filas.reduce((a,x)=>a+x.q,0)===1?"bulto":"bultos"),t)); filas.forEach(x=>B.push(bFila(x.k==="Sin clase"?"Concentrado":x.k,money(x.v),x.sub)));
+  }
+  if(bore.costo>0||bore.q>0||bore.kg>0){
+    const t=R(bore.costo); total+=t; B.push(bSec("Bore",t));
+    B.push(bFila("Bore",money(t),bore.kg>0?boreTxt(bore.kg,bore.costo):(bore.q>0?peso(bore.q)+" "+(bore.q===1?"bulto":"bultos")+" × "+money(bore.costo/bore.q)+" c/u":"")));
   }
   const mi=Object.values(meds).concat(Object.values(otros));
   if(mi.length){
@@ -1816,10 +1861,11 @@ function datosDetalleCerdo(){
   const promDe=l=>l.pesoPromKg!=null?l.pesoPromKg:(l.pesoProm!=null?l.pesoProm/2:((l.pesoTotalKg||0)/Math.max(l.cantidad||1,1)));
   let ini=null,k=0; for(const l of lotes){ const n=l.cantidad||0; if(ez.idx>=k&&ez.idx<k+n){ ini={l,kg:(l.animales&&l.animales[ez.idx-k]&&l.animales[ez.idx-k].kg)||promDe(l)}; break; } k+=n; }
   const ents=[...D.insumos].sort((a,b)=>(a.fecha||"").localeCompare(b.fecha||"")||(a.creado||0)-(b.creado||0)).filter(x=>activoEn(ez,x.fecha)).map(x=>{
-    const n=pl.filter(q=>activoEn(q,x.fecha)).length||1, f=1/n, c=x.concepto==="Medicinas"?C_MED:(x.concepto||""), med=c===C_MED, b=x.bultos||0;
+    const n=pl.filter(q=>activoEn(q,x.fecha)).length||1, f=1/n, c=conceptoIns(x), med=c===C_MED, b=x.bultos||0;
     const un=med?((x.unidad||"").trim()||"unidad"):"bulto";
     const sh=b*f, cant=b>0?((n>1&&Number.isInteger(b)&&b<n)?b+"/"+n+" "+un:peso(sh)+" "+pluralUn(sh,un)):"";
-    return {fecha:x.fecha,tit:c==="Concentrado"&&x.claseConc?"Concentrado "+x.claseConc:med&&x.detalle?"Medicamento: "+x.detalle:(c||"Insumo"),cant,prov:x.proveedor||"",monto:((x.costo||0)+(x.flete||0))*f,bul:c==="Concentrado"?b*f:0};
+    const kgS=(x.kilos||0)*f, esB=c==="Bore"&&kgS>0;
+    return {fecha:x.fecha,tit:c==="Concentrado"&&x.claseConc?"Concentrado "+x.claseConc:med&&x.detalle?"Medicamento: "+x.detalle:esB?"Bore • "+boreTxt(kgS,0,x.valorArroba>0?x.valorArroba:(x.costo||0)/((x.kilos||1)/ARROBA_KG)):(c||"Insumo"),cant:esB?"":cant,prov:x.proveedor||"",monto:((x.costo||0)+(x.flete||0))*f,bul:c==="Concentrado"?b*f:0};
   });
   const mr=ents.map(e=>Math.round(e.monto)), dif=iv.alimento-mr.reduce((a,x)=>a+x,0);
   if(ents.length&&dif){ let mi=0; mr.forEach((v,i)=>{ if(v>mr[mi]) mi=i; }); mr[mi]+=dif; }
@@ -1850,11 +1896,12 @@ function datosDetalleLote(){
   const promDe=l=>l.pesoPromKg!=null?l.pesoPromKg:(l.pesoProm!=null?l.pesoProm/2:((l.pesoTotalKg||0)/Math.max(l.cantidad||1,1)));
   let n=0,kg=0,valor=0,fleL=0;
   lotes.forEach(l=>{ const c=l.cantidad||0; n+=c; kg+=l.pesoTotalKg!=null?l.pesoTotalKg:promDe(l)*c; valor+=l.valor||0; fleL+=l.flete||0; });
-  const conc={},san={},prov={}; let fleI=0;
+  const conc={},san={},bore={q:0,kg:0,costo:0,pv:[]}; let fleI=0;
   D.insumos.forEach(x=>{
-    const c=x.concepto==="Medicinas"?C_MED:(x.concepto||""), costo=x.costo||0, q=x.bultos||0; fleI+=x.flete||0;
+    const c=conceptoIns(x), costo=x.costo||0, q=x.bultos||0; fleI+=x.flete||0;
     if(c==="Concentrado"){ const k=x.claseConc||"Sin clase", o=conc[k]=conc[k]||{q:0,costo:0,pv:[]}; o.q+=q; o.costo+=costo; const pv=(x.proveedor||"").trim(); if(pv&&!o.pv.some(y=>norm(y)===norm(pv))) o.pv.push(pv); }
     else if(c==="Fletes"){ fleI+=costo; }
+    else if(c==="Bore"){ bore.q+=q; bore.kg+=x.kilos||0; bore.costo+=costo; const pv=(x.proveedor||"").trim(); if(pv&&!bore.pv.some(y=>norm(y)===norm(pv))) bore.pv.push(pv); }
     else { const nom=c===C_MED?((x.detalle||"").trim()||"Medicamento"):(c||"Otros"); const o=san[norm(nom)]=san[norm(nom)]||{nom,costo:0}; o.costo+=costo; }
   });
   const fila=(t,sub,a,c)=>`<div class="r${c?" "+c:""}"><span class="t mw"><span>${palabras(t)}</span>${sub?`<small>${palabras(sub)}</small>`:""}</span><span class="a">${a}</span></div>`;
@@ -1867,6 +1914,10 @@ function datosDetalleLote(){
     const fs=ks.map(k=>({k,q:conc[k].q,v:R(conc[k].costo),pv:conc[k].pv})), t=fs.reduce((a,x)=>a+x.v,0), q=fs.reduce((a,x)=>a+x.q,0); total+=t;
     B.push(bSec("Alimento · "+peso(q)+(q===1?" bulto":" bultos"),t));
     fs.forEach(x=>B.push({html:fila(x.k==="Sin clase"?"Concentrado":x.k,peso(x.q)+(x.q===1?" bulto":" bultos")+(x.pv.length?" • "+x.pv.join(", "):""),money(x.v))}));
+  }
+  if(bore.costo>0||bore.q>0){
+    const t=R(bore.costo); total+=t; B.push(bSec("Bore",t));
+    { const d0=bore.kg>0?boreTxt(bore.kg,bore.costo):(bore.q>0?peso(bore.q)+(bore.q===1?" bulto":" bultos"):""); B.push({html:fila("Bore",d0+(bore.pv.length?(d0?" • ":"")+bore.pv.join(", "):""),money(t))}); }
   }
   const sv=Object.values(san), vS=R(sv.reduce((a,o)=>a+o.costo,0)), vF=R(fleL)+R(fleI);
   if(vS>0||vF>0){
