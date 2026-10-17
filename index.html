@@ -94,9 +94,9 @@ nav button.act{background:linear-gradient(135deg,#f0a35a,#f0c36a);border-color:#
 .bl .tt{position:absolute;left:30.6%;width:64.1%;top:14.5%;height:49%;display:block;color:#fff;font-weight:700;font-size:calc(var(--hw)*.07);line-height:1.05;text-align:center;white-space:nowrap;text-shadow:2px 0 #4a2511,-2px 0 #4a2511,0 2px #4a2511,0 -2px #4a2511,1.5px 1.5px #4a2511,-1.5px 1.5px #4a2511,1.5px -1.5px #4a2511,-1.5px -1.5px #4a2511,0 3px 2px rgba(0,0,0,.35)}
 .bl .rb{position:absolute;left:29.2%;width:53.8%;top:65.9%;height:23.3%;display:flex;align-items:center;justify-content:center;color:#fff3dc;text-align:center;white-space:nowrap;line-height:1.05;text-shadow:0 1px 2px rgba(0,0,0,.45)}
 .bl .rb b{font-size:calc(var(--hw)*.05);font-weight:700}
-.bl .hd{display:flex;align-items:center;gap:8px;background:#2f7a36;color:#fff;border-radius:13px;padding:5px 12px;overflow:hidden;white-space:nowrap}
+.bl .hd{display:flex;align-items:center;justify-content:center;gap:10px;background:#2f7a36;color:#fff;border-radius:13px;padding:5px 12px;overflow:hidden;white-space:nowrap}
 .bl .hd svg{width:30px;height:30px;flex:0 0 auto}.bl .hd .hn{flex:0 0 auto;font-size:20px;font-weight:700}
-.bl .hd .hf{flex:0 0 auto;margin-left:auto;font-size:12px;font-weight:600;font-style:italic;opacity:.97}
+.bl .hd .hf{flex:0 0 auto;margin-left:0;font-size:12px;font-weight:600;font-style:italic;opacity:.97}
 .bl.rep .r{padding:2px 9px}.bl.rep .r .t{font-size:15.5px}.bl.rep .r .a{font-size:17px}
 .bl .r .t small{display:block;font-size:11.5px;font-weight:600;color:#6b4a2c;line-height:1.1}
 .bl.rep .r.g .t,.bl.rep .r.n .t{font-size:17px}.bl.rep .r.g .a,.bl.rep .r.n .a{font-size:21px}
@@ -167,7 +167,8 @@ nav button.act{background:linear-gradient(135deg,#f0a35a,#f0c36a);border-color:#
 @media (prefers-reduced-motion:no-preference){.sheet{animation:up .22s ease-out}@keyframes up{from{transform:translateY(30px);opacity:0}}}
 input[readonly]{opacity:.7}
 /* Casillas calculadas de Bore: mismo fondo oscuro marrón y bordes redondeados que los demás campos, texto blanco en negrita bien legible */
-#iArrobas,#iCostoB{background:var(--s2);color:#fff;-webkit-text-fill-color:#fff;opacity:1;font-weight:700;border:1px solid var(--line);border-radius:10px;caret-color:transparent}
+#iArrobas,#iCostoB{background:var(--s2);color:#fff;-webkit-text-fill-color:#fff;opacity:1;font-weight:700;border:1px solid var(--line);border-radius:10px}
+#iCostoB{caret-color:transparent}
 #iArrobas::placeholder,#iCostoB::placeholder{color:#a8978f;-webkit-text-fill-color:#a8978f;font-weight:400}
 #crumbs{flex:1;display:flex;align-items:center;gap:6px;min-width:0;overflow-x:auto;scrollbar-width:none}#crumbs::-webkit-scrollbar{display:none}
 .cr{flex:0 1 auto;background:var(--s2);border:1px solid var(--line);color:var(--tx);border-radius:20px;padding:7px 12px;font-size:13px;max-width:44vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -437,9 +438,9 @@ input[readonly]{opacity:.7}
   <label>Presentación (opcional)</label><input id="iUnidad" placeholder="Ej: frasco, caja, dosis" autocomplete="off"></div>
   <div class="g2"><div><label id="iLblCant">Bultos</label><input type="number" inputmode="decimal" id="iBultos" step="0.1" placeholder="" oninput="dbn.calcInsumo()"></div>
   <div><label id="iLblUnit">Valor por unidad ($)</label><input class="money" inputmode="numeric" id="iUnit" placeholder="0" oninput="dbn.calcInsumo('unit')"></div></div>
-  <div id="iBoxBore2" style="display:none"><div class="g2"><div><label>Cantidad de arrobas (@)</label><input id="iArrobas" readonly inputmode="none" placeholder="0 @"></div>
+  <div id="iBoxBore2" style="display:none"><div class="g2"><div><label>Cantidad de arrobas (@)</label><input id="iArrobas" inputmode="decimal" autocomplete="off" placeholder="0 @" oninput="dbn.calcInsumo('arr')"></div>
   <div><label>Precio total ($)</label><input id="iCostoB" readonly inputmode="none" placeholder="$0"></div></div>
-  <div class="sub" style="margin:6px 0 0">1 arroba (@) = 12,5 kg. Escribe los kilos y el valor por @: las arrobas y el precio total se calculan solos.</div></div>
+  <div class="sub" style="margin:6px 0 0">1 arroba (@) = 12,5 kg. Escribe los kilos o las arrobas (se convierten solos entre sí) y el valor por @: el precio total se calcula solo.</div></div>
   <div id="iBoxTot"><label>Valor total pagado ($)</label><input class="money" inputmode="numeric" id="iCosto" placeholder="0" oninput="dbn.calcInsumo('total')">
   <div class="sub" id="iHint" style="margin:6px 0 0">Escribe el valor por unidad o el total y el otro se calcula solo.</div></div>
   <label>Costo de traída / flete ($)</label><input class="money" inputmode="numeric" id="iFlete" placeholder="Opcional" oninput="dbn.totalInsumo()">
@@ -506,9 +507,12 @@ const money = n => (Math.round(n||0)<0?"-":"")+"$"+miles(Math.abs(n||0));
 const peso = n => (Math.round((n||0)*100)/100).toLocaleString("es-CO",{maximumFractionDigits:2});
 const val = id => parseFloat($(id).value) || 0;
 const mval = id => parseInt(String($(id).value).replace(/\D/g,"")) || 0;
-const fechaTxt = f => f ? f.split("-").reverse().join("/") : "";
+/* Fecha numérica de respaldo (solo si la fecha no es válida) */
+const fechaNum = f => f ? String(f).split("-").reverse().join("/") : "";
+/* Formato GLOBAL de fecha en toda la app: 2026-10-13 → "13 de octubre de 2026" */
+const fechaTxt = f => fechaLarga(f);
 /* Fecha escrita con palabras: 2026-10-15 → "15 de octubre de 2026" */
-const fechaLarga = f => { const p=String(f||"").split("-"); if(p.length!==3||!(+p[1]>=1&&+p[1]<=12)) return fechaTxt(f); return (+p[2])+" de "+["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"][+p[1]-1]+" de "+p[0]; };
+const fechaLarga = f => { const p=String(f||"").split("-"); if(p.length!==3||!(+p[1]>=1&&+p[1]<=12)) return fechaNum(f); return (+p[2])+" de "+["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"][+p[1]-1]+" de "+p[0]; };
 let toastT; function toast(m){const t=$("toast");t.textContent=m;t.style.display="block";clearTimeout(toastT);toastT=setTimeout(()=>t.style.display="none",2600);}
 
 /* Cortes en libras de 500 g; peso en canal en kg (1 kg = 2 lb) */
@@ -710,8 +714,13 @@ function calcInsumo(from){
   if(from) lastEdI=from;
   /* Bore: kilos y valor por @ → arrobas = kg / 12,5 y precio total = (kg / 12,5) × valor por @ (todo se calcula solo) */
   if($("iConcepto").value==="Bore"){
+    if(from==="arr"){ /* el usuario escribe arrobas → kilos = @ × 12,5 (no se reformatea el campo mientras escribe) */
+      let t=String($("iArrobas").value||"").replace(/[@\s]/g,""); t=t.indexOf(",")>=0?t.replace(/\./g,"").replace(",","."):t;
+      const a=parseFloat(t)||0, k=a>0?Math.round(a*ARROBA_KG*1000)/1000:0;
+      $("iBultos").value=k>0?String(k):"";
+    }
     const kg=val("iBultos"), u=mval("iUnit"), tot=kg>0&&u>0?Math.round(kg*u/ARROBA_KG):0;
-    $("iArrobas").value=kg>0?(kg/ARROBA_KG).toLocaleString("es-CO",{maximumFractionDigits:3})+" @":"";
+    if(from!=="arr") $("iArrobas").value=kg>0?(kg/ARROBA_KG).toLocaleString("es-CO",{maximumFractionDigits:3})+" @":"";
     $("iCosto").value=tot>0?miles(tot):""; $("iCostoB").value=tot>0?"$"+miles(tot):"";
     setTimeout(totalInsumo,0); return;
   }
@@ -805,7 +814,7 @@ function renderInversion(){
     const ab=invAb.has(l.id),abA=invAb.has(l.id+"A"),tiene=l.proveedor||l.provTel||l.provUbic,lst=l.animales||[];
     const prom=l.pesoPromKg!=null?l.pesoPromKg:(l.pesoProm||0)/2,tot=l.pesoTotalKg!=null?l.pesoTotalKg:prom*(l.cantidad||0);
     const fl=l.flete||0,totC=(l.valor||0)+fl;
-    return `<div class="card inv"><div class="row" style="padding:0 0 8px;border:0"><div><b>${l.cantidad} cerdos · ${peso(prom)} kg por lechón</b><small>${fechaTxt(l.fecha)}${l.proveedor?" · "+esc(l.proveedor):" · Sin proveedor"}</small><small>Peso total ${peso(tot)} kg${l.individual?" · pesaje individual":""}</small></div><div class="num">${money(totC)}${fl?`<small>compra ${money(l.valor)} + flete ${money(fl)}</small>`:""}<small>≈ ${money(totC/(l.cantidad||1))} c/u</small></div></div>
+    return `<div class="card inv"><div class="row" style="padding:0 0 8px;border:0"><div><b>${l.cantidad} cerdos · ${peso(prom)} kg por lechón</b><small>${fechaLarga(l.fecha)}${l.proveedor?" · "+esc(l.proveedor):" · Sin proveedor"}</small><small>Peso total ${peso(tot)} kg${l.individual?" · pesaje individual":""}</small></div><div class="num">${money(totC)}${fl?`<small>compra ${money(l.valor)} + flete ${money(fl)}</small>`:""}<small>≈ ${money(totC/(l.cantidad||1))} c/u</small></div></div>
     <div class="acts2">${tiene?`<button class="sm" onclick="toggleInv('${l.id}')">${ab?"Ocultar contacto":"Ver contacto"}</button>`:""}${lst.length?`<button class="sm" onclick="toggleInv('${l.id}A')">${abA?"Ocultar cerdos":"Ver cerdos"}</button>`:""}<button class="sm" onclick="editarLote('${l.id}')">✏️ Editar</button><button class="sm del" onclick="borrarDoc('gastos_cerdos','${l.id}')">Eliminar</button></div>${ab?contactoHTML(l):""}${abA?`<div class="contacto">${lst.map((a,i)=>`<div>#${i+1} · ${a.arete?"Arete "+esc(a.arete):"Sin arete"} · ${peso(a.kg)} kg${a.arete&&areteUsada(a.arete)?" · sacrificado":""}</div>`).join("")}</div>`:""}</div>`;
   }).join(""):'<div class="card empty">Aún no hay compras de lechones. Toca el botón de arriba para registrar la primera.</div>';
   $("listaIns").innerHTML=D.insumos.length?ord(D.insumos).map(l=>{
@@ -1755,7 +1764,8 @@ const esperarFuentes = async () => { try{ await Promise.race([document.fonts.loa
    Se colocan letra por letra (no <textPath> real) para que el PNG exportado conserve la tipografía Fredoka y el contorno. */
 /* Trazados medidos sobre la ilustración del letrero (viewBox de 300 de ancho). Título: la madera clara es una media luna ∩ cuyo punto más alto está a ~38 % del ancho del texto (a la izquierda del centro) y baja hacia la derecha: parábola y=Y0+K(x-xv)² con xv=112, K=.0005.
    Subtítulo: la plaquita café es un arco ∩ simétrico muy suave (extremos 4 u más bajos que el centro). */
-const PATH_TITULO=[[15,24.7],[150,11.6],[285,34.8]], PATH_SUBT=[[40,16],[150,8],[260,16]];
+/* Cabecera en línea recta horizontal: trazados planos (misma altura en los 3 puntos) → texto nivelado, sin giro por letra */
+const PATH_TITULO=[[15,24],[150,24],[285,24]], PATH_SUBT=[[40,12],[150,12],[260,12]];
 function curvaTexto(box,txt,P,o){
   const cs=getComputedStyle(box), W=box.clientWidth, H=box.clientHeight, s=W/300, LHF=1.05, BL=.8;
   const m=document.createElement("span"); m.style.cssText="position:absolute;visibility:hidden;white-space:pre;left:0;top:0;font-family:"+cs.fontFamily+";font-weight:"+cs.fontWeight+";font-style:"+cs.fontStyle+";font-size:100px"; box.appendChild(m);
@@ -1854,7 +1864,7 @@ async function paginarReporte(o){
 let repBusy=false, repImg=null;
 const limNom = x => String(x||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^\w]+/g,"_").replace(/^_+|_+$/g,"");
 /* Genera las imágenes (una por página), las muestra y ofrece compartir por WhatsApp o descargar */
-async function entregarReporte(titulo,base,htmls){
+async function entregarReporte(titulo,base,htmls,auto){
   if(repBusy) return;
   if(!await ensureH2C()) return toast("Sin librería de imagen (¿sin conexión?)");
   repBusy=true; toast(htmls.length>1?"Generando "+htmls.length+" imágenes…":"Generando imagen…");
@@ -1868,6 +1878,8 @@ async function entregarReporte(titulo,base,htmls){
     <button class="btn wa" onclick="enviarReporte()">Compartir por WhatsApp</button>
     <button class="btn sec" onclick="descargarReporte()">Descargar PNG${blobs.length>1?" ("+blobs.length+")":""}</button>`;
     $("modal").classList.add("open");
+    /* abre el menú de compartir (WhatsApp) de inmediato; si el navegador lo bloquea, queda el botón «Compartir por WhatsApp» */
+    if(auto&&navigator.share&&navigator.canShare&&navigator.canShare({files:repImg.files})) navigator.share({files:repImg.files}).catch(()=>{});
   }catch(e){ toast("No se pudo crear la imagen"); }
   repBusy=false;
 }
@@ -1905,6 +1917,21 @@ function datosInversion(){
     if(!g){ const N=Math.max(pl.length,1); g={valor:pigs.reduce((a,x)=>a+x.valor,0)/N,flete:pigs.reduce((a,x)=>a+x.flete,0)/N,kg:pigs.reduce((a,x)=>a+x.kg,0)/Math.max(pigs.length,1)}; }
     lech={n:1,kg:g.kg,valor:g.valor,flete:g.flete};
     D.insumos.forEach(x=>{ if(!activoEn(ez,x.fecha)) return; const n=pl.filter(q=>activoEn(q,x.fecha)).length||1; fr.push({x,f:1/n}); });
+  }
+  if(!ez){ /* Lote completo: detalle de cada compra con su fecha (flete incluido en cada renglón) */
+    const B=[]; let total=0, R2=Math.round;
+    const filasL=lotes.map(l=>{ const n=l.cantidad||0, m=R2((l.valor||0)+(l.flete||0)); return {l,n,m}; });
+    const tL=filasL.reduce((a,x)=>a+x.m,0); total+=tL;
+    B.push(bSec("Lechones · "+lech.n+(lech.n===1?" lechón":" lechones"),tL));
+    filasL.forEach(({l,n,m})=>B.push(bFila(n+(n===1?" lechón":" lechones")+" • "+peso(promDe(l))+" kg c/u",money(m),[fechaAbrevGuion(l.fecha),provCorto(l.proveedor),money(m/(n||1))+"/lechón"+((l.flete||0)>0?" (flete incl.)":"")].filter(Boolean).join(" • "))));
+    const grp={Concentrado:[],Bore:[],Med:[],Fletes:[]}, nomG={Concentrado:"Concentrado",Bore:"Bore",Med:"Medicamentos e insumos",Fletes:"Fletes"};
+    [...D.insumos].sort((a,b)=>(a.fecha||"").localeCompare(b.fecha||"")||(a.creado||0)-(b.creado||0)).forEach(x=>{
+      const c=conceptoIns(x), k=c==="Concentrado"?"Concentrado":c==="Bore"?"Bore":c==="Fletes"?"Fletes":"Med";
+      grp[k].push({e:detInsumo(x,1,1),m:R2((x.costo||0)+(x.flete||0))});
+    });
+    Object.keys(grp).forEach(k=>{ const a=grp[k]; if(!a.length) return; const t=a.reduce((s,y)=>s+y.m,0); total+=t;
+      B.push(bSec(nomG[k],t)); a.forEach(y=>B.push(bFila(y.e.tit,money(y.m),[fechaAbrevGuion(y.e.fecha),y.e.prov,y.e.unit].filter(Boolean).join(" • ")))); });
+    return {ez,bloques:B,cierre:[bFila("Total invertido",money(total),"","g")],vacio:!D.lotes.length&&!D.insumos.length};
   }
   const conc={},meds={},otros={},bore={q:0,kg:0,costo:0}; let fleIns=0;
   fr.forEach(({x,f})=>{
@@ -1944,11 +1971,91 @@ function datosInversion(){
   const nota=ez?{html:`<div class="lg">${palabras(ez.c&&ez.c.fecha?"Alimento e insumos congelados a la fecha de sacrificio ("+fechaLargaCO(ez.c.fecha)+")":"Aún en ceba: alimento e insumos sumados proporcionalmente a hoy",true)}</div>`}:null;
   return {ez,bloques:B,cierre:[bFila("Total invertido",money(total),"","g")].concat(nota?[nota]:[]),vacio:!D.lotes.length&&!D.insumos.length};
 }
+/* Lista unificada de gastos de inversión (Lote completo o un cerdo): cada gasto con su fecha, categoría, compra y flete */
+function entradasInversion(){
+  const pl=plantelCerdos(), ez=invFiltroCerdo?pl.find(e=>e.key===invFiltroCerdo):null, R=Math.round;
+  const lotes=[...D.lotes].sort((a,b)=>(a.fecha||"").localeCompare(b.fecha||"")||(a.creado||0)-(b.creado||0));
+  const promDe=l=>l.pesoPromKg!=null?l.pesoPromKg:(l.pesoProm!=null?l.pesoProm/2:((l.pesoTotalKg||0)/Math.max(l.cantidad||1,1)));
+  const catIns=x=>{ const c=conceptoIns(x); return c==="Concentrado"?"Concentrado":c==="Bore"?"Bore":c==="Fletes"?"Fletes":"Med"; };
+  const E=[];
+  const addIns=(x,f,n)=>{
+    const cat=catIns(x), a=detInsumo(x,f,n), b=detInsumo({...x,flete:0},f,n);
+    const compra=((x.costo||0)+(x.flete||0))*f;
+    E.push({fecha:x.fecha,cat,tit:a.tit,prov:a.prov,unit:a.unit,unitEx:b.unit,costo:cat==="Fletes"?0:(x.costo||0)*f,flete:cat==="Fletes"?compra:(x.flete||0)*f,creado:x.creado||0,fleteTit:cat==="Fletes"?a.tit:"Flete • "+a.tit.split(" • ")[0]});
+  };
+  if(!ez){
+    lotes.forEach(l=>{ const n=l.cantidad||0, c=l.valor||0, fl=l.flete||0, kg=l.pesoTotalKg!=null?l.pesoTotalKg:promDe(l)*n;
+      E.push({fecha:l.fecha,cat:"Lechones",n,kg,tit:n+(n===1?" lechón":" lechones")+" • "+peso(promDe(l))+" kg c/u",prov:provCorto(l.proveedor),unit:money(R((c+fl)/(n||1)))+"/lechón"+(fl>0?" (flete incl.)":""),unitEx:money(R(c/(n||1)))+"/lechón",costo:c,flete:fl,creado:l.creado||0,fleteTit:"Flete lechones • "+n+(n===1?" lechón":" lechones")}); });
+    D.insumos.forEach(x=>addIns(x,1,1));
+  } else {
+    const pigs=[]; lotes.forEach(l=>{ const n=l.cantidad||0; for(let i=0;i<n;i++) pigs.push({valor:(l.valor||0)/n,flete:(l.flete||0)/n,kg:(l.animales&&l.animales[i]&&l.animales[i].kg)||promDe(l)}); });
+    let g=(ez.idx>=0&&ez.idx<pigs.length)?pigs[ez.idx]:null;
+    if(!g){ const N=Math.max(pl.length,1); g={valor:pigs.reduce((a,x)=>a+x.valor,0)/N,flete:pigs.reduce((a,x)=>a+x.flete,0)/N,kg:pigs.reduce((a,x)=>a+x.kg,0)/Math.max(pigs.length,1)}; }
+    let ini=null,k=0; for(const l of lotes){ const n=l.cantidad||0; if(ez.idx>=k&&ez.idx<k+n){ ini=l; break; } k+=n; }
+    E.push({fecha:ini?ini.fecha:"",cat:"Lechones",n:1,kg:g.kg,tit:"1 lechón • "+peso(g.kg)+" kg",prov:ini?provCorto(ini.proveedor):"",unit:money(R(g.valor+g.flete))+"/lechón"+(g.flete>0?" (flete incl.)":""),unitEx:money(R(g.valor))+"/lechón",costo:g.valor,flete:g.flete,creado:ini?ini.creado||0:0,fleteTit:"Flete lechón"});
+    D.insumos.forEach(x=>{ if(!activoEn(ez,x.fecha)) return; const n=pl.filter(q=>activoEn(q,x.fecha)).length||1; addIns(x,1/n,n); });
+  }
+  return {ez,E,vacio:!D.lotes.length&&!D.insumos.length};
+}
+const sumE = (a,f) => a.reduce((t,e)=>t+f(e),0);
+const porFechaDesc = (a,b) => (b.fecha||"").localeCompare(a.fecha||"")||(b.creado||0)-(a.creado||0);
+const subE = (e,u) => [fechaLarga(e.fecha),e.prov,u].filter(Boolean).join(" • ");
+function datosInversionTipo(tipo){
+  const d=entradasInversion(), E=d.E, R=Math.round, B=[]; let cierre;
+  if(tipo==="general"){
+    const L=E.filter(e=>e.cat==="Lechones"), A=E.filter(e=>e.cat!=="Lechones"&&e.cat!=="Fletes");
+    const vL=R(sumE(L,e=>e.costo)), vA=R(sumE(A,e=>e.costo)), vFl=R(sumE(E,e=>e.flete)), tot=vL+vA+vFl;
+    const pc=v=>tot>0?" • "+Math.round(v/tot*100)+" % del total":"";
+    const nL=sumE(L,e=>e.n||0), kgL=sumE(L,e=>e.kg||0);
+    const parte=(n,v)=>v>0?n+" "+money(v):"";
+    const pA=[["Concentrado","Concentrado"],["Bore","Bore"],["Medicamentos e insumos","Med"]].map(([n,c])=>parte(n,R(sumE(A.filter(e=>e.cat===c),e=>e.costo)))).filter(Boolean).join(" • ");
+    const fL=R(sumE(L,e=>e.flete)), fI=vFl-fL;
+    B.push(bSec("Totales por categoría"));
+    B.push(bFila("Lechones",money(vL),(nL>0?(nL===1?"1 lechón":nL+" lechones")+(kgL>0?" • "+peso(kgL)+" kg":""):"")+pc(vL)));
+    B.push(bFila("Alimento e insumos",money(vA),pA+pc(vA)));
+    B.push(bFila("Fletes",money(vFl),[parte("Lechones",fL),parte("Insumos",fI)].filter(Boolean).join(" • ")+pc(vFl)));
+    cierre=[bSec("Balance"),...(nL>0?[bFila("Inversión por lechón",money(R(tot/nL)),"Total invertido / lechones")]:[]),bFila("Total invertido",money(tot),"","g")];
+  } else if(tipo==="cronologico"){
+    const ord=[...E].sort(porFechaDesc); let tot=0;
+    B.push(bSec("Gastos del más reciente al más antiguo"));
+    ord.forEach(e=>{ const m=R(e.costo+e.flete); tot+=m; B.push(bFila(e.tit,money(m),subE(e,e.unit))); });
+    cierre=[bFila("Total invertido",money(tot),"","g")];
+  } else {
+    let tot=0;
+    const bloque=(nombre,arr,monto,tit,sub)=>{ if(!arr.length) return; const o=[...arr].sort(porFechaDesc), t=o.reduce((a,e)=>a+R(monto(e)),0); tot+=t; B.push(bSec(nombre,t)); o.forEach(e=>B.push(bFila(tit(e),money(R(monto(e))),sub(e)))); };
+    const costo=e=>e.costo, tt=e=>e.tit, sb=e=>subE(e,e.unitEx);
+    bloque("Lechones",E.filter(e=>e.cat==="Lechones"),costo,tt,sb);
+    bloque("Concentrados",E.filter(e=>e.cat==="Concentrado"),costo,tt,sb);
+    bloque("Bore e insumos de finca",E.filter(e=>e.cat==="Bore"||e.cat==="Med"),costo,tt,sb);
+    bloque("Fletes",E.filter(e=>e.flete>0),e=>e.flete,e=>e.fleteTit,e=>subE(e,""));
+    cierre=[bFila("Total invertido",money(tot),"","g")];
+  }
+  return {ez:d.ez,bloques:B,cierre,vacio:d.vacio};
+}
+const INV_TIPOS={
+  general:{titulo:"Reporte|general",arch:"General"},
+  cronologico:{titulo:"Reporte|cronológico",arch:"Cronologico"},
+  categoria:{titulo:"Reporte por|categoría",arch:"Por_categoria"}
+};
+/* El botón verde abre el selector de formato de reporte */
 function compartirInversion(){
-  const d=datosInversion(); if(d.vacio) return toast("Aún no hay inversión registrada");
+  if(entradasInversion().vacio) return toast("Aún no hay inversión registrada");
+  const op=(t,desc,tipo)=>`<button class="btn" onclick="generarReporteInversion('${tipo}')" style="text-align:left;padding:14px 16px">${t}<br><span style="font-size:12.5px;font-weight:400;opacity:.85">${desc}</span></button>`;
+  $("sheet").innerHTML=`<div class="mh"><h2>Seleccionar Formato de Reporte</h2><button class="sm" onclick="cerrar()">Cerrar</button></div>
+  <p class="sub">Se genera una imagen PNG (formato 9:16) lista para compartir por WhatsApp.</p>
+  ${op("📊 Reporte General","Solo totales por categoría (Lechones, Alimento e insumos, Fletes) y balance.","general")}
+  ${op("🗓️ Reporte Detallado Cronológico","Todos los gastos por fecha, del más reciente al más antiguo.","cronologico")}
+  ${op("🗂️ Reporte Detallado por Categoría","Bloques independientes: Lechones, Concentrados, Bore e insumos de finca y Fletes.","categoria")}
+  <button class="btn sec" onclick="exportarPDFInversion()" style="margin-top:18px">📄 Exportar a PDF (Documento) <span class="tag" style="margin-left:6px;font-size:11px">Próximamente</span></button>`;
+  $("modal").classList.add("open");
+}
+/* PDF: pendiente de integrar (jsPDF / html2pdf); el botón ya está en el modal */
+function exportarPDFInversion(){ toast("📄 Exportar a PDF: próximamente"); }
+function generarReporteInversion(tipo){
+  const cfg=INV_TIPOS[tipo]||INV_TIPOS.general, d=datosInversionTipo(tipo); if(d.vacio) return toast("Aún no hay inversión registrada");
   const py=proyActual(), pn=py?nomProy(py):"Lote completo", nm=d.ez?nombreSinNum(d.ez.nombre):"";
-  paginarReporte({titulo:"Reporte de|inversión",cinta:d.ez?nm:pn,cab:d.ez?nm:"Lote completo",bloques:d.bloques,cierre:d.cierre})
-    .then(h=>entregarReporte("Inversión","Inversion_"+(d.ez?limNom(nm):"Lote_"+limNom(py?py.nombre:"completo"))+"_"+hoy(),h))
+  paginarReporte({titulo:cfg.titulo,cinta:d.ez?nm:pn,cab:d.ez?nm:"Lote completo",bloques:d.bloques,cierre:d.cierre})
+    .then(h=>entregarReporte("Reporte de inversión","Inversion_"+cfg.arch+"_"+(d.ez?limNom(nm):"Lote_"+limNom(py?py.nombre:"completo"))+"_"+hoy(),h,true))
     .catch(()=>toast("No se pudo crear el reporte"));
 }
 
@@ -1981,7 +2088,7 @@ function compartirVentas(){
 /* ---- Detalle de inversión de UN cerdo: lechón base + cada compra de alimento/insumo cargada a él, por fecha ---- */
 const fechaCorta = f => f?String(f).split("-").reverse().join("/"):"";
 /* 17 - oct - 2026 */
-const fechaAbrevGuion = f => { const p=String(f||"").split("-"); if(p.length!==3||!(+p[1]>=1&&+p[1]<=12)) return fechaCorta(f); return String(+p[2]).padStart(2,"0")+" - "+["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"][+p[1]-1]+" - "+p[0]; };
+const fechaAbrevGuion = f => fechaLarga(f);
 /* "Jaime Mogollón (Solla)" → "Solla"; sin paréntesis se deja el nombre tal cual */
 const provCorto = v => { v=String(v||"").trim(); const m=v.match(/\(([^)]+)\)\s*$/); return m?m[1].trim():v; };
 /* "Compra de bore" → "Bore" */
