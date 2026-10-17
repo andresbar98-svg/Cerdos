@@ -198,11 +198,11 @@ input[readonly]{opacity:.7}
 /* Detalle de inversión: la primera línea va compacta y en un solo renglón (si no cabe, el ajuste automático la reduce); el precio con flecha queda holgado a la derecha */
 .bl.det .r .t.mw{font-size:13px}.bl.det .r .t.mw>span:first-child{display:block;white-space:nowrap}.bl.det .r .t.mw small{white-space:nowrap;display:block;overflow:visible}
 /* Registro en 2 líneas: línea 1 = concepto • cantidad ........ → $total · línea 2 (todo el ancho) = DD - mmm - AAAA • proveedor • precio unitario */
-.bl.det .r{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:8px;align-items:center}
+.bl.det .r{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:8px;row-gap:0;align-items:center;align-content:center}
 .bl.det .r .t.mw{display:contents}
 .bl.det .r .t.mw>span:first-child{grid-column:1;grid-row:1;min-width:0}
 .bl.det .r>.a{grid-column:2;grid-row:1}
-.bl.det .r .t.mw small{grid-column:1/-1;grid-row:2}
+.bl.det .r .t.mw small{grid-column:1/-1;grid-row:2;margin:0;line-height:1.05}.bl.det .r .t.mw>span:first-child{line-height:1.1}.bl.det .r>.a{line-height:1.1}
 .bl.det .r:not(.g):not(.n) .a{font-size:16.5px}
 .bl.compact-report{--k:.92}.bl.compact-report.c2{--k:.84}.bl.compact-report.c3{--k:.76}
 /* pocos registros: filas más holgadas */
@@ -1768,7 +1768,7 @@ function curvaTexto(box,txt,P,o){
   const totEm=em.reduce((a,x)=>a+x,0), f=Math.max(o.min,Math.min(o.max,(L*o.frac)/totEm)), lh=f*LHF, tot=totEm*f;
   /* centro del texto: o.cx (en unidades del viewBox de 300) = punto medio entre las hojitas de la madera; x(t) es lineal en t */
   const tc=Math.min(.95,Math.max(.05,((o.cx!=null?o.cx:150)-P[0][0])/(P[2][0]-P[0][0]))), dC=ls[Math.round(tc*N)];
-  const dy=H/2-(pt(tc)[1]-.33*f); let cum=dC-tot/2, h="";
+  const dy=H/2-(pt(tc)[1]-.33*f)+(o.dy||0)*s; let cum=dC-tot/2, h="";
   [...txt].forEach((c,i)=>{
     const w=em[i]*f, d=cum+w/2; cum+=w; if(c===" ") return;
     const t=at(Math.min(Math.max(d,0),L)), p=pt(t), v=dv(t), ang=Math.atan2(v[1],v[0])*180/Math.PI;
@@ -1781,14 +1781,14 @@ function arquearCinta(bl){
   const rb=bl.querySelector(".rb"),b=rb&&rb.querySelector("b"); if(!b||b.dataset.arq) return;
   const txt=[...b.querySelectorAll(".w")].map(w=>w.textContent).join(" ")||b.textContent; if(!txt) return;
   const mx=parseFloat(getComputedStyle(b).fontSize)||16;
-  const h=curvaTexto(rb,txt,PATH_SUBT,{max:mx,min:8,frac:.96,cx:141});
+  const h=curvaTexto(rb,txt,PATH_SUBT,{max:mx,min:8,frac:.96,cx:141,dy:.5});
   b.dataset.arq="1"; b.style.cssText+=";position:absolute;left:0;top:0;width:100%;height:100%;display:block"; b.innerHTML=h;
 }
 /* Título principal sobre la madera clara: UNA línea; tamaño máx. 22 px, se achica sola para no tocar la medalla ni las hojas */
 function arquearTitulo(bl){
   const tt=bl.querySelector(".tt"), d=tt&&tt.querySelector(".tl"); if(!d||tt.dataset.arq) return;
   const txt=[...d.querySelectorAll(".w")].map(w=>w.textContent).join(" ")||d.textContent; if(!txt) return;
-  tt.innerHTML=curvaTexto(tt,txt,PATH_TITULO,{max:22,min:9,frac:.76,cx:139}); tt.dataset.arq="1";
+  tt.innerHTML=curvaTexto(tt,txt,PATH_TITULO,{max:22,min:9,frac:.76,cx:139,dy:-1.5}); tt.dataset.arq="1";
 }
 function ajustarCabecera(bl){
   const hd=bl.querySelector(".hd"),hn=hd.querySelector(".hn"),hf=hd.querySelector(".hf"); let f=20,g=12;
