@@ -41,6 +41,7 @@ button{font-family:inherit;cursor:pointer}
 .btn{width:100%;margin-top:14px;background:var(--ac);color:#2a1a12;border:0;border-radius:10px;padding:13px;font-size:15px;font-weight:700}
 .btn.sec{background:var(--s2);color:var(--tx);border:1px solid var(--line)}
 .btn.wa{background:#2fae62;color:#fff}
+.btn.pdf{background:rgba(42,26,18,.88);color:#fff;border:1px solid var(--line)}
 .sm{background:none;border:1px solid var(--line);color:var(--mu);border-radius:8px;padding:5px 9px;font-size:12px}
 .sm.del{color:var(--er)}
 .sm.pri{background:var(--ac);color:#2a1a12;border-color:var(--ac);font-weight:700}
@@ -51,7 +52,27 @@ button{font-family:inherit;cursor:pointer}
 .kpis{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
 .kpi{background:var(--s1);border:1px solid var(--line);border-radius:var(--r);padding:12px}
 .kpi span{font-size:12px;color:var(--mu)}.kpi b{display:block;font-size:19px;margin-top:4px;font-variant-numeric:tabular-nums}
+.kpi small.kcons{display:block;margin-top:3px;font-size:11.5px;font-weight:400;color:var(--mu);line-height:1.3}
 .kpi.big{grid-column:1/-1;border-color:var(--ac)}.kpi.big b{font-size:25px}
+/* ---- Balance: encabezado principal (Total invertido / Inversión asignada + botones PNG y PDF) ---- */
+.bal-head{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--s1);border:1px solid var(--ac);border-radius:var(--r);padding:10px 12px;margin:0 0 10px}
+.bal-head .bh-txt{flex:1 1 auto;min-width:0}
+.bal-head .bh-txt span{display:block;font-size:12px;color:var(--mu);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bal-head .bh-txt b{display:block;margin-top:2px;font-size:clamp(20px,6.4vw,26px);line-height:1.1;font-variant-numeric:tabular-nums;white-space:nowrap}
+.bal-head .bh-btns{flex:0 0 auto;display:flex;gap:6px}
+.bal-head .bh-btns .btn{margin:0;width:auto;padding:8px 10px;min-height:38px;font-size:12.5px;line-height:1;border-radius:10px;display:flex;align-items:center;justify-content:center;white-space:nowrap}
+/* Tarjetas secundarias en dos columnas: Lechones | Alimento e insumos */
+.inv2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 0 14px;align-items:start}
+.inv2 .kpi{margin:0;min-width:0;padding:11px}
+.inv2 .kpi>b{font-size:18px}
+.inv2 small.kcons{display:block;margin-top:4px;font-size:11.5px;color:var(--mu);line-height:1.3}
+/* Líneas de consumo apiladas: concepto arriba, kilos y bultos/@ debajo (caben en media pantalla) */
+.cons-list{margin-top:8px;border-top:1px solid var(--line);display:flex;flex-direction:column}
+.cons-row{padding:7px 0;border-bottom:1px dashed var(--line);min-width:0}
+.cons-row:last-child{border-bottom:0;padding-bottom:0}
+.cons-row .cn{display:block;font-size:12.5px;color:var(--tx);line-height:1.25}
+.cons-row .cv{display:block;margin-top:2px;font-size:13.5px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.25}
+.cons-row .cv small{display:inline;margin:0;font-size:12px;font-weight:400;color:var(--mu)}
 .pos{color:var(--ok)}.neg{color:var(--er)}.wa-c{color:var(--wa)}
 .tag{display:inline-block;font-size:11px;border-radius:20px;padding:2px 9px;border:1px solid}
 .tag.Pagado{color:var(--ok);border-color:var(--ok)}.tag.Abonado{color:var(--wa);border-color:var(--wa)}.tag.Pendiente{color:var(--er);border-color:var(--er)}
@@ -274,6 +295,15 @@ input[readonly]{opacity:.7}
 .bl.compact-report.compact-report.c3 .r.g .t,.bl.compact-report.compact-report.c3 .r.n .t{font-size:12px}
 .bl.compact-report.compact-report.c3 .r.g .a,.bl.compact-report.compact-report.c3 .r.n .a{font-size:14px}
 .bl.compact-report.compact-report.c3 .sec{font-size:10.5px;padding:0 7px;margin-top:1px}
+/* Subfilas de desglose del Balance PNG: pegadas al borde punteado, letra normal (sin negrilla) para que cada línea quepa completa */
+.bl .sbf{display:flex;align-items:baseline;justify-content:space-between;gap:6px;margin:1px 0 0 2px;padding:1px 6px 1px 7px;background:#f6ecc8;border-left:3px solid #c9964f;border-radius:0 8px 8px 0;font-size:12px;font-weight:400;line-height:1.2;color:#8a4b12}
+.bl .sbf .sl{min-width:0;white-space:normal}
+.bl .sbf .sl b{margin-right:.45em;font-weight:400;color:#5a3a12;white-space:nowrap}
+.bl .sbf .sl i{font-style:normal;font-weight:400;color:#9a5a1e;white-space:nowrap}
+.bl .sbf .sv{flex:0 0 auto;white-space:nowrap;font-weight:700;color:#4a2a14;font-variant-numeric:tabular-nums}
+.bl.roomy .sbf{font-size:12.5px;padding:2px 6px 2px 7px}.bl.roomy2 .sbf{font-size:13px;padding:3px 6px 3px 7px}
+.bl.compact-report .sbf{font-size:11px;padding:0 6px 0 6px;margin-top:1px}
+.bl.compact-report.c2 .sbf{font-size:10px}.bl.compact-report.c3 .sbf{font-size:9px;margin-left:1px}
 
 </style>
 <style>
@@ -440,13 +470,21 @@ html,body{overscroll-behavior-y:contain}
 <section id="resumen">
   <h2 id="rProy" style="margin-bottom:10px">Balance</h2>
   <div class="vfil" id="bFiltroCerdo" style="margin:0 0 12px"></div>
-  <button class="btn wa" id="bCompartir" onclick="compartirBalance()" style="margin:0 0 14px">📤 Compartir Balance (PNG)</button>
-  <button class="btn wa" id="bDetalle" onclick="compartirDetalleCerdo()" style="margin:-6px 0 14px;display:none;background:#1f8f55">📋 Compartir Detalle de Inversión (PNG)</button>
-  <button class="btn wa" id="bDetalleLote" onclick="compartirDetalleLote()" style="margin:-6px 0 14px;background:#1f8f55">📋 Compartir Detalle del Lote (PNG)</button>
+  <!-- Encabezado: Total invertido (Lote) o Inversión asignada (cerdo) + botones compactos PNG / PDF -->
+  <div class="bal-head">
+    <div class="bh-txt"><span id="rInvLbl">Total invertido</span><b id="rInv">$0</b></div>
+    <div class="bh-btns">
+      <button class="btn wa" id="bCompartir" onclick="menuPNGBalance()" aria-label="Exportar Balance en imagen PNG: resumen o detallado">🖼️ PNG</button>
+      <button class="btn pdf" id="bDetallePDF" onclick="elegirOrdenDetalle('pdf')" aria-label="Reporte detallado de inversión en PDF">📄 PDF</button>
+    </div>
+  </div>
+  <div class="inv2">
+    <div class="kpi"><span>Costo de lechones</span><b id="rLech">$0</b><span id="rLechN"></span></div>
+    <div class="kpi"><span>Alimento e insumos</span><b id="rAli">$0</b><span id="rAliKg"></span></div>
+  </div>
   <div id="rCerdo" style="display:none"></div>
   <div id="rLote">
   <div class="kpis">
-    <div class="kpi"><span>Total invertido</span><b id="rInv">$0</b></div>
     <div class="kpi"><span>Total recaudado</span><b id="rRec" class="pos">$0</b></div>
     <div class="kpi"><span>Por cobrar</span><b id="rCob" class="wa-c">$0</b></div>
     <div class="kpi"><span>Ventas totales</span><b id="rVen">$0</b></div>
@@ -2303,23 +2341,57 @@ function inversionCerdo(e,pl){
   return {lechon:Math.round(lechon),alimento:Math.round(alim),total:Math.round(lechon)+Math.round(alim),compras:suma,excluidas:excl};
 }
 const KG_BULTO_CONC = 40; /* peso de un bulto de concentrado (kg) */
-/* Corte de inventario por sacrificio: el concentrado sobrante (kg) anotado al sacrificar se valora al precio promedio $/kg del concentrado comprado hasta esa fecha;
-   deja de cargarse a los cerdos de ese día y pasa, en partes iguales, solo a los cerdos que siguen en ceba (si no queda ninguno, no se mueve). */
+/* Corte de inventario por sacrificio: el concentrado sobrante (kg) anotado al sacrificar se resta del consumo del cerdo sacrificado
+   (consumo neto = kg asignados − kg sobrantes) y se valora al precio promedio $/kg del concentrado comprado hasta esa fecha, así que su costo baja
+   en proporción. Esos mismos kg (y su valor) pasan, en partes iguales, al inventario de los cerdos que siguen en ceba (si no queda ninguno, no se mueve).
+   El sobrante nunca supera los kg de concentrado asignados a ese cerdo (el neto no baja de 0). */
 function ajusteSobrante(e,pl){
-  pl=pl||plantelCerdos(); const items=[]; let total=0;
+  pl=pl||plantelCerdos(); const items=[]; let total=0,totalKg=0;
   pl.forEach(q=>{
     const c=q.c; if(!c||!c.fecha||!(c.sobranteKg>0)) return;
-    const d=c.fecha; let cost=0,kg=0;
-    D.insumos.forEach(x=>{ if(conceptoIns(x)==="Concentrado"&&(x.fecha||"")<=d&&(x.bultos||0)>0){ cost+=(x.costo||0)+(x.flete||0); kg+=(x.bultos||0)*KG_BULTO_CONC; } });
-    if(!(kg>0)) return;
-    const V=Math.min(c.sobranteKg,kg)*(cost/kg);
-    const Pc=pl.filter(t=>activoEn(t,d)), Rm=Pc.filter(t=>!(t.c&&t.c.fecha&&t.c.fecha<=d));
+    const d=c.fecha; let cost=0,kg=0,mio=0;
+    D.insumos.forEach(x=>{ if(conceptoIns(x)==="Concentrado"&&(x.fecha||"")<=d&&(x.bultos||0)>0){
+      const k=(x.bultos||0)*KG_BULTO_CONC; cost+=(x.costo||0)+(x.flete||0); kg+=k;
+      if(activoEn(q,x.fecha)) mio+=k/(pl.filter(t=>activoEn(t,x.fecha)).length||1); /* kg de esa compra que le tocan a q */
+    } });
+    if(!(kg>0)||!(mio>0)) return;
+    const S=Math.min(c.sobranteKg,mio), V=S*(cost/kg);
+    const Rm=pl.filter(t=>activoEn(t,d)&&!(t.c&&t.c.fecha&&t.c.fecha<=d)); /* cerdos que siguen en ceba */
     if(!Rm.length||!(V>0)) return;
-    let m=0; if(activoEn(e,d)) m-=V/Pc.length; if(Rm.some(t=>t.key===e.key)) m+=V/Rm.length;
-    if(m){ items.push({fecha:d,monto:m,kg:c.sobranteKg}); total+=m; }
+    let m=0,km=0;
+    if(q.key===e.key){ m-=V; km-=S; }                                  /* el sacrificado: consumo neto = asignado − sobrante */
+    else if(Rm.some(t=>t.key===e.key)){ m+=V/Rm.length; km+=S/Rm.length; } /* los que siguen: reciben el sobrante en su inventario */
+    if(m){ items.push({fecha:d,monto:m,kg:Math.abs(km),kgNeto:km}); total+=m; totalKg+=km; }
   });
-  return {items,total};
+  return {items,total,kg:totalKg};
 }
+/* Consumo físico de alimento SIN mezclar unidades:
+   · conc = Concentrado (Comercial/Levante/Engorde): bultos × KG_BULTO_CONC → kg y bultos (el sobrante trasladado también es concentrado)
+   · bore = Bore / Maíz (suplemento fresco): kilos registrados → kg y arrobas (@), nunca bultos
+   e = cerdo del plantel → su cuota (misma regla de reparto que el costo); sin e → lote completo. Devuelve {conc,bore} en kg. */
+function consumoAlimento(e,pl){
+  const kConc=x=>conceptoIns(x)==="Concentrado"?(x.bultos||0)*KG_BULTO_CONC:0, kBore=x=>conceptoIns(x)==="Bore"?(x.kilos||0):0;
+  if(!e) return {conc:D.insumos.reduce((a,x)=>a+kConc(x),0),bore:D.insumos.reduce((a,x)=>a+kBore(x),0)};
+  pl=pl||plantelCerdos(); let conc=0,bore=0;
+  D.insumos.forEach(x=>{ if(!activoEn(e,x.fecha)) return; const n=pl.filter(q=>activoEn(q,x.fecha)).length||1; conc+=kConc(x)/n; bore+=kBore(x)/n; });
+  return {conc:conc+ajusteSobrante(e,pl).kg,bore};
+}
+/* 🐖 1 lechón / 🐖 Cerdo individual (equilibra las líneas de consumo de Alimento e insumos) */
+const htmlLechones = n => n>0 ? `<small class="kcons">🐖 ${n} ${n===1?"lechón":"lechones"}</small>` : "";
+/* 🥣 Concentrado: 150 kg (~3,75 bultos)  ·  🌿 Bore / Suplemento: 41,36 kg (3,3 @) */
+const htmlConsumo = c => {
+  const L=[];
+  if(c.conc>1e-6) L.push(`🥣 Concentrado: ${peso(c.conc)} kg (~${(c.conc/KG_BULTO_CONC).toLocaleString("es-CO",{minimumFractionDigits:1,maximumFractionDigits:2})} bultos)`);
+  if(c.bore>1e-6) L.push(`🌿 Bore / Suplemento: ${peso(c.bore)} kg (${(c.bore/ARROBA_KG).toLocaleString("es-CO",{maximumFractionDigits:1})} @)`);
+  return L.length?`<small class="kcons">${L.join("<br>")}</small>`:"";
+};
+/* Versión en filas para la tarjeta ampliada de Alimento e insumos (balance por cerdo) */
+const htmlConsumoFilas = c => {
+  const R=[], f=n=>n.toLocaleString("es-CO",{minimumFractionDigits:1,maximumFractionDigits:2});
+  if(c.conc>1e-6) R.push(`<div class="cons-row"><span class="cn">🥣 Concentrado</span><span class="cv">${peso(c.conc)} kg<small>~${f(c.conc/KG_BULTO_CONC)} bultos</small></span></div>`);
+  if(c.bore>1e-6) R.push(`<div class="cons-row"><span class="cn">🌿 Bore / Suplemento</span><span class="cv">${peso(c.bore)} kg<small>${(c.bore/ARROBA_KG).toLocaleString("es-CO",{maximumFractionDigits:1})} @</small></span></div>`);
+  return R.length?`<div class="cons-list">${R.join("")}</div>`:"";
+};
 const pct1 = n => (Math.round(n*10)/10).toLocaleString("es-CO",{minimumFractionDigits:1,maximumFractionDigits:1})+"%";
 function renderResumen(){
   const csAll=cerdosOrden(), pl=plantelCerdos();
@@ -2328,13 +2400,13 @@ function renderResumen(){
   const ez=bFiltroCerdo?pl.find(e=>e.key===bFiltroCerdo):null, cz=ez?ez.c:null;
   { const p=proyActual(); $("rProy").textContent=(p?"Balance · "+nomProy(p):"Balance")+(ez?" · "+ez.nombre:""); }
   const inv=totLech()+totIns(),ven=D.ventas.reduce((a,v)=>a+(v.total||0),0),rec=D.ventas.reduce((a,v)=>a+abonado(v),0),cob=D.ventas.reduce((a,v)=>a+saldo(v),0);
-  $("rInv").textContent=money(inv);$("rRec").textContent=money(rec);$("rCob").textContent=money(cob);$("rVen").textContent=money(ven);
+  if(!ez){ $("rInvLbl").textContent="Total invertido"; $("rInv").textContent=money(inv); $("rLech").textContent=money(totLech()); $("rLechN").innerHTML=htmlLechones(cerdosBase().length); $("rAli").textContent=money(totIns()); $("rAliKg").innerHTML=htmlConsumoFilas(consumoAlimento(null)); }
+  $("rRec").textContent=money(rec);$("rCob").textContent=money(cob);$("rVen").textContent=money(ven);
   const u=ven-inv,c=rec-inv;
   $("rUtil").textContent=money(u);$("rUtil").className=u>=0?"pos":"neg";
   $("rCaja").textContent=money(c);$("rCaja").className=c>=0?"pos":"neg";
   $("rNum").textContent=D.cerdos.length;
   $("rLote").style.display=ez?"none":"";
-  $("bDetalle").style.display=ez?"":"none";$("bDetalleLote").style.display=ez?"none":"";
   const bx=$("rCerdo");
   if(ez){
     const iv=inversionCerdo(ez,pl);
@@ -2345,10 +2417,10 @@ function renderResumen(){
       ? (sacF?`<b>Alimento e insumos congelados a la fecha de sacrificio (${fechaLargaCO(sacF)})</b>`:`<b>Alimento e insumos repartidos entre los cerdos vivos de cada compra</b>`)
         +`<br><small>Cada compra se divide en partes iguales entre los cerdos activos ese día.${iv.excluidas?` ${iv.excluidas===1?"1 compra posterior al sacrificio no se suma":iv.excluidas+" compras posteriores al sacrificio no se suman"}.`:""}</small>`
       : `<b>Aún en ceba: el alimento se sigue sumando proporcionalmente hasta su día de sacrificio</b><br><small>Cada compra se divide en partes iguales entre los cerdos vivos ese día. Llevas ${iv.compras} ${iv.compras===1?"compra":"compras"} de alimento asignadas.</small>`;
+    $("rInvLbl").textContent="Inversión asignada a "+ez.nombre; $("rInv").textContent=money(iv.total);
+    $("rLech").textContent=money(iv.lechon); $("rLechN").innerHTML='<small class="kcons">🐖 Cerdo individual</small>';
+    $("rAli").textContent=money(iv.alimento); $("rAliKg").innerHTML=htmlConsumoFilas(consumoAlimento(ez,pl));
     bx.innerHTML=`<div class="kpis">
-      <div class="kpi big"><span>Inversión asignada a ${esc(ez.nombre)}</span><b>${money(iv.total)}</b></div>
-      <div class="kpi"><span>Costo del lechón</span><b>${money(iv.lechon)}</b></div>
-      <div class="kpi"><span>Alimento e insumos</span><b>${money(iv.alimento)}</b></div>
       <div class="kpi big"><span>Total ventas del cerdo (cobrado + pendiente)</span><b>${money(vt)}</b></div>
       <div class="kpi"><span>Cobrado</span><b class="pos">${money(cb)}</b></div>
       <div class="kpi"><span>Por cobrar</span><b class="wa-c">${money(pd)}</b></div>
@@ -2388,20 +2460,73 @@ const BL_IMG={bg:"data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgFBgc
 (()=>{const st=document.createElement("style"); st.textContent=".bl{background-image:url("+BL_IMG.bg+")}.bl .hdr{background-image:url("+BL_IMG.hdr+")}.bl .pig{background-image:url("+BL_IMG.pig+")}"; document.head.appendChild(st);})();
 let _blListo=null; const blListo=()=>_blListo||(_blListo=Promise.all(Object.values(BL_IMG).map(u=>new Promise(ok=>{ const i=new Image(); i.onload=i.onerror=ok; i.src=u; }))));
 const palabras = (t,corta) => String(t).split(" ").filter(Boolean).map(w=>`<span class="w">${esc(w)}</span>`).join(corta?"<wbr>":"");
+/* ---- Desglose de volúmenes para el Balance PNG ---- */
+const ETQ_CORTE={carne:"Carne",pierna:"Pierna",brazo:"Brazo",lomo:"Lomo",costilla:"Costilla",pesuna:"Pesuña",orejas:"Orejas",otros:"Otros",canal:"Canal"};
+const etqCorte = k => ETQ_CORTE[k]||(String(k||"Otros").charAt(0).toUpperCase()+String(k||"Otros").slice(1));
+const NB="\u00a0"; /* espacio de no separación: número y unidad nunca se parten */
+const nBultos = n => peso(n)+NB+(Math.abs(n-1)<1e-9?"bulto":"bultos");
+/* Inversión: lechones, concentrado, bore y otros (medicamentos, fletes, sacrificio…) — lote completo o un cerdo.
+   «Otros» se calcula por diferencia para que las subfilas siempre sumen el total. */
+function volumenesInversion(ez,pl){
+  const R=Math.round; let nL,vL,kgC=0,vC=0,kgB=0,vB=0,total;
+  if(!ez){
+    nL=D.lotes.reduce((a,l)=>a+(l.cantidad||0),0); vL=R(totLech()); total=R(totLech()+totIns());
+    D.insumos.forEach(x=>{ const c=conceptoIns(x), m=(x.costo||0)+(x.flete||0);
+      if(c==="Concentrado"){ kgC+=(x.bultos||0)*KG_BULTO_CONC; vC+=m; } else if(c==="Bore"){ kgB+=(x.kilos||0); vB+=m; } });
+  } else {
+    const iv=inversionCerdo(ez,pl), cons=consumoAlimento(ez,pl);
+    nL=1; vL=iv.lechon; total=iv.total; kgC=cons.conc; kgB=cons.bore;
+    D.insumos.forEach(x=>{ if(!activoEn(ez,x.fecha)) return; const n=pl.filter(q=>activoEn(q,x.fecha)).length||1, c=conceptoIns(x), m=((x.costo||0)+(x.flete||0))/n;
+      if(c==="Concentrado") vC+=m; else if(c==="Bore") vB+=m; });
+    vC+=ajusteSobrante(ez,pl).total;
+  }
+  vL=R(vL); vC=R(vC); vB=R(vB); total=R(total); /* cada categoría se redondea por separado antes de mostrarse */
+  let otros=total-vL-vC-vB;
+  /* residuo de redondeo (|otros| ≤ $1): se absorbe en la categoría mayor para que las partes sumen EXACTAMENTE la inversión y no aparece la fila */
+  if(Math.abs(otros)<=1){ if(vC>=vB&&vC>0) vC+=otros; else if(vB>0) vB+=otros; else vL+=otros; otros=0; }
+  return {nL,vL,kgC,vC,kgB,vB,otros,total};
+}
+/* Ventas: «Canal 58 kg × $12.000» o cortes del despiece con libras y precio (los 4 principales + «Otros cortes») */
+function desgloseVentas(items){
+  const m={}; items.forEach(i=>{ const k=i.corte||"otros", q=+i.cantidad||0, o=m[k]=m[k]||{q:0,v:0}; o.q+=q; o.v+=subItem(i); });
+  const L=[], pr=(q,v)=>q>0?NB+"×"+NB+money(v/q):"";
+  if(m.canal&&m.canal.q>0) L.push({t:"Canal",q:peso(m.canal.q)+NB+"kg"+pr(m.canal.q,m.canal.v),v:m.canal.v});
+  const cs=Object.keys(m).filter(k=>k!=="canal"&&(m[k].q>0||m[k].v>0)).sort((x,y)=>m[y].v-m[x].v);
+  cs.slice(0,4).forEach(k=>L.push({t:etqCorte(k),q:peso(m[k].q)+NB+"lb"+pr(m[k].q,m[k].v),v:m[k].v}));
+  const re=cs.slice(4); if(re.length) L.push({t:"Otros cortes",q:peso(re.reduce((a,k)=>a+m[k].q,0))+NB+"lb",v:re.reduce((a,k)=>a+m[k].v,0)});
+  return L;
+}
+/* Balance PNG enriquecido: devuelve (promesa de) las páginas HTML; paginarReporte ajusta la letra para que todo quepa en 9:16 */
 function balanceHTML(d){
   const py=proyActual(), pn=py?nomProy(py):"";
-  const fila=(t,a,c)=>`<div class="r${c?" "+c:""}"><span class="t">${palabras(t)}</span><span class="a">${a}</span></div>`;
-  const cls=d.gan>=0?"g":"n", rentTxt=d.rent==null?"—":pct1(d.rent);
-  let titulo,cinta,cab,filas,leyenda="";
+  const fila=(t,a,c,keep)=>({keep,html:`<div class="r${c?" "+c:""}"><span class="t">${palabras(t)}</span><span class="a">${a}</span></div>`});
+  /* subfila: emoji + concepto en negrita, cantidad en letra suelta, valor a la derecha */
+  const sub=(t,q,v)=>({html:`<div class="sbf"><span class="sl"><b>${palabras(t)}</b>${q?`<i>${palabras(q)}</i>`:""}</span>${v!=null?`<span class="sv">${money(v)}</span>`:""}</div>`});
+  const cls=d.gan>=0?"g":"n", rentTxt=d.rent==null?"—":pct1(d.rent), B=[];
+  const subInv=(ez,pl)=>{
+    const V=volumenesInversion(ez,pl), S=[];
+    S.push(sub("🐖 Lechón",V.nL>0?V.nL+NB+(V.nL===1?"lechón":"lechones"):"",V.vL));
+    if(V.kgC>1e-6||V.vC>0) S.push(sub("🥣 Concentrado",V.kgC>1e-6?nBultos(V.kgC/KG_BULTO_CONC)+" / "+peso(V.kgC)+NB+"kg":"",V.vC));
+    if(V.kgB>1e-6||V.vB>0) S.push(sub("🌿 Bore / Suplementos",V.kgB>1e-6?peso(V.kgB/ARROBA_KG)+NB+"@ / "+peso(V.kgB)+NB+"kg":"",V.vB));
+    if(Math.abs(V.otros)>1) S.push(sub("💊 Otros insumos y fletes","",V.otros)); /* oculta $0 y residuos de redondeo */
+    return S;
+  };
+  const subVen=items=>desgloseVentas(items).map(x=>sub("• "+x.t,x.q,Math.round(x.v)));
+  let titulo,cinta,cab,leyenda=null;
   if(d.modo==="lote"){
     titulo="Balance del|lote"; cinta=pn||"Lote completo"; cab="Lote completo";
-    filas=fila("Inversión total",money(d.inv))+fila("Ventas totales",money(d.ven))+fila("Cobrado",money(d.rec))+fila("Por cobrar",money(d.cob),d.cob>0?"n":"g")+fila("Ganancia neta",money(d.gan),cls)+fila("Rentabilidad",rentTxt,cls);
+    B.push(fila("Inversión total",money(d.inv),"",true),...subInv(null,null));
+    B.push(fila("Ventas totales",money(d.ven),"",true),...subVen(D.ventas.flatMap(v=>itemsDe(v))));
+    B.push(fila("Cobrado",money(d.rec)),fila("Por cobrar",money(d.cob),d.cob>0?"n":"g"),fila("Ganancia neta",money(d.gan),cls),fila("Rentabilidad",rentTxt,cls));
   } else {
+    const pl=plantelCerdos(), cz=d.ez.c;
     titulo="Balance por|cerdo"; cinta=cab=String(d.ez.nombre).replace(/#\s*/g,"");
-    filas=fila("Costo lechón",money(d.iv.lechon))+fila("Alimento e insumos",money(d.iv.alimento))+fila("Ventas del cerdo",money(d.vt))+fila("Cobrado",money(d.cb))+fila("Por cobrar",money(d.pd),d.pd>0?"n":"g")+fila("Ganancia neta",money(d.gan),cls)+fila("Rentabilidad",rentTxt,cls);
-    leyenda=`<div class="lg">${palabras(d.sacF?`Alimento e insumos congelados a la fecha de sacrificio (${fechaPNG(d.sacF)})`:"Aún en ceba: alimento e insumos sumados proporcionalmente a hoy",true)}</div>`;
+    B.push(fila("Inversión asignada",money(d.iv.total),"",true),...subInv(d.ez,pl));
+    B.push(fila("Ventas del cerdo",money(d.vt),"",true),...(cz?subVen(D.ventas.flatMap(v=>ventaCerdo(v,cz.id).items)):[]));
+    B.push(fila("Cobrado",money(d.cb)),fila("Por cobrar",money(d.pd),d.pd>0?"n":"g"),fila("Ganancia neta",money(d.gan),cls),fila("Rentabilidad",rentTxt,cls));
+    leyenda={html:`<div class="lg">${palabras(d.sacF?`Alimento e insumos congelados a la fecha de sacrificio (${fechaPNG(d.sacF)})`:"Aún en ceba: alimento e insumos sumados proporcionalmente a hoy",true)}</div>`};
   }
-  return plantillaBL({titulo,cinta,cab,cuerpo:filas+leyenda});
+  return paginarReporte({titulo,cinta,cab,bloques:B,cierre:leyenda?[leyenda]:[]});
 }
 /* Plantilla común de todos los reportes PNG 9:16: letrero ilustrado + plaquita café (solo identificador) + tarjeta crema con fecha larga en la franja verde */
 function plantillaBL(o){
@@ -2547,9 +2672,11 @@ function enviarReporte(){
   else { descargarReporte(); toast("Imagen descargada · adjúntala en WhatsApp"); }
 }
 /* ---- Balance ---- */
-function compartirBalance(){
+async function compartirBalance(){
+  if(repBusy) return;
   const d=datosBalance();
-  entregarReporte("Balance",nombreArchivoBalance(d).replace(/\.png$/,""),[balanceHTML(d)]);
+  try{ const pags=await balanceHTML(d); entregarReporte("Balance",nombreArchivoBalance(d).replace(/\.png$/,""),pags); }
+  catch(e){ console.error(e); toast("No se pudo crear el reporte"); }
 }
 
 /* ---- Bloques de reporte ---- */
@@ -2910,6 +3037,70 @@ async function pdfReporteInversion(tipo,orden){
   repBusy=false;
 }
 
+/* ---- Balance: «📄 Reporte Detallado de Inversión (PDF)» · individual (cerdo elegido) o lote completo ---- */
+function prepararPDFDetalle(orden){
+  orden=orden==="desc"?"desc":"asc";
+  const ordTxt=orden==="desc"?"Orden: más reciente primero":"Orden: más antiguo primero", ordArch=orden==="desc"?"_Recientes_primero":"_Antiguos_primero";
+  const py=proyActual(), pn=py?nomProy(py):"Lote completo", pl=plantelCerdos();
+  const ez=bFiltroCerdo?pl.find(e=>e.key===bFiltroCerdo):null;
+  if(ez){
+    const d=datosDetalleCerdo(orden); if(!d){ toast("Selecciona un cerdo"); return null; }
+    const iv=inversionCerdo(ez,pl), nm=nombreSinNum(ez.nombre);
+    return {base:"Detalle_Inversion_"+limNom(nm)+ordArch+"_"+hoy(),doc:{titulo:"Detalle de inversión por cerdo",lote:"Lote: "+pn+"  \u00B7  Cerdo: "+nm+"  \u00B7  "+ordTxt,
+      tarjetas:[{t:"Lechón base",v:money(iv.lechon)},{t:"Alimento e insumos",v:money(iv.alimento)},{t:"Total asignado",v:money(iv.total),dest:true}],bloques:d.bloques,cierre:d.cierre}};
+  }
+  const d=datosDetalleLote(orden); if(d.vacio){ toast("Aún no hay inversión registrada"); return null; }
+  const sec=d.bloques.filter(b=>b.d&&b.d.k==="sec"), tot=d.cierre.find(b=>b.d&&b.d.c==="g");
+  return {base:"Detalle_Lote_"+limNom(py?py.nombre:"completo")+ordArch+"_"+hoy(),doc:{titulo:"Detalle de inversión del lote",lote:"Lote: "+pn+"  \u00B7  Alcance: lote completo  \u00B7  "+ordTxt,
+    tarjetas:[{t:"Lechones",v:money(sec[0].d.v)},{t:"Alimento e insumos",v:money(sec[1].d.v)},{t:"Total invertido",v:tot?tot.d.a:"",dest:true}],bloques:d.bloques,cierre:d.cierre}};
+}
+/* ===== Exportación del Balance: botones compactos 🖼️ PNG y 📄 PDF del encabezado ===== */
+let ordenDetPref="asc"; /* último orden elegido: se resalta en el selector */
+const opBtn=(t,desc,js,sec)=>`<button class="btn${sec?" sec":""}" onclick="${js}" style="text-align:left;padding:14px 16px">${t}<br><span style="font-size:12.5px;font-weight:400;opacity:.85">${desc}</span></button>`;
+function abrirHojaExport(titulo,sub,cuerpo){
+  $("sheet").innerHTML=`<div class="mh"><h2>${titulo}</h2><button class="sm" onclick="cerrar()">Cerrar</button></div><p class="sub">${sub}</p>${cuerpo}`;
+  $("modal").classList.add("open");
+}
+/* ¿Hay algo que exportar en detalle? (cerdo elegido o lote completo con registros) */
+function detalleBalanceDisponible(){
+  const ez=bFiltroCerdo&&plantelCerdos().find(e=>e.key===bFiltroCerdo);
+  if(!ez&&datosDetalleLote().vacio){ toast("Aún no hay inversión registrada"); return false; }
+  return true;
+}
+/* 🖼️ PNG → menú rápido: Resumen o Detallado */
+function menuPNGBalance(){
+  if(repBusy) return;
+  abrirHojaExport("Exportar Balance (PNG)","Elige qué imagen quieres generar.",
+    opBtn("📊 Resumen (PNG)","Solo el balance ejecutivo: inversión, ventas, cobrado y ganancia.","cerrar();compartirBalance()")+
+    opBtn("🗂️ Detallado (PNG)","Lista completa de compras e insumos por fecha. A continuación eliges el orden.","elegirOrdenDetalle('png')",true));
+}
+/* Selector de orden cronológico para el reporte Detallado (fmt = 'png' | 'pdf') */
+function elegirOrdenDetalle(fmt){
+  fmt=fmt==="png"?"png":"pdf"; if(repBusy) return;
+  if(!detalleBalanceDisponible()) return;
+  const op=(t,desc,o)=>opBtn(t,desc,`cerrar();exportarDetalleBalance('${fmt}','${o}')`,ordenDetPref!==o);
+  abrirHojaExport("Orden del reporte detallado ("+fmt.toUpperCase()+")","Elige cómo se ordenan por fecha los registros de lechones, alimento e insumos.",
+    op("⬆️ Ascendente (cronológico)","De la primera fecha a la última","asc")+
+    op("⬇️ Descendente (inverso)","De la fecha más reciente a la más antigua","desc")+
+    (fmt==="png"?`<button class="btn sec" onclick="menuPNGBalance()" style="margin-top:10px">← Volver</button>`:""));
+}
+/* Despachador único: recuerda el orden y genera el PDF o el PNG detallado (cerdo elegido o lote completo) */
+function exportarDetalleBalance(fmt,orden){
+  orden=orden==="desc"?"desc":"asc"; ordenDetPref=orden;
+  if(fmt==="pdf") return pdfDetalleInversion(orden);
+  const ez=bFiltroCerdo&&plantelCerdos().find(e=>e.key===bFiltroCerdo);
+  return ez?compartirDetalleCerdo(orden):compartirDetalleLote(orden);
+}
+async function pdfDetalleInversion(orden){
+  if(repBusy) return;
+  const r=prepararPDFDetalle(orden); if(!r) return;
+  if(!(await ensureJsPDF())) return toast("Sin librería de PDF (¿sin conexión?)");
+  repBusy=true; toast("Generando PDF…");
+  try{ descargarPNG(crearPDFCarta(r.doc).output("blob"),r.base+".pdf"); toast("PDF descargado"); }
+  catch(e){ console.error(e); toast("No se pudo crear el PDF"); }
+  repBusy=false;
+}
+
 /* ---- Reporte de ventas por cliente (sigue los filtros de Clientes) ---- */
 const catVenta = k => ["carne","pierna","brazo","lomo"].includes(k)?"Carne":k==="costilla"?"Costilla":k==="canal"?"Canal":"Subproductos";
 function datosVentas(){
@@ -2988,7 +3179,7 @@ function detInsumo(x,f,n){
   if(quien) unitD=[unitD,quien].filter(Boolean).join(" | ");
   return {fecha:x.fecha,tit,prov:provCorto(x.proveedor),unit,unitD,quien,monto:compra*f,bul:c==="Concentrado"?b*f:0};
 }
-function datosDetalleCerdo(){
+function datosDetalleCerdo(orden){
   const pl=plantelCerdos(), ez=bFiltroCerdo?pl.find(e=>e.key===bFiltroCerdo):null; if(!ez) return null;
   const iv=inversionCerdo(ez,pl);
   const lotes=[...D.lotes].sort((a,b)=>(a.fecha||"").localeCompare(b.fecha||"")||(a.creado||0)-(b.creado||0));
@@ -2997,51 +3188,56 @@ function datosDetalleCerdo(){
   const ents=[...D.insumos].sort((a,b)=>(a.fecha||"").localeCompare(b.fecha||"")||(a.creado||0)-(b.creado||0)).filter(x=>activoEn(ez,x.fecha)).map(x=>{ const n=pl.filter(q=>activoEn(q,x.fecha)).length||1; return detInsumo(x,1/n,n); })
     .concat(ajusteSobrante(ez,pl).items.map(it=>({fecha:it.fecha,tit:it.monto<0?"Sobrante de concentrado trasladado":"Sobrante de concentrado recibido",prov:"",unit:peso(it.kg)+" kg sobrantes",monto:it.monto,bul:0})))
     .sort((a,b)=>(a.fecha||"").localeCompare(b.fecha||""));
+  if(orden==="desc") ents.reverse(); /* más reciente primero */
   const mr=ents.map(e=>Math.round(e.monto)), dif=iv.alimento-mr.reduce((a,x)=>a+x,0);
   if(ents.length&&dif){ let mi=0; mr.forEach((v,i)=>{ if(v>mr[mi]) mi=i; }); mr[mi]+=dif; }
   const fila=(t,sub,a,c)=>`<div class="r${c?" "+c:""}"><span class="t mw"><span>${palabras(t)}</span>${sub?`<small>${palabras(sub)}</small>`:""}</span><span class="a">${a}</span></div>`;
+  const filaB=(t,sub,a,c)=>({d:{k:"fila",t,sub,a,c},html:fila(t,sub,a,c)});
   const B=[];
   B.push(bSec("Lechón base",iv.lechon));
   const sacF=ez.c&&ez.c.fecha, fl=ini&&ini.l.flete?Math.round(ini.l.flete/Math.max(ini.l.cantidad||1,1)):0;
-  B.push({html:fila("Lechón"+(ini?" • "+peso(ini.kg)+" kg ("+peso(ini.kg*2)+" lb)":""),[ini&&ini.l.fecha?fechaAbrevGuion(ini.l.fecha):"",ini?provCorto(ini.l.proveedor):"",money(iv.lechon)+"/lechón"+(fl>0?" (flete incl.)":"")].filter(Boolean).join(" • "),"→ "+money(iv.lechon))});
+  B.push(filaB("Lechón"+(ini?" • "+peso(ini.kg)+" kg ("+peso(ini.kg*2)+" lb)":""),[ini&&ini.l.fecha?fechaAbrevGuion(ini.l.fecha):"",ini?provCorto(ini.l.proveedor):"",money(iv.lechon)+"/lechón"+(fl>0?" (flete incl.)":"")].filter(Boolean).join(" • "),"→ "+money(iv.lechon)));
   B.push(bSec("Alimento e insumos por fecha",iv.alimento));
   if(!ents.length) B.push({html:`<div class="nt">${palabras("Aún no hay compras de alimento cargadas a este cerdo")}</div>`});
-  ents.forEach((e,i)=>B.push({html:fila(e.tit,[fechaAbrevGuion(e.fecha),e.prov,e.unit].filter(Boolean).join(" • "),"→ "+money(mr[i]))}));
+  ents.forEach((e,i)=>B.push(filaB(e.tit,[fechaAbrevGuion(e.fecha),e.prov,e.unit].filter(Boolean).join(" • "),"→ "+money(mr[i]))));
   const bul=ents.reduce((a,e)=>a+e.bul,0);
   const cierre=[bSec("Resumen"),bFila("Bultos equivalentes comidos",peso(bul)),bFila("Inversión total asignada",money(iv.total),"","g"),
     {html:`<div class="lg">${palabras(sacF?"Inversión congelada a la fecha de sacrificio ("+fechaPNG(sacF)+")":"Aún en ceba: alimento e insumos sumados proporcionalmente a hoy",true)}</div>`}];
   return {ez,bloques:B,cierre};
 }
-function compartirDetalleCerdo(){
-  const d=datosDetalleCerdo(); if(!d) return toast("Selecciona un cerdo");
+function compartirDetalleCerdo(orden){
+  orden=orden==="desc"?"desc":"asc";
+  const d=datosDetalleCerdo(orden); if(!d) return toast("Selecciona un cerdo");
   const nm=nombreSinNum(d.ez.nombre);
   paginarReporte({titulo:"Inversión por|cerdo",cinta:nm,cab:nm,det:true,bloques:d.bloques,cierre:d.cierre})
-    .then(h=>entregarReporte("Detalle de inversión","Detalle_Inversion_"+limNom(nm)+"_"+hoy(),h))
+    .then(h=>entregarReporte("Detalle de inversión","Detalle_Inversion_"+limNom(nm)+(orden==="desc"?"_Recientes_primero":"_Antiguos_primero")+"_"+hoy(),h))
     .catch(()=>toast("No se pudo crear el reporte"));
 }
 
 /* ---- Detalle de inversión y resumen del LOTE COMPLETO: lechones, alimento por etapas, sanidad y fletes, total y rendimiento de ceba ---- */
-function datosDetalleLote(){
+function datosDetalleLote(orden){
   const R=Math.round, lotes=[...D.lotes].sort((a,b)=>(a.fecha||"").localeCompare(b.fecha||"")||(a.creado||0)-(b.creado||0));
   const promDe=l=>l.pesoPromKg!=null?l.pesoPromKg:(l.pesoProm!=null?l.pesoProm/2:((l.pesoTotalKg||0)/Math.max(l.cantidad||1,1)));
   const ins=[...D.insumos].sort((a,b)=>(a.fecha||"").localeCompare(b.fecha||"")||(a.creado||0)-(b.creado||0));
   const fila=(t,sub,a,c)=>`<div class="r${c?" "+c:""}"><span class="t mw"><span>${palabras(t)}</span>${sub?`<small>${palabras(sub)}</small>`:""}</span><span class="a">${a}</span></div>`;
+  const filaB=(t,sub,a,c)=>({d:{k:"fila",t,sub,a,c},html:fila(t,sub,a,c)});
   /* filas de lechones (una por compra) y de alimento/insumos (una por registro) */
   const fl=lotes.map(l=>{
     const n=l.cantidad||0, kg=l.pesoTotalKg!=null?l.pesoTotalKg:promDe(l)*n, fle=l.flete||0, tot=(l.valor||0)+fle;
     return {tit:n+(n===1?" lechón":" lechones")+" • "+peso(kg)+" kg ("+peso(kg*2)+" lb)",sub:[fechaAbrevGuion(l.fecha),provCorto(l.proveedor),n>0?money(tot/n)+"/lechón"+(fle>0?" (flete incl.)":""):""].filter(Boolean).join(" • "),monto:tot,n,kg};
   });
   const fi=ins.map(x=>{ const e=detInsumo(x,1,1); return {tit:e.tit,sub:[fechaAbrevGuion(e.fecha),e.prov,e.unit].filter(Boolean).join(" • "),monto:e.monto}; });
+  if(orden==="desc"){ fl.reverse(); fi.reverse(); } /* más reciente primero (lechones y alimento/insumos) */
   const todas=fl.concat(fi), mr=todas.map(e=>R(e.monto)), exacto=R(todas.reduce((a,e)=>a+e.monto,0)), dif=exacto-mr.reduce((a,x)=>a+x,0);
   if(todas.length&&dif){ let mi=0; mr.forEach((v,i)=>{ if(v>mr[mi]) mi=i; }); mr[mi]+=dif; }
   const vL=mr.slice(0,fl.length).reduce((a,x)=>a+x,0), vI=mr.slice(fl.length).reduce((a,x)=>a+x,0), total=vL+vI;
   const n=fl.reduce((a,e)=>a+e.n,0), kg=fl.reduce((a,e)=>a+e.kg,0);
   const B=[];
   B.push(bSec("Lechones • "+n+(n===1?" lechón":" lechones")+" • "+peso(kg)+" kg",vL));
-  fl.forEach((e,i)=>B.push({html:fila(e.tit,e.sub,"→ "+money(mr[i]))}));
+  fl.forEach((e,i)=>B.push(filaB(e.tit,e.sub,"→ "+money(mr[i]))));
   B.push(bSec("Alimento e insumos por fecha",vI));
   if(!fi.length) B.push({html:`<div class="nt">${palabras("Aún no hay compras de alimento o insumos")}</div>`});
-  fi.forEach((e,i)=>B.push({html:fila(e.tit,e.sub,"→ "+money(mr[fl.length+i]))}));
+  fi.forEach((e,i)=>B.push(filaB(e.tit,e.sub,"→ "+money(mr[fl.length+i]))));
   const tot=cerdosBase().length, sac=D.cerdos.length, canalKg=D.cerdos.reduce((a,c)=>a+kgDe(c),0), canalLb=D.cerdos.reduce((a,c)=>a+(c.canal!=null?c.canal:kgDe(c)*2),0);
   const ven=D.ventas.reduce((a,v)=>a+(v.total||0),0), rec=D.ventas.reduce((a,v)=>a+abonado(v),0), cob=D.ventas.reduce((a,v)=>a+saldo(v),0);
   const cierre=[bFila("Inversión total del lote",money(total),"","g"),bSec("Estado de ceba y rendimiento"),
@@ -3050,11 +3246,12 @@ function datosDetalleLote(){
     bFila("Total vendido",money(ven)),bFila("Cobrado",money(rec)),bFila("Saldo por cobrar",money(cob),"",cob>0?"n":"g")];
   return {bloques:B,cierre,vacio:!D.lotes.length&&!D.insumos.length};
 }
-function compartirDetalleLote(){
-  const d=datosDetalleLote(); if(d.vacio) return toast("Aún no hay inversión registrada");
+function compartirDetalleLote(orden){
+  orden=orden==="desc"?"desc":"asc";
+  const d=datosDetalleLote(orden); if(d.vacio) return toast("Aún no hay inversión registrada");
   const py=proyActual(), pn=py?nomProy(py):"Lote completo";
   paginarReporte({titulo:"Inversión del|lote",cinta:pn,cab:"Lote completo",det:true,bloques:d.bloques,cierre:d.cierre})
-    .then(h=>entregarReporte("Detalle del lote","Detalle_Lote_"+limNom(py?py.nombre:"completo")+"_"+hoy(),h))
+    .then(h=>entregarReporte("Detalle del lote","Detalle_Lote_"+limNom(py?py.nombre:"completo")+(orden==="desc"?"_Recientes_primero":"_Antiguos_primero")+"_"+hoy(),h))
     .catch(()=>toast("No se pudo crear el reporte"));
 }
 
