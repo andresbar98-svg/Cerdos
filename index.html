@@ -267,6 +267,15 @@ html,body{overscroll-behavior-y:contain}
 .d-bal{border-top:5px solid #7fd1a0}.d-inv{border-top:5px solid #e8a07a}.d-ven{border-top:5px solid #f0c36a}.d-ceb{border-top:5px solid #8fb7ff}
 .tag.enceba{color:var(--ok);border-color:var(--ok)}.tag.fin{color:var(--mu);border-color:var(--line)}
 .sheet{overscroll-behavior:contain}
+/* Tarjeta de gasto (insumos): izquierda flexible (producto + cantidad + proveedor + fecha) y derecha compacta (total + desglose en 2 lineas) */
+#iFleteSel{font-size:13px;padding:11px 2px 11px 8px;text-overflow:ellipsis}
+.gi-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.gi-l{flex:1 1 0;min-width:0;line-height:1.35;overflow-wrap:break-word}
+.gi-r{flex:0 1 auto;max-width:52%;text-align:right;font-variant-numeric:tabular-nums}
+.gi-r b{display:block;font-size:16px;font-weight:700;line-height:1.2;white-space:nowrap}
+.gi-r small{display:block;margin-top:3px;font-size:10.5px;line-height:1.3;color:var(--mu)}
+.gi-r .gi-f span{white-space:nowrap}
+.gi-r .gi-t{white-space:normal;overflow-wrap:anywhere}
 </style>
 </head>
 <body>
@@ -485,7 +494,11 @@ html,body{overscroll-behavior-y:contain}
   <div class="sub" style="margin:6px 0 0">1 arroba (@) = 12,5 kg. Escribe los kilos o las arrobas (se convierten solos entre sí) y el valor por @: el precio total se calcula solo.</div></div>
   <div id="iBoxTot"><label>Valor total pagado ($)</label><input class="money" inputmode="numeric" id="iCosto" placeholder="0" oninput="dbn.calcInsumo('total')">
   <div class="sub" id="iHint" style="margin:6px 0 0">Escribe el valor por unidad o el total y el otro se calcula solo.</div></div>
-  <label>Costo de traída / flete ($)</label><input class="money" inputmode="numeric" id="iFlete" placeholder="Opcional" oninput="dbn.totalInsumo()">
+  <div class="g2">
+    <div><label>Costo de traída / flete ($)</label><input class="money" inputmode="numeric" id="iFlete" placeholder="Opcional" oninput="dbn.totalInsumo()"></div>
+    <div><label>Encargado del flete</label><select id="iFleteSel" onchange="fleteCampos()"><option value="">Sin flete / No aplica</option><option>Carro de línea</option><option>Andrés Barrantes</option><option value="__otro">Otro</option></select></div>
+  </div>
+  <input type="text" id="iFleteOtro" style="display:none;margin-top:8px" placeholder="Nombre (ej: Don Pedro)" autocomplete="off">
   <div class="kpi" style="margin-top:12px"><span>Inversión de esta compra (compra + flete)</span><b id="iTotalF">$0</b></div>
   <label>Proveedor / almacén</label><select id="iProvSel" onchange="insumoCampos()"><option value="">Seleccionar proveedor</option><option>Jaime Mogollón (Solla)</option><option>Johan Pardo (Finca)</option><option>Manuel Ovalle (Italcol)</option><option value="__otro">Otro</option></select>
   <input id="iProv" style="display:none;margin-top:8px" placeholder="Nombre del proveedor o almacén (ej: Agropecuaria Suaita)" autocomplete="off">
@@ -780,6 +793,15 @@ const PROV_INS=["Jaime Mogollón (Solla)","Johan Pardo (Finca)","Manuel Ovalle (
 /* Concepto normalizado: "Medicinas" → Medicamento / Insumos y el antiguo "Maíz" → Bore (los registros viejos se muestran como Bore) */
 const conceptoIns = x => x.concepto==="Medicinas"?C_MED:(x.concepto==="Maíz"?"Bore":(x.concepto||""));
 let ultConc="Concentrado";
+/* Encargado del flete: solo se guarda el NOMBRE real (x.fleteResp). "Otro" es apenas la opcion del desplegable (value "__otro"):
+   al guardar se reemplaza por lo escrito y la palabra "Otro" nunca se almacena ni se muestra. */
+const FLETE_RESP=["Carro de línea","Andrés Barrantes"];
+const respFlete = x => { const r=String((x&&x.fleteResp)||"").trim(); return /^otro$/i.test(r)?"":r; };
+function fleteCampos(){
+  const o=$("iFleteSel").value==="__otro";
+  $("iFleteOtro").style.display=o?"":"none";
+  if(o) $("iFleteOtro").focus(); else $("iFleteOtro").value="";
+}
 function insumoCampos(){
   const c=$("iConcepto").value, esB=c==="Bore";
   /* al pasar de/hacia Bore se limpian cantidad, precios y proveedor para no mezclar kilos con bultos */
@@ -800,7 +822,7 @@ function insumoCampos(){
 function limpiarInsumo(){
   insEdit=null; $("iTitulo").textContent="Concentrado / Insumos"; $("iGuardar").textContent="Guardar gasto";
   ["iBultos","iUnit","iCosto","iFlete","iProv","iMed","iUnidad","iArrobas","iCostoB"].forEach(i=>$(i).value=""); lastEdI=null;
-  $("iConcepto").selectedIndex=0; $("iClase").selectedIndex=0; $("iProvSel").selectedIndex=0; insumoCampos(); totalInsumo();
+  $("iConcepto").selectedIndex=0; $("iClase").selectedIndex=0; $("iProvSel").selectedIndex=0; $("iFleteSel").selectedIndex=0; $("iFleteOtro").value=""; fleteCampos(); insumoCampos(); totalInsumo();
 }
 function editarInsumo(id){
   const l=D.insumos.find(x=>x.id===id); if(!l) return;
@@ -814,6 +836,7 @@ function editarInsumo(id){
   if(PROV_INS.includes(pr)) $("iProvSel").value=pr; else if(pr){ $("iProvSel").value="__otro"; $("iProv").value=pr; }
   $("iCosto").value=f(l.costo); $("iUnit").value=l.bultos>0?f(l.costo/l.bultos):""; lastEdI="total"; $("iFlete").value=f(l.flete);
   ultConc=conc;
+  { const fr=respFlete(l); if(FLETE_RESP.includes(fr)) $("iFleteSel").value=fr; else if(fr){ $("iFleteSel").value="__otro"; $("iFleteOtro").value=fr; } fleteCampos(); if(fr&&!FLETE_RESP.includes(fr)) $("iFleteOtro").value=fr; }
   if(conc==="Bore"){
     $("iBultos").value=l.kilos>0?l.kilos:""; $("iUnit").value=l.kilos>0?f(l.valorArroba>0?l.valorArroba:Math.round((l.costo||0)/(l.kilos/ARROBA_KG))):"";
     $("iArrobas").value=l.kilos>0?(l.kilos/ARROBA_KG).toLocaleString("es-CO",{maximumFractionDigits:3})+" @":""; $("iCostoB").value=l.kilos>0&&l.costo>0?"$"+miles(l.costo):"";
@@ -821,11 +844,19 @@ function editarInsumo(id){
   }
   insumoCampos(); totalInsumo(); $("mInsumo").classList.add("open");
 }
+/* Nombre a guardar: el del desplegable, o el texto escrito si se eligio "Otro" (nunca la palabra "Otro"); vacio si no aplica */
+function fleteRespForm(){
+  const v=$("iFleteSel").value; if(!v) return "";
+  const r=(v==="__otro"?$("iFleteOtro").value:v).trim();
+  return /^otro$/i.test(r)?"":r;
+}
 function guardarInsumo(){
   const conc=$("iConcepto").value, esMed=conc===C_MED, esConc=conc==="Concentrado";
   let prov=$("iProvSel").value; if(prov==="__otro"||conc==="Bore") prov=$("iProv").value.trim();
-  const o={tipo:"insumo",fecha:$("iFecha").value,concepto:conc,claseConc:esConc?$("iClase").value:"",detalle:esMed?$("iMed").value.trim():"",unidad:esMed?$("iUnidad").value.trim():"",bultos:conc==="Bore"?0:val("iBultos"),kilos:conc==="Bore"?val("iBultos"):0,valorArroba:conc==="Bore"&&val("iBultos")>0?Math.round(mval("iCosto")/(val("iBultos")/ARROBA_KG)):0,costo:mval("iCosto"),flete:mval("iFlete"),proveedor:prov};
+  const o={tipo:"insumo",fecha:$("iFecha").value,concepto:conc,claseConc:esConc?$("iClase").value:"",detalle:esMed?$("iMed").value.trim():"",unidad:esMed?$("iUnidad").value.trim():"",bultos:conc==="Bore"?0:val("iBultos"),kilos:conc==="Bore"?val("iBultos"):0,valorArroba:conc==="Bore"&&val("iBultos")>0?Math.round(mval("iCosto")/(val("iBultos")/ARROBA_KG)):0,costo:mval("iCosto"),flete:mval("iFlete"),proveedor:prov,fleteResp:fleteRespForm()};
   if(!o.fecha||o.costo<=0) return toast("Completa fecha y valor pagado");
+  if($("iFleteSel").value==="__otro"&&!o.fleteResp) return toast("Escribe el nombre de quien hizo el flete");
+  if(/^otro$/i.test($("iFleteOtro").value.trim())) return toast("Escribe el nombre real del transportador, no la palabra Otro");
   if(esMed&&!o.detalle) return toast("Escribe el nombre del medicamento o insumo");
   if(conc==="Bore"&&!(o.kilos>0)) return toast("Escribe los kilos de bore");
   if(conc==="Bore"&&!(mval("iUnit")>0)) return toast("Escribe el valor por arroba");
@@ -865,7 +896,7 @@ function renderInversion(){
   }).join(""):'<div class="card empty">Aún no hay compras de lechones. Toca el botón de arriba para registrar la primera.</div>';
   $("listaIns").innerHTML=D.insumos.length?ord(D.insumos).map(l=>{
     const fl=l.flete||0;
-    return `<div class="row" style="display:block"><div style="display:flex;justify-content:space-between;gap:10px"><div>${insumoTitulo(l)}<small>${fechaTxt(l.fecha)}</small></div><span class="num">${money((l.costo||0)+fl)}${fl?`<small>compra ${money(l.costo)} + flete ${money(fl)}</small>`:""}</span></div>
+    return `<div class="row" style="display:block"><div class="gi-top"><div class="gi-l">${insumoTitulo(l)}<small>${fechaTxt(l.fecha)}</small></div><div class="gi-r"><b>${money((l.costo||0)+fl)}</b>${fl?`<small class="gi-f"><span>compra ${money(l.costo)}</span> + <span>flete ${money(fl)}</span></small>`:""}${respFlete(l)?`<small class="gi-t">Transp: ${esc(respFlete(l))}</small>`:""}</div></div>
     <div class="acts2" style="margin-top:8px"><button class="sm" onclick="editarInsumo('${l.id}')">✏️ Editar</button><button class="sm del" onclick="borrarDoc('gastos_cerdos','${l.id}')">Eliminar</button></div></div>`;
   }).join(""):'<div class="empty">Aún no hay gastos de alimento o insumos.</div>';
 }
@@ -2047,7 +2078,7 @@ function entradasInversion(){
   const addIns=(x,f,n)=>{
     const cat=catIns(x), a=detInsumo(x,f,n), b=detInsumo({...x,flete:0},f,n);
     const compra=((x.costo||0)+(x.flete||0))*f;
-    E.push({fecha:x.fecha,cat,bul:cat==="Concentrado"?(x.bultos||0)*f:0,kgB:cat==="Bore"?(x.kilos||0)*f:0,tit:a.tit,prov:a.prov,unit:a.unitD,unitEx:b.unit,costo:cat==="Fletes"?0:(x.costo||0)*f,flete:cat==="Fletes"?compra:(x.flete||0)*f,creado:x.creado||0,fleteTit:cat==="Fletes"?a.tit:"Flete • "+a.tit.split(" • ")[0]});
+    E.push({fecha:x.fecha,cat,bul:cat==="Concentrado"?(x.bultos||0)*f:0,kgB:cat==="Bore"?(x.kilos||0)*f:0,tit:a.tit,prov:a.prov,unit:a.unitD,unitEx:b.unit,costo:cat==="Fletes"?0:(x.costo||0)*f,flete:cat==="Fletes"?compra:(x.flete||0)*f,creado:x.creado||0,fleteResp:respFlete(x),fleteTit:cat==="Fletes"?a.tit:"Flete • "+a.tit.split(" • ")[0]});
   };
   if(!ez){
     lotes.forEach(l=>{ const n=l.cantidad||0, c=l.valor||0, fl=l.flete||0, kg=l.pesoTotalKg!=null?l.pesoTotalKg:promDe(l)*n;
@@ -2099,7 +2130,7 @@ function datosInversionTipo(tipo,orden){
     bloque("Lechones",E.filter(e=>e.cat==="Lechones"),costo,tt,sb);
     bloque("Concentrados",E.filter(e=>e.cat==="Concentrado"),costo,tt,sb);
     bloque("Bore e insumos de finca",E.filter(e=>e.cat==="Bore"||e.cat==="Med"),costo,tt,sb);
-    bloque("Fletes",E.filter(e=>e.flete>0),e=>e.flete,e=>e.fleteTit,e=>subE(e,""));
+    bloque("Fletes",E.filter(e=>e.flete>0),e=>e.flete,e=>e.fleteTit,e=>subE(e,e.fleteResp?"Transporta: "+e.fleteResp:""));
     cierre=[bFila("Total invertido",money(tot),"","g")];
   }
   return {ez:d.ez,bloques:B,cierre,vacio:d.vacio};
@@ -2349,9 +2380,9 @@ const sinCompra = s => { s=String(s||"").trim().replace(/^compras?\s+(?:de|del)\
 /* Registro de insumo → línea 1: concepto • cantidad (→ $total) · línea 2: DD - mmm - AAAA • proveedor • precio unitario (flete incl.) */
 /* Desglose explicito insumo + flete: "Bulto: $96.000 | Flete: $4.000". El flete se calcula como (total redondeado - insumo redondeado)
    para que insumo + flete siempre sume exactamente el Valor de la fila. */
-function desgFlete(lbl,costo,flete){
+function desgFlete(lbl,costo,flete,resp){
   const R=Math.round, c=R(costo||0), fl=R((costo||0)+(flete||0))-c;
-  return lbl+": "+money(c)+" | Flete: "+money(fl);
+  return lbl+": "+money(c)+" | Flete: "+money(fl)+(resp?" ("+resp+")":"");
 }
 function detInsumo(x,f,n){
   const c=conceptoIns(x), med=c===C_MED, b=x.bultos||0;
@@ -2379,8 +2410,8 @@ function detInsumo(x,f,n){
   let unitD=unit;
   if((x.flete||0)>0&&c!=="Fletes"){
     const lbl=c==="Concentrado"?(b>0?pluralUn(sh,"bulto").replace(/^b/,"B"):"Concentrado"):esB?"Bore":"Insumo";
-    unitD=desgFlete(lbl,(x.costo||0)*f,(x.flete||0)*f);
-  }
+    unitD=desgFlete(lbl,(x.costo||0)*f,(x.flete||0)*f,respFlete(x));
+  } else if(c==="Fletes"&&respFlete(x)) unitD="Transporta: "+respFlete(x);
   return {fecha:x.fecha,tit,prov:provCorto(x.proveedor),unit,unitD,monto:compra*f,bul:c==="Concentrado"?b*f:0};
 }
 function datosDetalleCerdo(){
