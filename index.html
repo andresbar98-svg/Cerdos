@@ -268,7 +268,24 @@ html,body{overscroll-behavior-y:contain}
 .tag.enceba{color:var(--ok);border-color:var(--ok)}.tag.fin{color:var(--mu);border-color:var(--line)}
 .sheet{overscroll-behavior:contain}
 /* Tarjeta de gasto (insumos): izquierda flexible (producto + cantidad + proveedor + fecha) y derecha compacta (total + desglose en 2 lineas) */
-#iFleteSel{font-size:13px;padding:11px 2px 11px 8px;text-overflow:ellipsis}
+/* Modal de insumos: filas de 2 columnas (.g2 = display:grid; grid-template-columns:1fr 1fr; gap:10px). Los desplegables bajan a 13px para que sus textos quepan en media fila. */
+#mInsumo .g2{display:grid;grid-template-columns:1fr 1fr;gap:8px 10px;margin-top:10px}
+#mInsumo .g2 label{margin:0 0 4px}
+#mInsumo .g2 select{font-size:13px;padding:11px 2px 11px 8px;text-overflow:ellipsis}
+#mInsumo .g2 input[type=date]{font-size:14px;padding:11px 6px}
+#mInsumo .g2>div{min-width:0}
+#mInsumo .g2.solo>div{grid-column:1/-1}
+/* Concentrado con flete: costo | encargado en una fila y, si eligen "Otro", el nombre ocupa la fila de abajo */
+#iBoxFlete:not([style*="none"])~#iBoxFleteOtro,#iRowTot #iBoxFleteOtro,#iBoxMatOtro{grid-column:1/-1}
+/* Sacrificio: un desplegable por cerdo, de a 2 por fila (con 1 solo cerdo ocupa todo el ancho) */
+#iRowCerdos:empty{display:none}
+/* Registrar sacrificio: Costo de sacrificio | Encargado sacrificio (2 columnas compactas; "Otro" baja a todo el ancho) */
+#cRowSac{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+#cRowSac>div{min-width:0}#cRowSac label{margin:0 0 4px}
+#cRowSac select{font-size:13px;padding:11px 2px 11px 8px;text-overflow:ellipsis}
+#cRowSac input[type=date]{font-size:14px;padding:11px 6px}
+#cRowSac #cBoxMatOtro{grid-column:1/-1}
+#iBoxCerdosSel .sub{margin:4px 0 0}
 .gi-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
 .gi-l{flex:1 1 0;min-width:0;line-height:1.35;overflow-wrap:break-word}
 .gi-r{flex:0 1 auto;max-width:52%;text-align:right;font-variant-numeric:tabular-nums}
@@ -428,11 +445,16 @@ html,body{overscroll-behavior-y:contain}
 <div class="modal" id="mSacrificio"><div class="sheet">
   <div class="mh"><h2>➕ Registrar sacrificio</h2><button class="sm" onclick="cerrarForm('mSacrificio')">Cerrar</button></div>
 <p class="sub">Un registro por cada cerdo. Canal en kilos (kg) y cortes en libras (lb de 500 g).</p>
-    <div class="g2"><div><label>Fecha</label><input type="date" id="cFecha" oninput="fechaSacManual()"></div>
-    <div><label>N° de Arete / Marca</label><input id="cArete" list="dlAretes" placeholder="Ej: 125"><datalist id="dlAretes"></datalist></div></div>
+    <!-- Fila 1: Fecha | Cerdo a sacrificar · Fila 2: Costo de sacrificio | Encargado sacrificio -->
+    <div id="cRowSac">
+      <div><label>Fecha</label><input type="date" id="cFecha" oninput="fechaSacManual()"></div>
+      <div><label>Cerdo a sacrificar</label><select id="cNombre" onchange="cerdoDespieceCambio()"><option value="">-- Selecciona un cerdo --</option></select></div>
+      <div><label>Costo de sacrificio ($)</label><input class="money" inputmode="numeric" id="cSacCosto" placeholder="Ej: 20.000" oninput="sacManual()"></div>
+      <div><label>Encargado sacrificio</label><select id="cMatSel" onchange="otroCampo('cMatSel','cMatOtro',true,true);sacManual()"><option value="">Seleccionar encargado…</option><option>Pedro Niño</option><option>Edwuar Ávila</option><option>Félix Barrantes</option><option value="__otro">Otro</option></select></div>
+      <div id="cBoxMatOtro" style="display:none"><label>Nombre del matarife</label><input type="text" id="cMatOtro" placeholder="Ej: Don Luis" autocomplete="off"></div>
+    </div>
     <div class="sub" id="cFechaInfo" style="margin:6px 0 0"></div>
-    <div class="sub" id="cAreteInfo" style="margin:6px 0 0"></div>
-    <label>Cerdo a sacrificar (disponibles en ceba)</label><select id="cNombre" onchange="cerdoDespieceCambio()"><option value="">-- Selecciona un cerdo --</option></select>
+    <div class="sub" id="cSacInfo" style="margin:6px 0 0"></div>
     <div class="g2"><div><label>Peso canal (kg)</label><input type="number" inputmode="decimal" id="cCanal" step="0.01"></div>
     <div><label>Concentrado sobrante (kg)</label><input type="number" inputmode="decimal" id="cSobrante" step="0.1" min="0" placeholder="0"></div></div>
     <div class="sub" style="margin:6px 0 0">Equivale a <b id="canalLb">0</b> lb (1 kg = 2 lb). El sobrante es el corte de inventario: pasa solo a los cerdos que siguen en ceba.</div>
@@ -454,6 +476,9 @@ html,body{overscroll-behavior-y:contain}
   <h3 style="margin-top:16px">Stock resultante</h3>
   <div class="stock" id="ecStock"></div>
   <button class="btn" onclick="ecGuardar()">Guardar cambios</button>
+  <!-- Anular sacrificio: solo si el cerdo NO tiene un gasto de Sacrificio / Matarife en Inversión y gastos -->
+  <button class="btn" id="ecAnular" onclick="anularSacrificio()" style="background:#3a1a1a;color:#ff8a80;border:1px solid #6b2a2a;margin-top:10px">↩️ Anular / Deshacer sacrificio</button>
+  <div class="sub" id="ecAnularInfo" style="margin:6px 0 0"></div>
 </div></div>
 
 <div class="modal" id="mLote"><div class="sheet">
@@ -482,26 +507,42 @@ html,body{overscroll-behavior-y:contain}
 
 <div class="modal" id="mInsumo"><div class="sheet">
   <div class="mh"><h2 id="iTitulo">Concentrado / Insumos</h2><button class="sm" onclick="cerrarForm('mInsumo')">Cerrar</button></div>
-  <label>Fecha de compra</label><input type="date" id="iFecha">
-  <label>Concepto</label><select id="iConcepto" onchange="insumoCampos()"><option>Concentrado</option><option>Medicamento / Insumos</option><option>Bore</option><option>Fletes</option><option>Otro</option></select>
-  <div id="iBoxConc"><label>Clase de concentrado</label><select id="iClase"><option>Inicio</option><option>Levante</option><option>Engorde</option></select></div>
-  <div id="iBoxMed" style="display:none"><label>Medicamento o insumo</label><input id="iMed" placeholder="Ej: Ivermectina, Hierro, Antibiótico, Vitaminas" autocomplete="off">
-  <label>Presentación (opcional)</label><input id="iUnidad" placeholder="Ej: frasco, caja, dosis" autocomplete="off"></div>
-  <div class="g2"><div><label id="iLblCant">Bultos</label><input type="number" inputmode="decimal" id="iBultos" step="0.1" placeholder="" oninput="dbn.calcInsumo()"></div>
+  <!-- Fila 1: Fecha de compra | Concepto -->
+  <div class="g2">
+    <div><label>Fecha de compra</label><input type="date" id="iFecha"></div>
+    <div><label>Concepto</label><select id="iConcepto" onchange="insumoCampos()"><option>Concentrado</option><option>Medicamento / Insumos</option><option>Bore</option><option>Fletes</option><option>Sacrificio / Matarife</option><option>Otro</option></select></div>
+  </div>
+  <!-- Fila 1b (según concepto): Clase de concentrado, o Medicamento | Presentación -->
+  <div class="g2" id="iRowConc">
+    <div id="iBoxConc"><label>Clase de concentrado</label><select id="iClase"><option>Inicio</option><option>Levante</option><option>Engorde</option></select></div>
+    <div id="iBoxMedN" style="display:none"><label>Medicamento o insumo</label><input id="iMed" placeholder="Ej: Ivermectina, Hierro" autocomplete="off"></div>
+    <div id="iBoxMedU" style="display:none"><label>Presentación (opcional)</label><input id="iUnidad" placeholder="Ej: frasco, caja, dosis" autocomplete="off"></div>
+  </div>
+  <!-- Fila 2: Cantidad | Valor por unidad (las etiquetas cambian según el concepto) -->
+  <div class="g2"><div><label id="iLblCant">Bultos</label><input type="number" inputmode="decimal" id="iBultos" step="0.1" placeholder="" oninput="dbn.calcInsumo();selCerdos()"></div>
   <div><label id="iLblUnit">Valor por unidad ($)</label><input class="money" inputmode="numeric" id="iUnit" placeholder="0" oninput="dbn.calcInsumo('unit')"></div></div>
+  <!-- Fila 3 (solo Sacrificio, si Cerdos > 0): un desplegable por cerdo en estado En ceba, de a 2 por fila -->
+  <div id="iBoxCerdosSel" style="display:none"><div class="g2" id="iRowCerdos"></div><div class="sub" id="iCerdosInfo"></div></div>
   <div id="iBoxBore2" style="display:none"><div class="g2"><div><label>Cantidad de arrobas (@)</label><input id="iArrobas" inputmode="decimal" autocomplete="off" placeholder="0 @" oninput="dbn.calcInsumo('arr')"></div>
   <div><label>Precio total ($)</label><input id="iCostoB" readonly inputmode="none" placeholder="$0"></div></div>
   <div class="sub" style="margin:6px 0 0">1 arroba (@) = 12,5 kg. Escribe los kilos o las arrobas (se convierten solos entre sí) y el valor por @: el precio total se calcula solo.</div></div>
-  <div id="iBoxTot"><label>Valor total pagado ($)</label><input class="money" inputmode="numeric" id="iCosto" placeholder="0" oninput="dbn.calcInsumo('total')">
-  <div class="sub" id="iHint" style="margin:6px 0 0">Escribe el valor por unidad o el total y el otro se calcula solo.</div></div>
-  <div class="g2">
-    <div><label>Costo de traída / flete ($)</label><input class="money" inputmode="numeric" id="iFlete" placeholder="Opcional" oninput="dbn.totalInsumo()"></div>
-    <div><label>Encargado del flete</label><select id="iFleteSel" onchange="fleteCampos()"><option value="">Sin flete / No aplica</option><option>Carro de línea</option><option>Andrés Barrantes</option><option value="__otro">Otro</option></select></div>
+  <!-- Fila 3: Valor total pagado | Proveedor / almacén (con Sacrificio: Valor total | Encargado sacrificio; si eligen "Otro", el nombre baja a la fila siguiente) -->
+  <div class="g2" id="iRowTot">
+    <div id="iBoxTot"><label>Valor total pagado ($)</label><input class="money" inputmode="numeric" id="iCosto" placeholder="0" oninput="dbn.calcInsumo('total')"></div>
+    <div id="iBoxProv"><label>Proveedor / almacén</label><select id="iProvSel" onchange="insumoCampos()"><option value="">Seleccionar…</option><option>Jaime Mogollón (Solla)</option><option>Johan Pardo (Finca)</option><option>Manuel Ovalle (Italcol)</option><option value="__otro">Otro</option></select>
+    <input id="iProv" style="display:none;margin-top:8px" placeholder="Nombre del proveedor o almacén (ej: Agropecuaria Suaita)" autocomplete="off"></div>
+    <div id="iBoxMatSel" style="display:none"><label>Encargado sacrificio</label><select id="iMatSel" onchange="matCampos(true)"><option value="">Seleccionar encargado…</option><option>Pedro Niño</option><option>Edwuar Ávila</option><option>Félix Barrantes</option><option value="__otro">Otro</option></select></div>
+    <div id="iBoxMatOtro" style="display:none"><label>Nombre del matarife</label><input type="text" id="iMatOtro" placeholder="Ej: Don Luis" autocomplete="off"></div>
   </div>
-  <input type="text" id="iFleteOtro" style="display:none;margin-top:8px" placeholder="Nombre (ej: Don Pedro)" autocomplete="off">
-  <div class="kpi" style="margin-top:12px"><span>Inversión de esta compra (compra + flete)</span><b id="iTotalF">$0</b></div>
-  <label>Proveedor / almacén</label><select id="iProvSel" onchange="insumoCampos()"><option value="">Seleccionar proveedor</option><option>Jaime Mogollón (Solla)</option><option>Johan Pardo (Finca)</option><option>Manuel Ovalle (Italcol)</option><option value="__otro">Otro</option></select>
-  <input id="iProv" style="display:none;margin-top:8px" placeholder="Nombre del proveedor o almacén (ej: Agropecuaria Suaita)" autocomplete="off">
+  <!-- Fila 4: Costo flete | Encargado flete (con Fletes solo el encargado; con "Otro" el nombre queda a su lado o debajo) -->
+  <div class="g2" id="iRowFlete">
+    <div id="iBoxFlete"><label>Costo flete ($)</label><input class="money" inputmode="numeric" id="iFlete" placeholder="Opcional" oninput="dbn.totalInsumo()"></div>
+    <div id="iBoxFleteSel"><label>Encargado flete</label><select id="iFleteSel" onchange="fleteCampos(true)"><option value="">Sin flete / No aplica</option><option>Carro de línea</option><option>Andrés Barrantes</option><option value="__otro">Otro</option></select></div>
+    <div id="iBoxFleteOtro" style="display:none"><label>Nombre del encargado</label><input type="text" id="iFleteOtro" placeholder="Ej: Don Pedro" autocomplete="off"></div>
+  </div>
+  <!-- Fila 5: ayuda + resumen -->
+  <div class="sub" id="iHint" style="margin:10px 0 0">Escribe el valor por unidad o el total y el otro se calcula solo.</div>
+  <div class="kpi" style="margin-top:8px"><span id="iKpiLbl">Inversión de esta compra (compra + flete)</span><b id="iTotalF">$0</b></div>
   <button class="btn" id="iGuardar" onclick="guardarInsumo()">Guardar gasto</button>
 </div></div>
 <div class="modal" id="mProy"><div class="sheet">
@@ -670,9 +711,18 @@ function abrirForm(id){
 }
 function cerrarForm(id){$(id).classList.remove("open");}
 /* Abre los formularios de Nuevo encargo / Nueva venta como ventana emergente */
+/* Lote completo: hay cerdos en el lote y ya no queda ninguno En ceba (ni sacrificado pendiente de pesaje por completar) */
+const MSG_LOTE_COMPLETO="Todos los cerdos de este lote ya han sido sacrificados";
+const loteCompleto = () => cerdosBase().length>0 && cerdosVivos().length===0 && cerdosPend().length===0;
+/* Atenúa los botones de «Registrar Sacrificio» cuando el lote ya está completo (siguen avisando al tocarlos) */
+function estadoBtnSacrificio(){
+  const lleno=loteCompleto();
+  document.querySelectorAll("[onclick=\"abrirNuevo('mSacrificio')\"]").forEach(b=>{ b.style.opacity=lleno?".45":""; b.setAttribute("aria-disabled",lleno?"true":"false"); });
+}
 function abrirNuevo(id){
+  if(id==="mSacrificio"&&loteCompleto()){ estadoBtnSacrificio(); return toast(MSG_LOTE_COMPLETO); }
   if(id==="mEncargo"){ if(!$("pFechaSac").value){ $("pFechaSac").value=hoy(); try{fechaManual();}catch(e){} } renderPItems(); }
-  else if(id==="mSacrificio"){ if(!$("cFecha").value) $("cFecha").value=hoy(); try{llenarCNombre();infoFechaSac();}catch(e){} sumarCortes(); }
+  else if(id==="mSacrificio"){ if(!$("cFecha").value) $("cFecha").value=hoy(); try{matOpcionesC();llenarCNombre();infoFechaSac();}catch(e){} sumarCortes(); }
   else { if(id==="mVenta"&&vFiltroCerdo&&!vCerdoSel) vCerdoSel=vFiltroCerdo; renderItems(); }
   $(id).classList.add("open"); $(id).querySelector(".sheet").scrollTop=0;
 }
@@ -683,7 +733,6 @@ const areteUsada = a => D.cerdos.some(c=>norm(c.arete)===norm(a));
 const aretesLibres = () => aretesLotes().filter(a=>!areteUsada(a.arete));
 const infoArete = a => aretesLotes().find(x=>norm(x.arete)===norm(a));
 const esCerdo = (c,t) => !!norm(t) && (norm(t)===norm(c.nombre) || (!!norm(c.arete) && norm(t)===norm(c.arete)));
-function llenarAretes(){ $("dlAretes").innerHTML=aretesLibres().map(a=>`<option value="${esc(a.arete)}" label="${peso(a.kg)} kg">`).join(""); }
 
 /* ---- Formulario de lechones: promedio vs. individual ---- */
 function modoLote(){
@@ -789,44 +838,110 @@ function calcInsumo(from){
   setTimeout(totalInsumo,0);
 }
 function totalInsumo(){ $("iTotalF").textContent=money(mval("iCosto")+mval("iFlete")); }
-const PROV_INS=["Jaime Mogollón (Solla)","Johan Pardo (Finca)","Manuel Ovalle (Italcol)"], C_MED="Medicamento / Insumos";
+const PROV_INS=["Jaime Mogollón (Solla)","Johan Pardo (Finca)","Manuel Ovalle (Italcol)"], C_MED="Medicamento / Insumos", C_SAC="Sacrificio / Matarife";
 /* Concepto normalizado: "Medicinas" → Medicamento / Insumos y el antiguo "Maíz" → Bore (los registros viejos se muestran como Bore) */
 const conceptoIns = x => x.concepto==="Medicinas"?C_MED:(x.concepto==="Maíz"?"Bore":(x.concepto||""));
 let ultConc="Concentrado";
 /* Encargado del flete: solo se guarda el NOMBRE real (x.fleteResp). "Otro" es apenas la opcion del desplegable (value "__otro"):
    al guardar se reemplaza por lo escrito y la palabra "Otro" nunca se almacena ni se muestra. */
 const FLETE_RESP=["Carro de línea","Andrés Barrantes"];
-const respFlete = x => { const r=String((x&&x.fleteResp)||"").trim(); return /^otro$/i.test(r)?"":r; };
-function fleteCampos(){
-  const o=$("iFleteSel").value==="__otro";
-  $("iFleteOtro").style.display=o?"":"none";
-  if(o) $("iFleteOtro").focus(); else $("iFleteOtro").value="";
+const nombreOk = r => { r=String(r||"").trim(); return /^otro$/i.test(r)?"":r; };
+const respFlete = x => nombreOk(x&&x.fleteResp);   /* encargado del flete (x.fleteResp) */
+const respMat   = x => nombreOk(x&&x.matarife);    /* encargado del sacrificio / matarife (x.matarife) */
+/* Muestra el campo de texto solo si el desplegable esta en "Otro" (y su fila esta visible); si no, lo oculta y lo vacia */
+function otroCampo(selId,otroId,visible,foco){
+  const o=visible&&$(selId).value==="__otro";
+  $(otroId).parentElement.style.display=o?"":"none";   /* se oculta/muestra la columna completa (etiqueta + campo) */
+  if(o&&foco) $(otroId).focus();
+  if($(selId).value!=="__otro") $(otroId).value="";
 }
+function fleteCampos(foco){ otroCampo("iFleteSel","iFleteOtro",$("iConcepto").value!==C_SAC,foco); soloFila("iRowTot"); soloFila("iRowFlete"); }
+function matCampos(foco){ otroCampo("iMatSel","iMatOtro",$("iConcepto").value===C_SAC,foco); soloFila("iRowTot"); soloFila("iRowFlete"); }
+/* Encargados de sacrificio: los predeterminados + los ya usados, entre "Seleccionar encargado…" y "Otro" */
+const MAT_DEF=["Pedro Niño","Edwuar Ávila","Félix Barrantes"];   /* matarifes predeterminados */
+function matListaHtml(){
+  const usados=D.insumos.filter(x=>conceptoIns(x)===C_SAC).map(respMat).filter(Boolean);
+  const nombres=[...new Set([...MAT_DEF,...usados])];   /* los predeterminados primero, luego los que ya se usaron */
+  return '<option value="">Seleccionar encargado…</option>'+nombres.map(n=>`<option>${esc(n)}</option>`).join("")+'<option value="__otro">Otro</option>';
+}
+/* Mismo desplegable en «Registrar sacrificio» (conserva lo elegido) */
+function matOpcionesC(){ const s=$("cMatSel"),cur=s.value; s.innerHTML=matListaHtml(); s.value=cur; if(s.value!==cur) s.selectedIndex=0; }
+function matOpciones(sel){
+  $("iMatSel").innerHTML=matListaHtml();
+  if(sel) $("iMatSel").value=sel;
+}
+/* Nombre a guardar: el elegido en la lista o, con "Otro", SOLO lo escrito (nunca la palabra "Otro"); vacio si no aplica */
+function encargadoForm(selId,otroId){ const v=$(selId).value; if(!v) return ""; return nombreOk(v==="__otro"?$(otroId).value:v); }
+const famIns = c => c==="Bore"?"B":c==="Fletes"?"F":c===C_SAC?"S":"N";
+/* Si en una fila de 2 columnas solo queda visible una casilla (p. ej. sin "Clase" o con Bore sin "Valor total"), ocupa todo el ancho */
+/* ===== Sacrificio: un desplegable por cada cerdo indicado en "Cerdos" (solo los que están En ceba / disponibles) ===== */
+let insLigados=[];   /* ids de cerdos ya sacrificados por este gasto (al editarlo no se vuelven a elegir) */
+function selCerdos(){
+  const box=$("iBoxCerdosSel"), row=$("iRowCerdos"), info=$("iCerdosInfo"), esS=$("iConcepto").value===C_SAC;
+  if(!esS){ box.style.display="none"; row.innerHTML=""; info.textContent=""; return; }
+  if(insLigados.length){
+    const nom=insLigados.map(id=>(D.cerdos.find(c=>c.id===id)||{}).nombre).filter(Boolean);
+    row.innerHTML=""; info.textContent="Cerdos ya sacrificados con este gasto: "+(nom.join(", ")||insLigados.length); box.style.display=""; return;
+  }
+  let n=Math.floor(val("iBultos")); n=n>0?Math.min(n,60):0;
+  if(!n){ box.style.display="none"; row.innerHTML=""; info.textContent=""; return; }
+  const prev=[...row.querySelectorAll("select")].map(x=>x.value);
+  row.innerHTML=Array.from({length:n},(_,i)=>`<div><label>Seleccionar Cerdo #${i+1}</label><select class="iCerdoSel" onchange="llenarSelCerdos()"></select></div>`).join("");
+  [...row.querySelectorAll("select")].forEach((x,i)=>x.dataset.v=prev[i]||"");
+  row.classList.toggle("solo",n===1); box.style.display="";
+  llenarSelCerdos();
+}
+/* Cada desplegable lista los cerdos en ceba que no estén elegidos en otro desplegable */
+function llenarSelCerdos(){
+  const sels=[...$("iRowCerdos").querySelectorAll("select")], vivos=cerdosVivos();
+  const cur=sels.map(x=>x.value||x.dataset.v||"");
+  sels.forEach((x,i)=>{
+    const otros=new Set(cur.filter((v,j)=>j!==i&&v));
+    x.innerHTML='<option value="">Seleccionar…</option>'+vivos.filter(v=>!otros.has(v.valor)).map(v=>`<option value="${esc(v.valor)}">${esc(v.label)}</option>`).join("");
+    x.value=cur[i]; if(x.value!==cur[i]) x.value=""; x.dataset.v="";
+  });
+  $("iCerdosInfo").textContent=sels.length>vivos.length?"Solo hay "+vivos.length+" cerdo"+(vivos.length===1?"":"s")+" en ceba; reduce la cantidad.":"";
+}
+function soloFila(id){ const r=$(id), n=[...r.children].filter(d=>d.style.display!=="none").length; r.classList.toggle("solo",n<2); r.style.display=n?"":"none"; }
 function insumoCampos(){
   const c=$("iConcepto").value, esB=c==="Bore";
   /* al pasar de/hacia Bore se limpian cantidad, precios y proveedor para no mezclar kilos con bultos */
-  if((ultConc==="Bore")!==esB){ ["iBultos","iUnit","iCosto","iArrobas","iCostoB","iProv"].forEach(i=>$(i).value=""); $("iProvSel").selectedIndex=0; lastEdI=null; totalInsumo(); }
+  const esF=c==="Fletes", esS=c===C_SAC;
+  /* al cambiar de familia (Bore / Fletes / Sacrificio / resto) se limpian cantidad y precios para no mezclar kilos, viajes, cerdos y bultos */
+  if(famIns(ultConc)!==famIns(c)){ ["iBultos","iUnit","iCosto","iArrobas","iCostoB","iProv"].forEach(i=>$(i).value=""); $("iProvSel").selectedIndex=0; lastEdI=null; totalInsumo(); }
   ultConc=c;
   $("iBoxConc").style.display=c==="Concentrado"?"":"none";
-  $("iBoxMed").style.display=c===C_MED?"":"none";
+  $("iBoxMedN").style.display=c===C_MED?"":"none"; $("iBoxMedU").style.display=c===C_MED?"":"none";
   $("iBoxBore2").style.display=esB?"":"none"; $("iBoxTot").style.display=esB?"none":"";
-  $("iLblCant").textContent=esB?"Kilos de bore (kg)":c==="Concentrado"?"Bultos":c===C_MED?"Cantidad":"Bultos / unidades";
-  $("iLblUnit").textContent=esB?"Valor por arroba @ ($)":"Valor por unidad ($)";
+  $("iLblCant").textContent=esB?"Kilos de bore (kg)":esF?"Cantidad de viajes":esS?"Cerdos":c==="Concentrado"?"Bultos":c===C_MED?"Cantidad":"Bultos / unidades";
+  $("iLblUnit").textContent=esB?"Valor por arroba @ ($)":esF?"Valor del viaje ($)":esS?"Valor por sacrificio ($)":"Valor por unidad ($)";
+  $("iBultos").step=(esF||esS)?"1":"0.1";
+  /* Fletes y Sacrificio: sin proveedor ni costo de traida (el valor total ya es el costo del servicio); cada uno con su encargado */
+  $("iBoxProv").style.display=(esF||esS)?"none":"";
+  $("iBoxFlete").style.display=(esF||esS)?"none":"";
+  $("iBoxFleteSel").style.display=esS?"none":"";
+  $("iBoxMatSel").style.display=esS?"":"none";
+  /* Fletes: Fila 3 = Valor total | Encargado flete. Con los demás conceptos el encargado vuelve junto al "Costo flete" */
+  if(esF) $("iRowTot").append($("iBoxFleteSel"),$("iBoxFleteOtro")); else $("iRowFlete").append($("iBoxFleteSel"),$("iBoxFleteOtro"));
+  fleteCampos(); matCampos();
+  $("iKpiLbl").textContent=esF?"Costo total del flete":esS?"Costo total del sacrificio":"Inversión de esta compra (compra + flete)";
   $("iBultos").placeholder=esB?"Ej: 132":""; $("iUnit").placeholder=esB?"Ej: 5.000":"0";
   /* Proveedor: con Bore es un campo de texto libre en blanco; con las demás opciones, la lista con «Otro» */
   $("iProvSel").style.display=esB?"none":"";
   $("iProv").style.display=esB||$("iProvSel").value==="__otro"?"":"none";
   $("iProv").placeholder=esB?"Escribe el nombre del proveedor o finca":"Nombre del proveedor o almacén (ej: Agropecuaria Suaita)";
+  selCerdos();
+  $("iHint").style.display=esB?"none":""; soloFila("iRowConc"); soloFila("iRowTot"); soloFila("iRowFlete");
   if(lastEdI) calcInsumo();
 }
 function limpiarInsumo(){
-  insEdit=null; $("iTitulo").textContent="Concentrado / Insumos"; $("iGuardar").textContent="Guardar gasto";
+  insEdit=null; insLigados=[]; $("iTitulo").textContent="Concentrado / Insumos"; $("iGuardar").textContent="Guardar gasto";
   ["iBultos","iUnit","iCosto","iFlete","iProv","iMed","iUnidad","iArrobas","iCostoB"].forEach(i=>$(i).value=""); lastEdI=null;
-  $("iConcepto").selectedIndex=0; $("iClase").selectedIndex=0; $("iProvSel").selectedIndex=0; $("iFleteSel").selectedIndex=0; $("iFleteOtro").value=""; fleteCampos(); insumoCampos(); totalInsumo();
+  $("iConcepto").selectedIndex=0; $("iClase").selectedIndex=0; $("iProvSel").selectedIndex=0; $("iFleteSel").selectedIndex=0; $("iFleteOtro").value=""; matOpciones(); $("iMatSel").selectedIndex=0; $("iMatOtro").value=""; ultConc="Concentrado"; insumoCampos(); totalInsumo();
 }
 function editarInsumo(id){
   const l=D.insumos.find(x=>x.id===id); if(!l) return;
-  limpiarInsumo(); insEdit=id;
+  limpiarInsumo(); insEdit=id; insLigados=(l.cerdosIds||[]).slice();
   $("iTitulo").textContent="Editar gasto de insumos"; $("iGuardar").textContent="Guardar cambios";
   const f=v=>v>0?miles(v):"", sel=$("iConcepto"), conc=conceptoIns(l);
   if(conc&&![...sel.options].some(o=>o.value===conc)) sel.add(new Option(conc,conc));
@@ -836,40 +951,101 @@ function editarInsumo(id){
   if(PROV_INS.includes(pr)) $("iProvSel").value=pr; else if(pr){ $("iProvSel").value="__otro"; $("iProv").value=pr; }
   $("iCosto").value=f(l.costo); $("iUnit").value=l.bultos>0?f(l.costo/l.bultos):""; lastEdI="total"; $("iFlete").value=f(l.flete);
   ultConc=conc;
-  { const fr=respFlete(l); if(FLETE_RESP.includes(fr)) $("iFleteSel").value=fr; else if(fr){ $("iFleteSel").value="__otro"; $("iFleteOtro").value=fr; } fleteCampos(); if(fr&&!FLETE_RESP.includes(fr)) $("iFleteOtro").value=fr; }
+  { const fr=respFlete(l); if(FLETE_RESP.includes(fr)) $("iFleteSel").value=fr; else if(fr){ $("iFleteSel").value="__otro"; $("iFleteOtro").value=fr; } }
+  { const mt=respMat(l); if(mt){ if([...$("iMatSel").options].some(o=>o.value===mt)) $("iMatSel").value=mt; else { $("iMatSel").value="__otro"; $("iMatOtro").value=mt; } } }
   if(conc==="Bore"){
     $("iBultos").value=l.kilos>0?l.kilos:""; $("iUnit").value=l.kilos>0?f(l.valorArroba>0?l.valorArroba:Math.round((l.costo||0)/(l.kilos/ARROBA_KG))):"";
     $("iArrobas").value=l.kilos>0?(l.kilos/ARROBA_KG).toLocaleString("es-CO",{maximumFractionDigits:3})+" @":""; $("iCostoB").value=l.kilos>0&&l.costo>0?"$"+miles(l.costo):"";
     $("iProvSel").selectedIndex=0; $("iProv").value=pr; lastEdI=null;
   }
   insumoCampos(); totalInsumo(); $("mInsumo").classList.add("open");
-}
-/* Nombre a guardar: el del desplegable, o el texto escrito si se eligio "Otro" (nunca la palabra "Otro"); vacio si no aplica */
-function fleteRespForm(){
-  const v=$("iFleteSel").value; if(!v) return "";
-  const r=(v==="__otro"?$("iFleteOtro").value:v).trim();
-  return /^otro$/i.test(r)?"":r;
+  { const fr=respFlete(l), mt=respMat(l); if($("iFleteSel").value==="__otro") $("iFleteOtro").value=fr; if($("iMatSel").value==="__otro") $("iMatOtro").value=mt; fleteCampos(); matCampos(); }
 }
 function guardarInsumo(){
   const conc=$("iConcepto").value, esMed=conc===C_MED, esConc=conc==="Concentrado";
+  const esFl=conc==="Fletes", esSac=conc===C_SAC;
   let prov=$("iProvSel").value; if(prov==="__otro"||conc==="Bore") prov=$("iProv").value.trim();
-  const o={tipo:"insumo",fecha:$("iFecha").value,concepto:conc,claseConc:esConc?$("iClase").value:"",detalle:esMed?$("iMed").value.trim():"",unidad:esMed?$("iUnidad").value.trim():"",bultos:conc==="Bore"?0:val("iBultos"),kilos:conc==="Bore"?val("iBultos"):0,valorArroba:conc==="Bore"&&val("iBultos")>0?Math.round(mval("iCosto")/(val("iBultos")/ARROBA_KG)):0,costo:mval("iCosto"),flete:mval("iFlete"),proveedor:prov,fleteResp:fleteRespForm()};
+  if(esFl||esSac) prov="";   /* sin proveedor en Fletes ni Sacrificio */
+  const o={tipo:"insumo",fecha:$("iFecha").value,concepto:conc,claseConc:esConc?$("iClase").value:"",detalle:esMed?$("iMed").value.trim():"",unidad:esMed?$("iUnidad").value.trim():"",bultos:conc==="Bore"?0:val("iBultos"),kilos:conc==="Bore"?val("iBultos"):0,valorArroba:conc==="Bore"&&val("iBultos")>0?Math.round(mval("iCosto")/(val("iBultos")/ARROBA_KG)):0,costo:mval("iCosto"),flete:(esFl||esSac)?0:mval("iFlete"),proveedor:prov,fleteResp:esSac?"":encargadoForm("iFleteSel","iFleteOtro"),matarife:esSac?encargadoForm("iMatSel","iMatOtro"):""};
   if(!o.fecha||o.costo<=0) return toast("Completa fecha y valor pagado");
-  if($("iFleteSel").value==="__otro"&&!o.fleteResp) return toast("Escribe el nombre de quien hizo el flete");
-  if(/^otro$/i.test($("iFleteOtro").value.trim())) return toast("Escribe el nombre real del transportador, no la palabra Otro");
+  if(!esSac&&$("iFleteSel").value==="__otro"&&!o.fleteResp) return toast("Escribe el nombre de quien hizo el flete");
+  if(!esSac&&$("iFleteSel").value==="__otro"&&/^otro$/i.test($("iFleteOtro").value.trim())) return toast("Escribe el nombre real del transportador, no la palabra Otro");
+  if(esSac&&$("iMatSel").value==="__otro"&&!o.matarife) return toast("Escribe el nombre del encargado del sacrificio");
+  if(esSac&&$("iMatSel").value==="__otro"&&/^otro$/i.test($("iMatOtro").value.trim())) return toast("Escribe el nombre real del matarife, no la palabra Otro");
   if(esMed&&!o.detalle) return toast("Escribe el nombre del medicamento o insumo");
   if(conc==="Bore"&&!(o.kilos>0)) return toast("Escribe los kilos de bore");
   if(conc==="Bore"&&!(mval("iUnit")>0)) return toast("Escribe el valor por arroba");
-  if(conc!=="Bore"&&$("iProvSel").value==="__otro"&&!o.proveedor) return toast("Escribe el nombre del proveedor");
+  if(conc!=="Bore"&&!esFl&&!esSac&&$("iProvSel").value==="__otro"&&!o.proveedor) return toast("Escribe el nombre del proveedor");
   const id=insEdit; if(!id) o.creado=Date.now();
-  guardarDoc("gastos_cerdos",o,id||undefined).then(ok=>{if(ok){limpiarInsumo();cerrarForm("mInsumo");toast(id?"Gasto actualizado":"Gasto guardado");}});
+  /* Sacrificio: los cerdos elegidos pasan a Sacrificado con la fecha del gasto */
+  if(esSac&&!insLigados.length){
+    const sels=[...document.querySelectorAll("#iRowCerdos select")].map(x=>x.value);
+    /* al editar un gasto antiguo (sin cerdos ligados) la selección es opcional: si no eligen ninguno, se guarda como antes */
+    if(sels.length&&!(id&&sels.every(v=>!v))){ if(sels.some(v=>!v)) return toast("Selecciona los "+sels.length+" cerdos del sacrificio"); return sacrificarCerdos(o,sels,id); }
+  }
+  const lig=esSac?insLigados.slice():[];
+  guardarDoc("gastos_cerdos",o,id||undefined).then(ok=>{if(ok){
+    /* gasto ya ligado a cerdos: si cambió la fecha, el valor o el encargado, se actualizan también en esos cerdos */
+    const vivosLig=lig.filter(cid=>D.cerdos.some(c=>c.id===cid));
+    if(vivosLig.length&&db){ const bt=db.batch(); vivosLig.forEach(cid=>bt.set(db.collection("cerdos").doc(cid),{fecha:o.fecha,fechaBeneficio:o.fecha,costoBeneficio:Math.round(o.costo/lig.length),matarife:o.matarife},{merge:true})); bt.commit().catch(e=>toast("Error nube: "+e.code)); }
+    limpiarInsumo();cerrarForm("mInsumo");toast(id?"Gasto actualizado":"Gasto guardado");}});
+}
+/* Un solo lote atómico: el gasto + un registro "Sacrificado" por cada cerdo (fecha del gasto = fecha de sacrificio/beneficio)
+   + la fecha en cascada a sus preventas y ventas. Los cerdos quedan listos en Inventario / Canal / Ventas; el pesaje y los cortes se completan con ✏️ Editar. */
+function sacrificarCerdos(o,sels,id){
+  if(!db) return toast("Configura Firebase primero");
+  if(!proyActivo) return toast("Primero crea o selecciona un proyecto");
+  const vivos=cerdosVivos(), vivosAntes=vivos.length, baseTot=cerdosBase().length, py=proyActual();
+  const el=sels.map(v=>vivos.find(x=>x.valor===v));
+  if(el.some(x=>!x)||new Set(sels).size!==sels.length) return toast("Revisa los cerdos: alguno ya no está disponible o está repetido");
+  const gref=id?db.collection("gastos_cerdos").doc(id):db.collection("gastos_cerdos").doc(), bt=db.batch();
+  const unit=Math.round(o.costo/el.length), ceros={}; BUCKETS.forEach(b=>ceros[b.k]=0);
+  const ids=[]; let np=0,nv=0;
+  el.forEach((c,i)=>{
+    const r=db.collection("cerdos").doc(); ids.push(r.id);
+    const ing=c.arete?infoArete(c.arete):null;
+    bt.set(r,{nombre:c.nombre,arete:c.arete||"",pesoIngresoKg:ing?ing.kg:null,fecha:o.fecha,fechaBeneficio:o.fecha,canal:0,canalKg:0,sobranteKg:0,cortes:{...ceros},piezas:{},otrosDesc:"",sinPesaje:true,costoBeneficio:unit,matarife:o.matarife||"",gastoId:gref.id,proyectoId:proyActivo,creado:Date.now()+i},{merge:true});
+    const pl=planFechaSac(c.nombre,c.arete,r.id,o.fecha);
+    pl.pvs.forEach(p=>bt.set(db.collection("preventas_cerdos").doc(p.id),{fechaSacrificio:o.fecha},{merge:true}));
+    pl.vs.forEach(v=>bt.set(db.collection("ventas_cerdos").doc(v.id),{fechaSacrificio:o.fecha},{merge:true}));
+    np+=pl.pvs.length; nv+=pl.vs.length;
+  });
+  bt.set(gref,{...o,cerdosIds:ids,cerdosNombres:el.map(c=>c.nombre),proyectoId:proyActivo},{merge:true});
+  bt.commit().catch(e=>toast("Error nube: "+e.code));
+  limpiarInsumo(); cerrarForm("mInsumo");
+  toast(el.length+" cerdo"+(el.length===1?"":"s")+" sacrificado"+(el.length===1?"":"s")+" · "+fechaTxt(o.fecha)+((np||nv)?" · fecha actualizada en "+np+" preventa(s) y "+nv+" venta(s)":""));
+  if(py&&py.estado!=="Finalizado"&&baseTot>0&&vivosAntes===el.length) setTimeout(()=>{
+    if(confirm("Sacrificaste el último cerdo de «"+nomProy(py)+"».\n\n¿Marcar el proyecto como Finalizado? El historial queda guardado; aún podrás registrar ventas y abonos, y reabrirlo cuando quieras.")) estadoProyecto("Finalizado",o.fecha||hoy(),py.id);
+  },350);
+}
+/* Eliminar un gasto de insumos. Con «Sacrificio / Matarife» la eliminación es inversa: los cerdos que ese gasto sacrificó
+   vuelven a En ceba (se borra su registro de Sacrificado y su tarjeta de despiece) y la lista de cerdos disponibles se recalcula sola. */
+function borrarGastoIns(id){
+  const g=D.insumos.find(x=>x.id===id); if(!g) return;
+  if(!db) return toast("Configura Firebase primero");
+  if(conceptoIns(g)!==C_SAC){ borrarDoc("gastos_cerdos",id); return; }
+  /* cerdos ligados: los que guarda el gasto + los que apuntan a él */
+  const ids=new Set([...(g.cerdosIds||[]),...D.cerdos.filter(c=>c.gastoId===id).map(c=>c.id)]);
+  const cs=D.cerdos.filter(c=>ids.has(c.id));
+  if(!cs.length){ borrarDoc("gastos_cerdos",id); return; }
+  const conVentas=cs.filter(c=>D.ventas.some(v=>itemsDe(v).some(i=>i.cerdoId===c.id)));
+  if(conVentas.length) return toast(conVentas.map(c=>c.nombre).join(", ")+" tiene ventas; elimínalas primero");
+  const pesados=cs.filter(c=>c.canalKg>0);
+  const msg="¿Eliminar este gasto de sacrificio?\n\n"+cs.map(c=>c.nombre).join(", ")+" volverá"+(cs.length===1?"":"n")+" a «En ceba» y se borrará"+(cs.length===1?"":"n")+" su"+(cs.length===1?"":"s")+" registro"+(cs.length===1?"":"s")+" de despiece."+(pesados.length?"\n\n⚠️ "+pesados.map(c=>c.nombre).join(", ")+" ya tiene pesaje de canal y cortes: se perderá.":"");
+  if(!confirm(msg)) return;
+  const bt=db.batch();
+  cs.forEach(c=>bt.delete(db.collection("cerdos").doc(c.id)));
+  bt.delete(db.collection("gastos_cerdos").doc(id));
+  bt.commit().then(()=>toast(cs.length+" cerdo"+(cs.length===1?"":"s")+" de nuevo en ceba · gasto eliminado")).catch(e=>toast("Error: "+(e.code||e.message)));
+  /* refleja el cambio al instante (contadores, botón de sacrificio y tarjetas), aun sin red */
+  R.cerdos=R.cerdos.filter(c=>!ids.has(c.id)); R.insumos=R.insumos.filter(x=>x.id!==id); renderAll();   /* renderAll vuelve a filtrar D desde R */
 }
 /* Título del gasto en el historial: tipo + detalle • cantidad • proveedor */
 function insumoTitulo(l){
   const c=conceptoIns(l), n=l.bultos||0, med=c===C_MED, p=[];
   p.push(esc(c==="Concentrado"&&l.claseConc?"Concentrado "+l.claseConc:med&&l.detalle?"Medicamento: "+l.detalle:c));
   if(c==="Bore"&&l.kilos>0) p.push(esc(boreTxt(l.kilos,l.costo||0,l.valorArroba||0)));
-  else if(n>0) p.push(peso(n)+" "+esc(med?(l.unidad||(n===1?"unidad":"unidades")):(n===1?"bulto":"bultos")));
+  else if(n>0) p.push(peso(n)+" "+esc(c==="Fletes"?(n===1?"viaje":"viajes"):c===C_SAC?(n===1?"cerdo sacrificado":"cerdos sacrificados"):med?(l.unidad||(n===1?"unidad":"unidades")):(n===1?"bulto":"bultos")));
   if(l.proveedor) p.push(esc(l.proveedor));
   if(c==="Bore"&&l.kilos>0) p.push("Total: "+money(l.costo||0));
   return p.join(" • ");
@@ -896,8 +1072,8 @@ function renderInversion(){
   }).join(""):'<div class="card empty">Aún no hay compras de lechones. Toca el botón de arriba para registrar la primera.</div>';
   $("listaIns").innerHTML=D.insumos.length?ord(D.insumos).map(l=>{
     const fl=l.flete||0;
-    return `<div class="row" style="display:block"><div class="gi-top"><div class="gi-l">${insumoTitulo(l)}<small>${fechaTxt(l.fecha)}</small></div><div class="gi-r"><b>${money((l.costo||0)+fl)}</b>${fl?`<small class="gi-f"><span>compra ${money(l.costo)}</span> + <span>flete ${money(fl)}</span></small>`:""}${respFlete(l)?`<small class="gi-t">Transp: ${esc(respFlete(l))}</small>`:""}</div></div>
-    <div class="acts2" style="margin-top:8px"><button class="sm" onclick="editarInsumo('${l.id}')">✏️ Editar</button><button class="sm del" onclick="borrarDoc('gastos_cerdos','${l.id}')">Eliminar</button></div></div>`;
+    return `<div class="row" style="display:block"><div class="gi-top"><div class="gi-l">${insumoTitulo(l)}<small>${fechaTxt(l.fecha)}</small></div><div class="gi-r"><b>${money((l.costo||0)+fl)}</b>${fl?`<small class="gi-f"><span>compra ${money(l.costo)}</span> + <span>flete ${money(fl)}</span></small>`:""}${conceptoIns(l)===C_SAC?(respMat(l)?`<small class="gi-t">Matarife: ${esc(respMat(l))}</small>`:""):(respFlete(l)?`<small class="gi-t">Transp: ${esc(respFlete(l))}</small>`:"")}</div></div>
+    <div class="acts2" style="margin-top:8px"><button class="sm" onclick="editarInsumo('${l.id}')">✏️ Editar</button><button class="sm del" onclick="borrarGastoIns('${l.id}')">Eliminar</button></div></div>`;
   }).join(""):'<div class="empty">Aún no hay gastos de alimento o insumos.</div>';
 }
 
@@ -929,27 +1105,48 @@ function sumarCortes(){
   panelPVSac();
 }
 $("cCanal").addEventListener("input",sumarCortes);
-function infoAreteSac(){
-  const a=$("cArete").value.trim(),e=$("cAreteInfo"); if(!a){e.textContent="";return;}
-  if(areteUsada(a)){e.innerHTML='<span class="neg">⚠️ Este arete ya está registrado en otro cerdo.</span>';return;}
-  const i=infoArete(a); e.textContent=i?`Ingresó con ${peso(i.kg)} kg (compra del ${fechaTxt(i.fecha)}).`:"Arete no encontrado en las compras; se guardará igual.";
+/* Sincroniza el costo/encargado del sacrificio con la lista de gastos (concepto «Sacrificio / Matarife»), dentro del mismo lote atómico.
+   - Cerdo con gasto ya ligado: se actualiza ese gasto (si cubre varios cerdos, solo cambia la parte de este cerdo en el total).
+   - Sin gasto ligado y con costo > 0: se crea un gasto nuevo ligado al cerdo.
+   Devuelve los campos que se guardan en el registro del cerdo. */
+function sincGastoSac(bt,{cid,nombre,fecha,costo,mat,pend}){
+  const g=gastoDeCerdo(pend), out={fechaBeneficio:fecha,matarife:mat||""};
+  if(costo>0) out.costoBeneficio=costo;
+  if(g){
+    const ids=g.cerdosIds&&g.cerdosIds.length?g.cerdosIds:[cid], solo=ids.length===1, upd={};
+    if(costo>0) upd.costo=solo?costo:ids.filter(i=>i!==cid).reduce((a,i)=>a+((D.cerdos.find(c=>c.id===i)||{}).costoBeneficio||0),0)+costo;
+    if(solo){ upd.fecha=fecha; if(mat) upd.matarife=mat; }
+    if(Object.keys(upd).length) bt.set(db.collection("gastos_cerdos").doc(g.id),upd,{merge:true});
+    out.gastoId=g.id;
+  } else if(costo>0){
+    const gr=db.collection("gastos_cerdos").doc();
+    bt.set(gr,{tipo:"insumo",fecha,concepto:C_SAC,claseConc:"",detalle:"",unidad:"",bultos:1,kilos:0,valorArroba:0,costo,flete:0,proveedor:"",fleteResp:"",matarife:mat||"",cerdosIds:[cid],cerdosNombres:[nombre],proyectoId:proyActivo,creado:Date.now()});
+    out.gastoId=gr.id;
+  }
+  return out;
 }
 function guardarCerdo(){
   const sel=cerdoDespiece(); if(!sel) return toast("Selecciona el cerdo a sacrificar");
-  const nombre=sel.nombre, arete=sel.arete||$("cArete").value.trim();
+  const pend=sel.pend?D.cerdos.find(c=>c.id===sel.id):null;
+  const nombre=sel.nombre, arete=sel.arete||"";
   const canalKg=val("cCanal"); if(canalKg<=0) return toast("Ingresa el peso en canal (kg)");
   const canal=canalKg*2;
   const cortes={}; BUCKETS.forEach(b=>cortes[b.k]=formVal(b.k));
   const piezas={pierna1:val("c_p1"),pierna2:val("c_p2"),brazo1:val("c_b1"),brazo2:val("c_b2"),costilla1:val("c_k1"),costilla2:val("c_k2")},otrosDesc=$("cOtrosDesc").value.trim();
   if(!Object.values(cortes).some(v=>v>0)) return toast("Ingresa al menos un corte");
-  if(arete&&areteUsada(arete)) return toast("Ese arete ya fue registrado en otro cerdo");
+  if(arete&&D.cerdos.some(c=>(!pend||c.id!==pend.id)&&norm(c.arete)===norm(arete))) return toast("Ese arete ya fue registrado en otro cerdo");
+  const costoS=mval("cSacCosto"), matS=encargadoForm("cMatSel","cMatOtro");
+  if($("cMatSel").value==="__otro"&&!matS) return toast("Escribe el nombre del matarife");
+  if($("cMatSel").value==="__otro"&&/^otro$/i.test($("cMatOtro").value.trim())) return toast("Escribe el nombre real del matarife, no la palabra Otro");
   if(!db) return toast("Configura Firebase primero");
   if(!proyActivo) return toast("Primero crea o selecciona un proyecto");
   const ing=arete?infoArete(arete):null, fecha=$("cFecha").value;
   const py=proyActual(),vivosAntes=cerdosVivos().length,baseTot=cerdosBase().length;
   /* Un solo lote atómico: el cerdo + la fecha en cascada (preventas, ventas y comprobantes) */
-  const ref=db.collection("cerdos").doc(), bt=db.batch();
-  bt.set(ref,{nombre,arete,pesoIngresoKg:ing?ing.kg:null,fecha,canal,canalKg,sobranteKg:Math.max(val("cSobrante"),0),cortes,piezas,otrosDesc,proyectoId:proyActivo,creado:Date.now()},{merge:true});
+  const ref=pend?db.collection("cerdos").doc(pend.id):db.collection("cerdos").doc(), bt=db.batch();
+  /* Costo y encargado del sacrificio -> gasto «Sacrificio / Matarife» (se crea, o se actualiza el que ya estaba ligado al cerdo) */
+  const sg=sincGastoSac(bt,{cid:ref.id,nombre,fecha,costo:costoS,mat:matS,pend});
+  bt.set(ref,{nombre,arete,pesoIngresoKg:ing?ing.kg:(pend?pend.pesoIngresoKg??null:null),fecha,canal,canalKg,sobranteKg:Math.max(val("cSobrante"),0),cortes,piezas,otrosDesc,sinPesaje:false,...sg,proyectoId:proyActivo,...(pend?{}:{creado:Date.now()})},{merge:true});
   let np=0,nv=0;
   if(fecha){
     const pl=planFechaSac(nombre,arete,ref.id,fecha);
@@ -959,11 +1156,11 @@ function guardarCerdo(){
   }
   const sobra=BUCKETS.some(b=>pvLb(pvDe(nombre,arete),b.k)>(cortes[b.k]||0)+1e-9);
   bt.commit().catch(e=>toast("Error nube: "+e.code)); /* no bloquea si estás sin red */
-  $("cNombre").value="";$("cArete").value="";$("cArete").readOnly=false;$("cCanal").value="";$("cSobrante").value="";fechaSacAuto=false;$("cFecha").value=hoy();
-  limpiarCortes();llenarCNombre();infoAreteSac();infoFechaSac();panelPVSac();cerrarForm("mSacrificio");
+  $("cNombre").value="";$("cCanal").value="";$("cSobrante").value="";$("cSacCosto").value="";$("cMatSel").selectedIndex=0;$("cMatOtro").value="";otroCampo("cMatSel","cMatOtro",true);$("cSacInfo").textContent="";sacAuto=false;fechaSacAuto=false;$("cFecha").value=hoy();
+  limpiarCortes();llenarCNombre();infoFechaSac();panelPVSac();cerrarForm("mSacrificio");
   toast(nombre+" guardado"+((np||nv)?" · fecha actualizada en "+np+" preventa"+(np===1?"":"s")+" y "+nv+" venta"+(nv===1?"":"s"):"")+(sobra?" ⚠️ Las preventas superan los cortes":""));
   /* Último cerdo del lote: ofrecer el cierre del proyecto */
-  if(py&&py.estado!=="Finalizado"&&baseTot>0&&vivosAntes===1) setTimeout(()=>{
+  if(!pend&&py&&py.estado!=="Finalizado"&&baseTot>0&&vivosAntes===1) setTimeout(()=>{
     if(confirm("Sacrificaste el último cerdo de «"+nomProy(py)+"».\n\n¿Marcar el proyecto como Finalizado? El historial queda guardado; aún podrás registrar ventas y abonos, y reabrirlo cuando quieras.")) estadoProyecto("Finalizado",fecha||hoy(),py.id);
   },350);
 }
@@ -1005,7 +1202,47 @@ function editarCerdo(id){
   $("ecCarne").value=ecR(initCorte(c,"carne")); $("ecCostilla").value=ecR(initCorte(c,"costilla"));
   ["lomo","pesuna","orejas","otros"].forEach(k=>$("ec_"+k).value=ecR(initCorte(c,k)));
   $("ecOtrosDesc").value=c.otrosDesc||"";
-  ecCalc(); $("mEditCerdo").classList.add("open"); $("mEditCerdo").querySelector(".sheet").scrollTop=0;
+  ecCalc(); ecAnularEstado(c); $("mEditCerdo").classList.add("open"); $("mEditCerdo").querySelector(".sheet").scrollTop=0;
+}
+/* ===== Anular / deshacer sacrificio (condicional) ===== */
+/* Gasto de Sacrificio / Matarife asociado al cerdo: el que guarda el cerdo (gastoId) o el que lo lista entre sus cerdosIds */
+const gastoAsociadoSac = c => R.insumos.find(x=>x.id===c.gastoId) || R.insumos.find(x=>conceptoIns(x)===C_SAC&&(x.cerdosIds||[]).includes(c.id)) || null;
+const cerdoConVentas = c => R.ventas.some(v=>itemsDe(v).some(i=>i.cerdoId===c.id));
+/* Pesaje registrado: kilos de canal, o libras de cualquier corte / pieza, mayores a 0 */
+const tienePesaje = c => (c.canalKg||0)>0 || (c.canal||0)>0 || Object.values(c.cortes||{}).some(v=>(+v||0)>0) || Object.values(c.piezas||{}).some(v=>(+v||0)>0);
+const MSG_NO_ANULAR="No se puede anular: este sacrificio ya cuenta con pesajes, ventas asociadas o registros en inversión.";
+/* Solo se puede anular si el despiece está en ceros, sin ventas y sin gasto asociado en Inversión y gastos */
+const anulacionBloqueada = c => tienePesaje(c) || cerdoConVentas(c) || !!gastoAsociadoSac(c);
+function ecAnularEstado(c){
+  const b=$("ecAnular"), i=$("ecAnularInfo"), bloq=anulacionBloqueada(c);
+  /* aria-disabled (y no disabled) para que al tocarlo igual muestre el mensaje */
+  b.setAttribute("aria-disabled",bloq?"true":"false"); b.style.opacity=bloq?".4":""; b.style.cursor=bloq?"not-allowed":"";
+  i.textContent=bloq?MSG_NO_ANULAR+" Solo puedes editar el despiece.":"Despiece en ceros, sin ventas ni gasto asociado: puedes anular el sacrificio y el cerdo vuelve a «En ceba».";
+}
+function anularSacrificio(){
+  const c=D.cerdos.find(x=>x.id===ecId); if(!c) return;
+  if(anulacionBloqueada(c)){ ecAnularEstado(c); return toast(MSG_NO_ANULAR); }
+  if(!db) return toast("Configura Firebase primero");
+  if(!confirm("¿Anular el sacrificio de "+c.nombre+"?\n\nVolverá a «En ceba» y se borrará su registro de despiece (está en ceros).")) return;
+  db.collection("cerdos").doc(c.id).delete().catch(e=>toast("Error: "+(e.code||e.message)));
+  R.cerdos=R.cerdos.filter(x=>x.id!==c.id);   /* renderAll vuelve a filtrar D desde R: contadores, lista de disponibles y botón se recalculan */
+  cerrarForm("mEditCerdo"); renderAll(); toast(c.nombre+" · sacrificio anulado, de nuevo en ceba");
+}
+/* ===== Saneamiento al iniciar: cerdos marcados como sacrificados sin pesaje y sin gasto (quedaron huérfanos) ===== */
+let saneadoDesp=false;
+function sanearDespiece(){
+  if(saneadoDesp||!db) return;
+  if(!["gastos_cerdos","cerdos","ventas_cerdos","preventas_cerdos","proyectos_cerdos"].every(k=>listos[k])) return;
+  saneadoDesp=true;
+  const h=R.cerdos.filter(c=>c.sinPesaje&&!tienePesaje(c)&&!gastoAsociadoSac(c)&&!cerdoConVentas(c));
+  if(!h.length) return;
+  setTimeout(()=>{
+    if(!confirm("Se encontró"+(h.length===1?"":"n")+" "+h.length+" cerdo"+(h.length===1?"":"s")+" marcado"+(h.length===1?"":"s")+" como sacrificado"+(h.length===1?"":"s")+" sin pesaje y sin gasto de sacrificio:\n\n"+h.map(c=>c.nombre).join(", ")+"\n\n¿Devolver"+(h.length===1?"lo":"los")+" a «En ceba»? No se pierde ningún dato (aún no tienen pesaje)."))return;
+    const bt=db.batch(); h.forEach(c=>bt.delete(db.collection("cerdos").doc(c.id)));
+    bt.commit().catch(e=>toast("Error: "+(e.code||e.message)));
+    const ids=new Set(h.map(c=>c.id)); R.cerdos=R.cerdos.filter(c=>!ids.has(c.id)); renderAll();
+    toast(h.length+" cerdo"+(h.length===1?"":"s")+" restaurado"+(h.length===1?"":"s")+" a En ceba");
+  },600);
 }
 function ecGuardar(){
   const c=D.cerdos.find(x=>x.id===ecId); if(!c) return;
@@ -1035,16 +1272,13 @@ function renderInventario(){
   const cs=[...D.cerdos].sort((a,b)=>(a.creado||0)-(b.creado||0));
   $("inventario").innerHTML=cs.length?cs.map(c=>{
     const mine=pvDe(c.nombre,c.arete),fal=faltantes(c),bk=BUCKETS.filter(b=>pvLb(mine,b.k)>0);
-    return `<div class="card"><div class="row" style="padding-top:0"><div><b>${esc(c.nombre)}</b>${c.arete?` <span class="tag ar">Arete ${esc(c.arete)}</span>`:""}<small>${fechaTxt(c.fecha)} · canal ${peso(kgDe(c))} kg (${peso(c.canal)} lb)${c.pesoIngresoKg?` · ingresó ${peso(c.pesoIngresoKg)} kg`:""}</small></div><div style="display:flex;gap:6px;flex:0 0 auto"><button class="sm" onclick="editarCerdo('${c.id}')">✏️ Editar</button><button class="sm del" onclick="borrarCerdo('${c.id}')">❌</button></div></div>
+    const mat=respMat(c)||respMat(gastoDeCerdo(c)||{});   /* encargado del sacrificio: el del cerdo o, si falta, el de su gasto */
+    return `<div class="card"><div class="row" style="padding-top:0;align-items:flex-start;gap:8px"><div style="flex:1 1 0;min-width:0"><b>${esc(c.nombre)}</b>${mat?` <span style="color:var(--mu);font-size:13px;font-weight:600">• Matarife: ${esc(mat)}</span>`:""}${c.arete?` <span class="tag ar">Arete ${esc(c.arete)}</span>`:""}<small>${fechaTxt(c.fecha)} · canal ${peso(kgDe(c))} kg (${peso(c.canal)} lb)${c.pesoIngresoKg?` · ingresó ${peso(c.pesoIngresoKg)} kg`:""}</small></div><div style="flex:0 0 auto;margin-left:auto"><button class="sm" onclick="editarCerdo('${c.id}')">✏️ Editar</button></div></div>
   <div class="stock"><span class="h">Corte</span><span class="h n">Inicial</span><span class="h n">Vendido</span><span class="h n">Disp.</span>
   ${CORTES.map(([k,n])=>{const d=dispCorte(c,k);return `<span>${nomFila(c,k,n)}</span><span class="n">${peso(initCorte(c,k))}</span><span class="n">${peso(vendidoCorte(c.id,k))}</span><span class="n ${d<=0?"neg":"pos"}">${peso(d)}</span>`}).join("")}</div>
   ${piezasTxt(c)}
   ${bk.length?`<div class="sub" style="margin:10px 0 0">Preventa apartada: ${bk.map(b=>{const a=pvLb(mine,b.k),d=dispBucket(c,b);return `<span class="${a>d+1e-9?"neg":"pos"}">${b.n} ${peso(a)} lb</span>`}).join(" · ")}</div>`:""}
   ${fal.length?`<div class="alerta" style="margin:12px 0 0">⚠️ Falta carne para la preventa: ${fal.map(x=>`${x.n} (−${peso(x.ap-x.d)} lb)`).join(", ")}</div>`:""}</div>`}).join(""):'<div class="card empty">No hay cerdos sacrificados. Toca «➕ Registrar Sacrificio / Despiece» para registrar el primero.</div>';
-}
-function borrarCerdo(id){
-  if(D.ventas.some(v=>itemsDe(v).some(i=>i.cerdoId===id))) return toast("Tiene ventas; elimínalas primero");
-  borrarDoc("cerdos",id);
 }
 
 /* ===== Ventas (varios cortes por venta) ===== */
@@ -1066,11 +1300,23 @@ function refrescarItems(){
   const a=document.activeElement;
   if(a&&a.tagName==="INPUT"&&$("vItems").contains(a)) calcVenta(); else renderItems();
 }
+/* Inventario disponible de un cerdo: suma de lo que queda en cada corte (sin contar negativos) */
+const stockTotalCerdo = c => BUCKETS.reduce((a,b)=>a+Math.max(0,dispCorte(c,b.k)),0);
+const cerdoConStock = c => stockTotalCerdo(c)>1e-9;
+const MSG_SIN_STOCK="No hay cerdos con inventario disponible para venta";
+/* Texto del cerdo en el selector de Ventas: «Cerdo #1 (Arete: 125)»; si no se puede vender, la razón */
+function etiquetaVenta(c){
+  const base=cerdoEtiqueta(c.nombre,c.arete);
+  return !tienePesaje(c)?base+" (Sin pesaje)":cerdoConStock(c)?base+" · "+peso(stockTotalCerdo(c))+" lb disp.":base+" (Agotado / Vendido totalmente)";
+}
 function renderItems(){
   const cs=[...D.cerdos].sort((a,b)=>(a.creado||0)-(b.creado||0));
-  if(!cs.some(c=>c.id===vCerdoSel)) vCerdoSel="";
+  const conStock=cs.filter(cerdoConStock);
+  if(!conStock.some(c=>c.id===vCerdoSel)) vCerdoSel="";
   carrito.forEach(it=>{ it.cerdoId=vCerdoSel; });
-  { const h='<option value="">— Selecciona un cerdo —</option>'+cs.map(x=>`<option value="${x.id}"${x.id===vCerdoSel?" selected":""}>🐷 ${esc(x.nombre)}${x.arete?" · Arete "+esc(x.arete):""}</option>`).join("");
+  /* Solo se pueden elegir los cerdos con inventario > 0; los agotados o sin pesaje salen deshabilitados con su motivo */
+  { const ph=!cs.length?"— No hay cerdos sacrificados —":!conStock.length?"⚠️ "+MSG_SIN_STOCK:"— Selecciona un cerdo —";
+    const h=`<option value="">${esc(ph)}</option>`+cs.map(x=>`<option value="${x.id}"${x.id===vCerdoSel?" selected":""}${cerdoConStock(x)?"":" disabled"}>🐷 ${esc(etiquetaVenta(x))}</option>`).join("");
     const sel=$("vCerdo"); if(sel.innerHTML!==h) sel.innerHTML=h; sel.value=vCerdoSel; }
   $("vItems").innerHTML=carrito.map((it,i)=>{
     const c=cs.find(x=>x.id===it.cerdoId);
@@ -1098,7 +1344,9 @@ function avisoStock(pares){ /* pares: [{c, k, cant, disp}] ya agrupados por cerd
 function guardarVenta(){
   const cliente=$("vCliente").value.trim();
   if(!cliente) return toast("Ingresa el nombre del cliente");
+  if(!D.cerdos.some(cerdoConStock)) return toast(MSG_SIN_STOCK);
   if(!vCerdoSel||!D.cerdos.some(x=>x.id===vCerdoSel)) return toast("Selecciona el cerdo de la venta");
+  if(!cerdoConStock(D.cerdos.find(x=>x.id===vCerdoSel))) return toast("Este cerdo ya vendió todo su inventario; elige otro");
   carrito.forEach(it=>{ it.cerdoId=vCerdoSel; });
   const pedido={};
   for(const it of carrito){
@@ -1107,7 +1355,10 @@ function guardarVenta(){
     if(it.cant<=0||it.precio<=0) return toast("Completa cantidad y precio de cada corte");
     const key=c.id+"|"+it.corte; pedido[key]=(pedido[key]||0)+it.cant;
   }
-  const aviso=avisoStock(Object.entries(pedido).map(([key,cant])=>{const [cid,k]=key.split("|"),c=D.cerdos.find(x=>x.id===cid);return {c,k,cant,disp:dispCorte(c,k)};}));
+  /* Validación de stock: las libras de cada corte (sumadas si se repite) no pueden superar lo disponible del cerdo */
+  const exceso=Object.entries(pedido).map(([key,cant])=>{const [cid,k]=key.split("|"),c=D.cerdos.find(x=>x.id===cid);return {c,k,cant,disp:Math.max(0,dispCorte(c,k))};}).filter(x=>x.cant>x.disp+1e-9);
+  if(exceso.length){ const x=exceso[0]; return toast("Stock insuficiente de "+nomCorte(x.k)+" en "+x.c.nombre+": pides "+peso(x.cant)+" lb y solo hay "+peso(x.disp)+" lb"+(exceso.length>1?" (y "+(exceso.length-1)+" corte(s) más)":"")); }
+  const aviso="";
   const items=carrito.map(it=>{const c=D.cerdos.find(x=>x.id===it.cerdoId);return{cerdoId:c.id,cerdoNombre:c.nombre,arete:c.arete||"",corte:it.corte,desc:(it.desc||"").trim(),cantidad:it.cant,precio:it.precio,subtotal:Math.round(it.cant*it.precio)};});
   const total=items.reduce((a,i)=>a+i.subtotal,0),e=$("vEstado").value;
   const ab=e==="Pagado"?total:e==="Pendiente"?0:Math.min(mval("vAbono"),total);
@@ -1642,10 +1893,20 @@ function cerdoPVCambio(){
 /* ===== Despiece: selector de cerdos disponibles + fecha sincronizada con Preventa ===== */
 let fechaSacAuto=false;
 function fechaSacManual(){ fechaSacAuto=false; infoFechaSac(); }
-function cerdoDespiece(){ const v=$("cNombre").value; return v?(cerdosVivos().find(x=>x.valor===v)||null):null; }
+/* Cerdos ya sacrificados desde un gasto de Sacrificio / Matarife a los que aún les falta el pesaje: también se listan aquí para completarlos */
+/* Identificador completo del cerdo en la lista: «Cerdo #1 (Arete: 125)»; sin marca solo «Cerdo #1» */
+const cerdoEtiqueta = (nombre,arete) => String(nombre||"")+(String(arete||"").trim()?" (Arete: "+String(arete).trim()+")":"");
+const cerdosPend = () => D.cerdos.filter(c=>c.sinPesaje&&!(c.canalKg>0));
+const pendIdSel = () => { const v=$("cNombre").value; return v.startsWith("pend:")?v.slice(5):""; };
+function cerdoDespiece(){
+  const v=$("cNombre").value; if(!v) return null;
+  if(v.startsWith("pend:")){ const c=D.cerdos.find(x=>x.id===v.slice(5)); return c?{valor:v,label:c.nombre,nombre:c.nombre,arete:c.arete||"",pend:true,id:c.id}:null; }
+  return cerdosVivos().find(x=>x.valor===v)||null;
+}
 function llenarCNombre(){
   const sel=$("cNombre"),cur=sel.value,vs=cerdosVivos();
-  sel.innerHTML='<option value="">'+(vs.length?"-- Selecciona un cerdo --":"-- No hay cerdos disponibles --")+'</option>'+vs.map(v=>`<option value="${esc(v.valor)}">${esc(v.label)}</option>`).join("");
+  const pd=cerdosPend();
+  sel.innerHTML='<option value="">'+(vs.length||pd.length?"-- Selecciona un cerdo --":"-- No hay cerdos disponibles --")+'</option>'+vs.map(v=>`<option value="${esc(v.valor)}">${esc(cerdoEtiqueta(v.nombre,v.arete))}</option>`).join("")+pd.map(c=>`<option value="pend:${esc(c.id)}">${esc(cerdoEtiqueta(c.nombre,c.arete)+" · falta pesaje")}</option>`).join("");
   sel.value=cur; if(sel.value!==cur){ sel.selectedIndex=0; if(cur) cerdoDespieceCambio(); }
 }
 /* Fecha de sacrificio programada en las preventas del cerdo (abiertas primero, la más reciente) */
@@ -1654,13 +1915,30 @@ function fechaProgramada(sel){
   const l=pvTodasDe(sel.nombre,sel.arete).filter(p=>p.fechaSacrificio).sort((a,b)=>((a.estado==="Despachado")-(b.estado==="Despachado"))||((b.creado||0)-(a.creado||0)));
   return l.length?l[0].fechaSacrificio:"";
 }
+/* Costo y encargado: si el cerdo ya tiene un gasto de Sacrificio / Matarife ligado, se muestran solos (evita duplicar el gasto) */
+let sacAuto=false;
+function sacManual(){ sacAuto=false; }
+function gastoDeCerdo(c){ return c&&c.gastoId?D.insumos.find(x=>x.id===c.gastoId)||null:null; }
+function autoSacGasto(sel){
+  const info=$("cSacInfo"); info.textContent="";
+  const c=sel&&sel.pend?D.cerdos.find(x=>x.id===sel.id):null, g=gastoDeCerdo(c);
+  if(!c){ if(sacAuto){ $("cSacCosto").value=""; $("cMatSel").selectedIndex=0; otroCampo("cMatSel","cMatOtro",true); sacAuto=false; } return; }
+  const n=g&&(g.cerdosIds||[]).length||1, costo=c.costoBeneficio>0?c.costoBeneficio:(g?Math.round((g.costo||0)/n):0);
+  const mat=nombreOk(c.matarife)||(g?respMat(g):"");
+  $("cSacCosto").value=costo>0?miles(costo):"";
+  const s=$("cMatSel");
+  if(!mat) s.selectedIndex=0; else if([...s.options].some(o=>o.value===mat)) s.value=mat; else { s.value="__otro"; $("cMatOtro").value=mat; }
+  otroCampo("cMatSel","cMatOtro",true); if(s.value==="__otro") $("cMatOtro").value=mat;
+  sacAuto=true;
+  if(c.fecha) $("cFecha").value=c.fecha;
+  info.textContent=g?"Costo y encargado tomados del gasto de sacrificio del "+fechaTxt(g.fecha)+". Al guardar se actualiza ese mismo gasto (sin duplicarlo).":"Este cerdo ya fue marcado como sacrificado; completa el pesaje.";
+}
 function cerdoDespieceCambio(){
-  const sel=cerdoDespiece(),ar=$("cArete");
-  ar.value=sel?sel.arete:""; ar.readOnly=!!(sel&&sel.arete);
+  const sel=cerdoDespiece();
   const f=fechaProgramada(sel);
   if(f){ $("cFecha").value=f; fechaSacAuto=true; }
   else if(fechaSacAuto){ $("cFecha").value=hoy(); fechaSacAuto=false; }
-  infoAreteSac(); infoFechaSac(); panelPVSac();
+  autoSacGasto(sel); infoFechaSac(); panelPVSac();
 }
 /* Qué preventas y ventas deben adoptar la fecha de sacrificio de este cerdo */
 function planFechaSac(nombre,arete,cid,f){
@@ -1701,7 +1979,7 @@ function renderPreventas(){
 function panelPVSac(){
   const sel=cerdoDespiece(); if(!sel){$("pvSac").innerHTML="";return;}
   const nombre=sel.nombre;
-  const mine=pvDe(nombre,sel.arete||$("cArete").value.trim()),tot=pvLb(mine),sin=pvLb(pvSin());
+  const mine=pvDe(nombre,sel.arete||""),tot=pvLb(mine),sin=pvLb(pvSin());
   if(!tot&&!sin){$("pvSac").innerHTML="";return;}
   const filas=BUCKETS.map(b=>({n:b.n,ap:pvLb(mine,b.k),ob:formVal(b.k)})).filter(x=>x.ap>0);
   const falta=filas.some(x=>x.ap>x.ob+1e-9);
@@ -2021,20 +2299,21 @@ function datosInversion(){
     const tL=filasL.reduce((a,x)=>a+x.m,0); total+=tL;
     B.push(bSec("Lechones · "+lech.n+(lech.n===1?" lechón":" lechones"),tL));
     filasL.forEach(({l,n,m})=>B.push(bFila(n+(n===1?" lechón":" lechones")+" • "+peso(promDe(l))+" kg c/u",money(m),[fechaAbrevGuion(l.fecha),provCorto(l.proveedor),((l.flete||0)>0?desgFlete(n===1?"Lechón":"Lechones",l.valor||0,l.flete):money(m/(n||1))+"/lechón")].filter(Boolean).join(" • "))));
-    const grp={Concentrado:[],Bore:[],Med:[],Fletes:[]}, nomG={Concentrado:"Concentrado",Bore:"Bore",Med:"Medicamentos e insumos",Fletes:"Fletes"};
+    const grp={Concentrado:[],Bore:[],Med:[],Sac:[],Fletes:[]}, nomG={Concentrado:"Concentrado",Bore:"Bore",Med:"Medicamentos e insumos",Sac:"Sacrificio / Matarife",Fletes:"Fletes"};
     [...D.insumos].sort((a,b)=>(a.fecha||"").localeCompare(b.fecha||"")||(a.creado||0)-(b.creado||0)).forEach(x=>{
-      const c=conceptoIns(x), k=c==="Concentrado"?"Concentrado":c==="Bore"?"Bore":c==="Fletes"?"Fletes":"Med";
+      const c=conceptoIns(x), k=c==="Concentrado"?"Concentrado":c==="Bore"?"Bore":c==="Fletes"?"Fletes":c===C_SAC?"Sac":"Med";
       grp[k].push({e:detInsumo(x,1,1),m:R2((x.costo||0)+(x.flete||0))});
     });
     Object.keys(grp).forEach(k=>{ const a=grp[k]; if(!a.length) return; const t=a.reduce((s,y)=>s+y.m,0); total+=t;
       B.push(bSec(nomG[k],t)); a.forEach(y=>B.push(bFila(y.e.tit,money(y.m),[fechaAbrevGuion(y.e.fecha),y.e.prov,y.e.unitD].filter(Boolean).join(" • ")))); });
     return {ez,bloques:B,cierre:[bFila("Total invertido",money(total),"","g")],vacio:!D.lotes.length&&!D.insumos.length};
   }
-  const conc={},meds={},otros={},bore={q:0,kg:0,costo:0}; let fleIns=0;
+  const conc={},meds={},otros={},bore={q:0,kg:0,costo:0},sac={q:0,costo:0}; let fleIns=0;
   fr.forEach(({x,f})=>{
     const c=conceptoIns(x), costo=(x.costo||0)*f, q=(x.bultos||0)*f; fleIns+=(x.flete||0)*f;
     if(c==="Concentrado"){ const k=x.claseConc||"Sin clase"; const o=conc[k]=conc[k]||{q:0,costo:0}; o.q+=q; o.costo+=costo; }
     else if(c==="Fletes"){ fleIns+=costo; }
+    else if(c===C_SAC){ sac.q+=q; sac.costo+=costo; }
     else if(c==="Bore"){ bore.q+=q; bore.kg+=(x.kilos||0)*f; bore.costo+=costo; }
     else if(c===C_MED){ const nom=(x.detalle||"Medicamento / Insumos").trim(), un=(x.unidad||"").trim(), k=norm(nom)+"|"+norm(un); const o=meds[k]=meds[k]||{nom,un,q:0,costo:0}; o.q+=q; o.costo+=costo; }
     else { const k=c||"Otros"; const o=otros[k]=otros[k]||{nom:k,un:"bultos",q:0,costo:0}; o.q+=q; o.costo+=costo; }
@@ -2052,6 +2331,10 @@ function datosInversion(){
   if(bore.costo>0||bore.q>0||bore.kg>0){
     const t=R(bore.costo); total+=t; B.push(bSec("Bore",t));
     B.push(bFila("Bore",money(t),bore.kg>0?boreTxt(bore.kg,bore.costo):(bore.q>0?peso(bore.q)+" "+(bore.q===1?"bulto":"bultos")+" × "+money(bore.costo/bore.q)+" c/u":"")));
+  }
+  if(sac.costo>0||sac.q>0){
+    const t=R(sac.costo); total+=t; B.push(bSec("Sacrificio / Matarife",t));
+    B.push(bFila("Sacrificio / Matarife",money(t),sac.q>0?peso(sac.q)+" "+pluralUn(sac.q,"cerdo")+" · "+money(sac.costo/sac.q)+" c/u":""));
   }
   const mi=Object.values(meds).concat(Object.values(otros));
   if(mi.length){
@@ -2073,12 +2356,12 @@ function entradasInversion(){
   const pl=plantelCerdos(), ez=invFiltroCerdo?pl.find(e=>e.key===invFiltroCerdo):null, R=Math.round;
   const lotes=[...D.lotes].sort((a,b)=>(a.fecha||"").localeCompare(b.fecha||"")||(a.creado||0)-(b.creado||0));
   const promDe=l=>l.pesoPromKg!=null?l.pesoPromKg:(l.pesoProm!=null?l.pesoProm/2:((l.pesoTotalKg||0)/Math.max(l.cantidad||1,1)));
-  const catIns=x=>{ const c=conceptoIns(x); return c==="Concentrado"?"Concentrado":c==="Bore"?"Bore":c==="Fletes"?"Fletes":"Med"; };
+  const catIns=x=>{ const c=conceptoIns(x); return c==="Concentrado"?"Concentrado":c==="Bore"?"Bore":c==="Fletes"?"Fletes":c===C_SAC?"Sac":"Med"; };
   const E=[];
   const addIns=(x,f,n)=>{
     const cat=catIns(x), a=detInsumo(x,f,n), b=detInsumo({...x,flete:0},f,n);
     const compra=((x.costo||0)+(x.flete||0))*f;
-    E.push({fecha:x.fecha,cat,bul:cat==="Concentrado"?(x.bultos||0)*f:0,kgB:cat==="Bore"?(x.kilos||0)*f:0,tit:a.tit,prov:a.prov,unit:a.unitD,unitEx:b.unit,costo:cat==="Fletes"?0:(x.costo||0)*f,flete:cat==="Fletes"?compra:(x.flete||0)*f,creado:x.creado||0,fleteResp:respFlete(x),fleteTit:cat==="Fletes"?a.tit:"Flete • "+a.tit.split(" • ")[0]});
+    E.push({fecha:x.fecha,cat,bul:cat==="Concentrado"?(x.bultos||0)*f:0,kgB:cat==="Bore"?(x.kilos||0)*f:0,tit:a.tit,prov:a.prov,unit:a.unitD,unitEx:b.unit,quien:a.quien,cerd:cat==="Sac"?(x.bultos||0)*f:0,costo:cat==="Fletes"?0:(x.costo||0)*f,flete:cat==="Fletes"?compra:(x.flete||0)*f,creado:x.creado||0,fleteResp:respFlete(x),fleteTit:cat==="Fletes"?a.tit:"Flete • "+a.tit.split(" • ")[0]});
   };
   if(!ez){
     lotes.forEach(l=>{ const n=l.cantidad||0, c=l.valor||0, fl=l.flete||0, kg=l.pesoTotalKg!=null?l.pesoTotalKg:promDe(l)*n;
@@ -2103,11 +2386,12 @@ function datosInversionTipo(tipo,orden){
   const d=entradasInversion(), E=d.E, R=Math.round, B=[]; let cierre;
   if(tipo==="general"){
     const L=E.filter(e=>e.cat==="Lechones"), A=E.filter(e=>e.cat!=="Lechones"&&e.cat!=="Fletes");
-    const vL=R(sumE(L,e=>e.costo)), vA=["Concentrado","Bore","Med"].reduce((t,c)=>t+R(sumE(A.filter(e=>e.cat===c),e=>e.costo)),0), vFl=R(sumE(E,e=>e.flete)), tot=vL+vA+vFl;
+    const vL=R(sumE(L,e=>e.costo)), vA=["Concentrado","Bore","Med","Sac"].reduce((t,c)=>t+R(sumE(A.filter(e=>e.cat===c),e=>e.costo)),0), vFl=R(sumE(E,e=>e.flete)), tot=vL+vA+vFl;
     const nL=sumE(L,e=>e.n||0), kgL=sumE(L,e=>e.kg||0);
     const parte=(n,v)=>v>0?n+" "+money(v):"";
     const C=A.filter(e=>e.cat==="Concentrado"), Bo=A.filter(e=>e.cat==="Bore"), Me=A.filter(e=>e.cat==="Med");
-    const vC=R(sumE(C,e=>e.costo)), vB=R(sumE(Bo,e=>e.costo)), vM=R(sumE(Me,e=>e.costo)), vA2=vC+vB+vM;
+    const Sa=A.filter(e=>e.cat==="Sac"), vS=R(sumE(Sa,e=>e.costo)), nS=sumE(Sa,e=>e.cerd);
+    const vC=R(sumE(C,e=>e.costo)), vB=R(sumE(Bo,e=>e.costo)), vM=R(sumE(Me,e=>e.costo)), vA2=vC+vB+vM+vS;
     const bul=sumE(C,e=>e.bul), kgB=sumE(Bo,e=>e.kgB);
     const fL=R(sumE(L,e=>e.flete)), fI=vFl-fL;
     B.push(bSec("Totales por categoría"));
@@ -2116,6 +2400,7 @@ function datosInversionTipo(tipo,orden){
     if(C.length) B.push(bFilaAI("Concentrado",bul>0?peso(bul)+" "+(bul===1?"bulto":"bultos")+" ("+peso(bul*KG_BULTO_CONC)+" kg)":"",vC));
     if(Bo.length) B.push(bFilaAI("Bore",kgB>0?peso(kgB)+" kg ("+(kgB/ARROBA_KG).toLocaleString("es-CO",{maximumFractionDigits:3})+" @)":"",vB));
     if(vM>0) B.push(bFilaAI("Medicamentos e insumos","",vM));
+    if(Sa.length) B.push(bFilaAI("Sacrificio / Matarife",nS>0?peso(nS)+" "+pluralUn(nS,"cerdo"):"",vS));
     B.push(bFilaAI("Fletes","Fletes e insumos",vFl));
     cierre=[bSec("Balance"),...(nL>0?[bFila("Inversión por lechón",money(R(tot/nL)),"Total invertido / lechones")]:[]),bFila("Total invertido",money(tot),"","g")];
   } else if(tipo==="cronologico"){
@@ -2130,6 +2415,7 @@ function datosInversionTipo(tipo,orden){
     bloque("Lechones",E.filter(e=>e.cat==="Lechones"),costo,tt,sb);
     bloque("Concentrados",E.filter(e=>e.cat==="Concentrado"),costo,tt,sb);
     bloque("Bore e insumos de finca",E.filter(e=>e.cat==="Bore"||e.cat==="Med"),costo,tt,sb);
+    bloque("Sacrificio / Matarife",E.filter(e=>e.cat==="Sac"),costo,tt,e=>subE(e,[e.unitEx,e.quien].filter(Boolean).join(" | ")));
     bloque("Fletes",E.filter(e=>e.flete>0),e=>e.flete,e=>e.fleteTit,e=>subE(e,e.fleteResp?"Transporta: "+e.fleteResp:""));
     cierre=[bFila("Total invertido",money(tot),"","g")];
   }
@@ -2385,8 +2671,10 @@ function desgFlete(lbl,costo,flete,resp){
   return lbl+": "+money(c)+" | Flete: "+money(fl)+(resp?" ("+resp+")":"");
 }
 function detInsumo(x,f,n){
-  const c=conceptoIns(x), med=c===C_MED, b=x.bultos||0;
-  const un=med?((x.unidad||"").trim()||"unidad"):"bulto";
+  const c=conceptoIns(x), med=c===C_MED, b=x.bultos||0, esF=c==="Fletes", esS=c===C_SAC;
+  const un=esF?"viaje":esS?"cerdo":med?((x.unidad||"").trim()||"unidad"):"bulto";
+  /* quien hizo el servicio: transportador (Fletes) o matarife (Sacrificio) -> solo su nombre, nunca "Otro" */
+  const quien=esF?(respFlete(x)?"Transporta: "+respFlete(x):""):esS?(respMat(x)?"Matarife: "+respMat(x):""):"";
   const sh=b*f, cant=b>0?((n>1&&Number.isInteger(b)&&b<n)?b+"/"+n+" "+un:peso(sh)+" "+pluralUn(sh,un)):"";
   const kgS=(x.kilos||0)*f, esB=c==="Bore"&&kgS>0, tag=(x.flete||0)>0?" (flete incl.)":"";
   const compra=(x.costo||0)+(x.flete||0);
@@ -2401,8 +2689,12 @@ function detInsumo(x,f,n){
   } else if(med){
     tit=sinCompra(x.detalle||"Medicamento")+(cant?" • "+cant:"");
     if(b>0) unit=money(compra/b)+"/"+un+tag;
-  } else if(c==="Fletes"){
-    tit="Flete de transporte";
+  } else if(esF){
+    tit="Flete de transporte"+(cant?" · "+cant:"");
+    if(b>0) unit=money(compra/b)+"/viaje";
+  } else if(esS){
+    tit="Sacrificio / Matarife"+(cant?" · "+cant:"");
+    if(b>0) unit=money(compra/b)+"/cerdo";
   } else {
     tit=sinCompra(x.detalle||c||"Insumo")+(cant?" • "+cant:"");
     if(b>0) unit=money(compra/b)+"/"+un+tag;
@@ -2411,8 +2703,9 @@ function detInsumo(x,f,n){
   if((x.flete||0)>0&&c!=="Fletes"){
     const lbl=c==="Concentrado"?(b>0?pluralUn(sh,"bulto").replace(/^b/,"B"):"Concentrado"):esB?"Bore":"Insumo";
     unitD=desgFlete(lbl,(x.costo||0)*f,(x.flete||0)*f,respFlete(x));
-  } else if(c==="Fletes"&&respFlete(x)) unitD="Transporta: "+respFlete(x);
-  return {fecha:x.fecha,tit,prov:provCorto(x.proveedor),unit,unitD,monto:compra*f,bul:c==="Concentrado"?b*f:0};
+  }
+  if(quien) unitD=[unitD,quien].filter(Boolean).join(" | ");
+  return {fecha:x.fecha,tit,prov:provCorto(x.proveedor),unit,unitD,quien,monto:compra*f,bul:c==="Concentrado"?b*f:0};
 }
 function datosDetalleCerdo(){
   const pl=plantelCerdos(), ez=bFiltroCerdo?pl.find(e=>e.key===bFiltroCerdo):null; if(!ez) return null;
@@ -2624,7 +2917,7 @@ async function eliminarAnio(a){
 }
 function resetFormsProyecto(){
   cerrar();cerrarForm("mLote");cerrarForm("mInsumo");cerrarForm("mEncargo");cerrarForm("mVenta");cerrarForm("mSacrificio");cerrarForm("mEditCerdo");ev=null;cv=null;ventaDesde=null;
-  $("pCerdo").value="";$("cNombre").value="";$("cArete").value="";$("cArete").readOnly=false;
+  $("pCerdo").value="";$("cNombre").value="";
   fechaAuto=false;fechaSacAuto=false;$("pFechaSac").value=hoy();$("cFecha").value=hoy();
   vCerdoSel="";vFiltroCerdo="";cFiltroCerdo="";bFiltroCerdo="";invFiltroCerdo="";carrito=[{cerdoId:"",corte:"carne",cant:0,precio:0}];pcarrito=[{corte:"carne",desc:"",cant:0}];renderPItems();
 }
@@ -2803,7 +3096,7 @@ function irRendimiento(){
   irA("resumen");
   setTimeout(()=>{ const e=$("rendimiento"); if(e) window.scrollTo({top:Math.max(0,e.getBoundingClientRect().top+window.scrollY-140),behavior:"smooth"}); },80);
 }
-function renderAll(){filtrarProyecto();renderInversion();renderInventario();refrescarItems();renderVentas();renderDeudores();renderResumen();renderPreventas();llenarAretes();llenarCNombre();infoAreteSac();infoFechaSac();panelPVSac();renderHistorico();renderPanel();renderCeba();renderInicio();asegurarInicial();try{ccSync();}catch(e){}}
+function renderAll(){filtrarProyecto();renderInversion();renderInventario();refrescarItems();renderVentas();renderDeudores();renderResumen();renderPreventas();llenarCNombre();infoFechaSac();panelPVSac();estadoBtnSacrificio();renderHistorico();renderPanel();renderCeba();renderInicio();asegurarInicial();sanearDespiece();try{ccSync();}catch(e){}}
 
 /* ===== Arranque ===== */
 function net(){const on=navigator.onLine,l=$("ledNet");l.className="led "+(on?"on":"");l.querySelector("span").textContent=on?"En línea":"Sin red";}
@@ -2811,7 +3104,6 @@ window.addEventListener("online",net);window.addEventListener("offline",net);net
 ["lFecha","iFecha","cFecha","pFechaSac"].forEach(i=>$(i).value=hoy());
 buildCortesForm();
 renderPItems();
-$("cArete").addEventListener("input",()=>{infoAreteSac();panelPVSac();});
 irA(location.hash.slice(1)||"panel");
 renderAll(); cargarFirebase().then(initFB,initFB);
 /* Service Worker: la versión (SW_VERSION) fuerza al navegador a bajar el sw.js nuevo, que descarta la caché vieja (cerdos-v2) */
