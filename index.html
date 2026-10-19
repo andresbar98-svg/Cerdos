@@ -506,6 +506,8 @@ nav button,.navback,#btnProy,header button{position:relative;z-index:1000;pointe
 <!-- ============ PREVENTA ============ -->
 <section id="preventa">
   <button class="btn verde nuevo-btn" onclick="abrirNuevo('mEncargo')">➕ Nuevo Encargo</button>
+  <button class="btn sec nuevo-btn" onclick="abrirProgSac()">📅 Programar Sacrificio</button>
+  <div class="card"><h3>📅 Sacrificios programados</h3><div id="pvProgLista"></div></div>
   <div id="pvAlerta" style="margin-top:12px"></div>
 
   <div class="chips"><button class="pchip act" data-f="apartado">Apartados</button><button class="pchip" data-f="despachado">Despachados</button><button class="pchip" data-f="todos">Todos</button></div>
@@ -586,12 +588,27 @@ nav button,.navback,#btnProy,header button{position:relative;z-index:1000;pointe
 
 <div class="modal" id="modal"><div class="sheet" id="sheet"></div></div>
 
+<div class="modal" id="mProgSac"><div class="sheet">
+  <div class="mh"><h2>📅 Programar sacrificio</h2><button class="sm" onclick="cerrarForm('mProgSac')">Cerrar</button></div>
+  <p class="sub">Fija la fecha de sacrificio de un cerdo. Ese día (o cuando el cerdo se registre como sacrificado) sus preventas se cierran solas.</p>
+  <label>Cerdo asignado</label><select id="psCerdo" onchange="psCambio()"></select>
+  <label>Fecha de sacrificio</label><input type="date" id="psFecha">
+  <div class="g2">
+    <div><label>Costo de sacrificio ($)</label><input class="money" inputmode="numeric" id="psCosto" placeholder="Ej: 20.000"></div>
+    <div><label>Encargado del sacrificio</label><select id="psMatSel" onchange="otroCampo('psMatSel','psMatOtro',true,true)"><option value="">Seleccionar encargado…</option><option value="__otro">Otro</option></select></div>
+    <div id="psBoxMatOtro" style="display:none"><label>Nombre del matarife</label><input type="text" id="psMatOtro" placeholder="Ej: Don Luis" autocomplete="off"></div>
+  </div>
+  <p class="sub" style="margin:8px 0 0">Si pones un costo, se registra de una vez como gasto «Sacrificio / Matarife» en Inversión, asociado a este cerdo.</p>
+  <button class="btn" onclick="guardarProgSac()">Guardar programación</button>
+</div></div>
+
 <div class="modal" id="mEncargo"><div class="sheet">
   <div class="mh"><h2>➕ Nuevo encargo</h2><button class="sm" onclick="cerrarForm('mEncargo')">Cerrar</button></div>
 <p class="sub">Anota lo que los vecinos apartan antes del sacrificio. Cantidades en libras (lb).</p>
     <div class="g2"><div><label>Cliente (vecino)</label><input id="pCliente" placeholder="Nombre"></div>
     <div><label>Teléfono</label><input type="tel" inputmode="tel" id="pTel" placeholder="3001234567"></div></div>
     <label>Cerdo o N° de arete (opcional)</label><select id="pCerdo" onchange="cerdoPVCambio()"><option value="">-- Sin asignar / Cualquiera --</option></select>
+    <div id="pCerdoAviso" class="alerta" style="display:none;margin:8px 0 0"></div>
     <label>Fecha de sacrificio programada</label><input type="date" id="pFechaSac" oninput="fechaManual()">
     <div id="pItems"></div>
     <button class="btn add" onclick="agregarPItem()">+ Agregar otro producto</button>
@@ -925,7 +942,9 @@ function estadoBtnSacrificio(){
 function abrirNuevo(id){
   if(id==="mSacrificio"&&loteCompleto()){ estadoBtnSacrificio(); return toast(MSG_LOTE_COMPLETO); }
   if(id==="mEncargo"){ if(!$("pFechaSac").value){ $("pFechaSac").value=hoy(); try{fechaManual();}catch(e){} } renderPItems(); }
-  else if(id==="mSacrificio"){ if(!$("cFecha").value) $("cFecha").value=hoy(); try{matOpcionesC();llenarCNombre();infoFechaSac();}catch(e){} setTipoSalida("despiece"); sumarCortes(); }
+  else if(id==="mSacrificio"){ if(!$("cFecha").value) $("cFecha").value=hoy(); try{matOpcionesC();llenarCNombre();infoFechaSac();}catch(e){}
+    try{ if(!$("cNombre").value){ const c=[...cerdosVivos().filter(v=>{const f=sacProgDe(v.nombre);return f&&f<=hoy();}).map(v=>v.valor),...cerdosPend().map(x=>"pend:"+x.id)]; if(c.length===1){ $("cNombre").value=c[0]; cerdoDespieceCambio(); } } }catch(e){}
+    setTipoSalida("despiece"); sumarCortes(); }
   else { if(id==="mVenta"&&vFiltroCerdo&&!vCerdoSel) vCerdoSel=vFiltroCerdo; renderItems(); }
   $(id).classList.add("open"); $(id).querySelector(".sheet").scrollTop=0;
 }
@@ -1144,6 +1163,7 @@ function limpiarInsumo(){
 }
 function editarInsumo(id){
   const l=D.insumos.find(x=>x.id===id); if(!l) return;
+  if(l.programado) return toast("Este gasto viene de un sacrificio programado: edítalo en 📅 Programar Sacrificio");
   limpiarInsumo(); insEdit=id; insLigados=(l.cerdosIds||[]).slice();
   $("iTitulo").textContent="Editar gasto de insumos"; $("iGuardar").textContent="Guardar cambios";
   const f=v=>v>0?miles(v):"", sel=$("iConcepto"), conc=conceptoIns(l);
@@ -1312,13 +1332,14 @@ $("cCanal").addEventListener("input",sumarCortes);
    - Cerdo con gasto ya ligado: se actualiza ese gasto (si cubre varios cerdos, solo cambia la parte de este cerdo en el total).
    - Sin gasto ligado y con costo > 0: se crea un gasto nuevo ligado al cerdo.
    Devuelve los campos que se guardan en el registro del cerdo. */
-function sincGastoSac(bt,{cid,nombre,fecha,costo,mat,pend}){
-  const g=gastoDeCerdo(pend), out={fechaBeneficio:fecha,matarife:mat||""};
+function sincGastoSac(bt,{cid,nombre,fecha,costo,mat,pend,gProg}){
+  const g=gastoDeCerdo(pend)||gProg||null, out={fechaBeneficio:fecha,matarife:mat||""};
   if(costo>0) out.costoBeneficio=costo;
   if(g){
     const ids=g.cerdosIds&&g.cerdosIds.length?g.cerdosIds:[cid], solo=ids.length===1, upd={};
     if(costo>0) upd.costo=solo?costo:ids.filter(i=>i!==cid).reduce((a,i)=>a+((D.cerdos.find(c=>c.id===i)||{}).costoBeneficio||0),0)+costo;
     if(solo){ upd.fecha=fecha; if(mat) upd.matarife=mat; }
+    if(!(g.cerdosIds&&g.cerdosIds.length)){ upd.cerdosIds=[cid]; upd.cerdosNombres=[nombre]; upd.programado=false; }   /* gasto programado: ahora queda ligado al cerdo sacrificado */
     if(Object.keys(upd).length) bt.set(db.collection("gastos_cerdos").doc(g.id),upd,{merge:true});
     out.gastoId=g.id;
   } else if(costo>0){
@@ -1359,7 +1380,7 @@ function guardarCerdo(){
   /* Un solo lote atómico: el cerdo + la fecha en cascada (preventas, ventas y comprobantes) */
   const ref=pend?db.collection("cerdos").doc(pend.id):db.collection("cerdos").doc(), bt=db.batch();
   /* Costo y encargado del sacrificio -> gasto «Sacrificio / Matarife» (se crea, o se actualiza el que ya estaba ligado al cerdo) */
-  const sg=sincGastoSac(bt,{cid:ref.id,nombre,fecha,costo:costoS,mat:matS,pend});
+  const sg=sincGastoSac(bt,{cid:ref.id,nombre,fecha,costo:costoS,mat:matS,pend,gProg:pend?null:gastoProgDe(nombre)});
   bt.set(ref,{nombre,arete,pesoIngresoKg:ing?ing.kg:(pend?(pend.pesoIngresoKg==null?null:pend.pesoIngresoKg):null),fecha,canal,canalKg,sobranteKg:Math.max(val("cSobrante"),0),cortes,piezas,otrosDesc,tipoSalida:enCanal?"canal":"despiece",sinPesaje:false,...sg,proyectoId:proyActivo,...(pend?{}:{creado:Date.now()})},{merge:true});
   let np=0,nv=0;
   if(fecha){
@@ -2150,6 +2171,8 @@ function renderPItems(){
 function guardarPreventa(){
   const cliente=$("pCliente").value.trim();
   if(!cliente) return toast("Ingresa el nombre del cliente");
+  { const v0=$("pCerdo").value.trim(), e0=v0?plantelCerdos().find(x=>pvValor(x)===v0):null;
+    if(e0&&pvCierre(e0.nombre,e0.arete)){ avisoPCerdo(MSG_PV_CERRADA); llenarPCerdo(); return toast(MSG_PV_CERRADA); } }
   const items=[];
   for(const it of pcarrito){
     if(!(it.cant>0)) continue;
@@ -2168,15 +2191,17 @@ function guardarPreventa(){
 let cv=null;
 function confirmarVentaPV(id){
   const p=D.preventas.find(x=>x.id===id); if(!p) return;
-  const cs=[...D.cerdos].sort((x,y)=>(x.creado||0)-(y.creado||0)),c0=cs.find(x=>esCerdo(x,p.cerdo))||cs[0];
+  const cs=[...D.cerdos].sort((x,y)=>(x.creado||0)-(y.creado||0)),c0=cs.find(x=>esCerdo(x,p.cerdo))||(norm(p.cerdo)?null:cs[0]);   /* si el encargo es de un cerdo concreto que aún no se sacrifica, NO se asigna a otro cerdo */
   cv={id,cliente:p.cliente,tel:p.telefono||"",cerdoId:c0?c0.id:"",items:(p.items||[]).map(i=>({corte:CORTE_DE[i.corte]||(CORTES.some(x=>x[0]===i.corte)?i.corte:"otros"),nombre:pvNombre(i),otros:i.corte==="otros",cant:i.cantidad||0,precio:0,total:0,ult:"precio"}))};
-  renderCV(); $("modal").classList.add("open");
+  renderCV(); cvAviso(); $("modal").classList.add("open");
 }
+function cvAviso(){ const a=$("cvAviso"); if(a) a.style.display=cv&&!cv.cerdoId?"":"none"; }
 function renderCV(){
   const cs=[...D.cerdos].sort((x,y)=>(x.creado||0)-(y.creado||0));
   $("sheet").innerHTML=`<div class="mh"><h2>✅ Confirmar venta</h2><button class="sm" onclick="cerrar()">Cerrar</button></div>
   <p class="sub"><b>${esc(cv.cliente)}</b> · ajusta las libras entregadas, el precio y el abono antes de registrar la venta.</p>
-  <label>Descontar del inventario de</label><select onchange="cv.cerdoId=this.value">${cs.map(x=>`<option value="${x.id}"${x.id===cv.cerdoId?" selected":""}>${esc(x.nombre)}${x.arete?" · Arete "+esc(x.arete):""}</option>`).join("")}<option value=""${cv.cerdoId?"":" selected"}>Sin asignar (no descuenta inventario)</option></select>
+  <label>Descontar del inventario de</label><select onchange="cv.cerdoId=this.value;cvAviso()">${cs.map(x=>`<option value="${x.id}"${x.id===cv.cerdoId?" selected":""}>${esc(x.nombre)}${x.arete?" · Arete "+esc(x.arete):""}</option>`).join("")}<option value=""${cv.cerdoId?"":" selected"}>Sin asignar (no descuenta inventario)</option></select>
+  <div id="cvAviso" class="alerta" style="display:none;margin:8px 0 0">⚠️ Sin cerdo asignado: la venta no descuenta inventario ni suma al Libro/Balance de un cerdo. Solo aparecerá en «Todas las ventas» y en el Balance del lote. Elige el cerdo sacrificado para vincularla.</div>
   ${cv.items.map((it,i)=>`<div class="item"><div class="ih"><b>${esc(it.nombre)}</b></div>
     <div class="g2"><div><label>Libras entregadas</label><input type="number" inputmode="decimal" step="0.01" id="cvL${i}" value="${it.cant||""}" oninput="cvSet(${i},'cant',this.value)"></div>
     <div><label>Precio por lb ($)</label><input class="money" inputmode="numeric" id="cvP${i}" placeholder="0" oninput="cvSet(${i},'precio',this.value)"></div></div>
@@ -2201,14 +2226,23 @@ function cvTot(){ const t=cvTotal(); $("cvTotal").textContent=money(t); const sd
 function cvPagoCompleto(){ $("cvAbono").value=miles(cvTotal()); cvTot(); }
 function guardarVentaPV(){
   if(!cv) return;
+  if(!db) return toast("Conectando con la nube… intenta de nuevo en un momento");
+  if(!proyActivo) return toast("Primero crea o selecciona un proyecto");
   const c=D.cerdos.find(x=>x.id===cv.cerdoId)||null;
   if(cv.items.some(it=>!(it.cant>0)||!(it.total>0))) return toast("Completa libras y precio de cada ítem");
   let aviso=""; if(c){ const ped={}; for(const it of cv.items){ ped[it.corte]=(ped[it.corte]||0)+it.cant; } aviso=avisoStock(Object.entries(ped).map(([k,cant])=>({c,k,cant,disp:dispCorte(c,k)}))); }
+  /* cada ítem: cerdoId, corte, cantidad (lb), precio por lb y subtotal */
   const items=cv.items.map(it=>({cerdoId:c?c.id:"",cerdoNombre:c?c.nombre:"",arete:c?(c.arete||""):"",corte:it.corte,desc:it.otros?it.nombre:"",cantidad:it.cant,precio:it.precio,subtotal:it.total}));
-  const total=items.reduce((a,i)=>a+i.subtotal,0),ab=Math.min(mval("cvAbono"),total),f=hoy(),pid=cv.id;
-  guardarDoc("ventas_cerdos",{cliente:cv.cliente,telefono:cv.tel,items,total,abonado:ab,abonos:ab>0?[{fecha:f,valor:ab}]:[],fecha:f,creado:Date.now(),preventaId:pid,fechaSacrificio:fechasSacItems(items)[0]||(D.preventas.find(x=>x.id===pid)||{}).fechaSacrificio||""}).then(ok=>{
-    if(ok){ guardarDoc("preventas_cerdos",{estado:"Despachado"},pid); cv=null; cerrar(); toast("Venta registrada"+aviso); irA("ventas"); }
-  });
+  const total=items.reduce((a,i)=>a+i.subtotal,0),ab=Math.min(mval("cvAbono"),total),f=hoy(),pid=cv.id,pv0=D.preventas.find(x=>x.id===pid)||{};
+  const venta={cliente:cv.cliente,telefono:cv.tel,cerdoId:c?c.id:"",cerdoNombre:c?c.nombre:"",items,total,abonado:ab,abonos:ab>0?[{fecha:f,valor:ab}]:[],fecha:f,creado:Date.now(),preventaId:pid,origen:"preventa",fechaSacrificio:fechasSacItems(items)[0]||pv0.fechaSacrificio||"",proyectoId:proyActivo};
+  /* Un solo lote atómico: la venta entra al Libro de Ventas y la preventa pasa a Despachada; o se guardan las dos, o ninguna */
+  const bt=db.batch(), vr=db.collection("ventas_cerdos").doc();
+  bt.set(vr,venta);
+  bt.set(db.collection("preventas_cerdos").doc(pid),{estado:"Despachado",ventaId:vr.id},{merge:true});
+  bt.commit().catch(e=>toast("Error nube: "+e.code));
+  cv=null; cerrar();
+  toast("Venta registrada · "+money(total)+(total-ab>0?" · por cobrar "+money(total-ab):" · cobrada ✓")+aviso);
+  irA("ventas"); if(c) abrirVentasCerdo(c.id); else abrirVentasTodas();   /* la tarjeta de Clientes, Ventas y Balance se redibujan solas con el listener de la nube */
 }
 function textoPV(p){
   const det=(p.items||[]).map(i=>`• ${pvNombre(i)}: ${peso(i.cantidad)} lb`).join("\n");
@@ -2275,10 +2309,122 @@ function cerdosVivos(){
   const vivos=todos.filter(t=>{ if(t.arete) return !usados.has(norm(t.arete)); if(quitar>0){quitar--;return false;} return true; });
   return vivos.map((t,i)=>{const k=S+i+1; return t.arete?{valor:t.arete,label:"Cerdo #"+k+" - Arete "+t.arete,nombre:"Cerdo #"+k,arete:t.arete}:{valor:"Cerdo #"+k,label:"Cerdo #"+k,nombre:"Cerdo #"+k,arete:""};});
 }
+/* ===== Programación de sacrificios por cerdo: se guarda en el proyecto activo (proyectos_cerdos/{id}.sacProg = {clave-del-cerdo: "AAAA-MM-DD"}) ===== */
+const sacKey = n => norm(n).replace(/[.\/\[\]*`~\s]+/g,"_");
+/* Cerdo marcado como sacrificado desde Inversión (gasto «Sacrificio / Matarife») al que aún le falta el pesaje: cuenta como sacrificio programado */
+const cerdoPendDe = nombre => D.cerdos.find(c=>c.sinPesaje&&!(c.canalKg>0)&&esCerdo(c,nombre))||null;
+const sacProgDe = nombre => { const p=cerdoPendDe(nombre); if(p&&p.fecha) return p.fecha; const py=proyActual(), m=py&&py.sacProg; return (m&&m[sacKey(nombre)])||""; };
+const pvValor = e => e.arete||e.nombre;                       /* mismo valor que ya guarda el encargo en p.cerdo */
+const dmCorta = f => f?f.slice(8,10)+"/"+f.slice(5,7):"";
+const MSG_PV_CERRADA="No se pueden agregar más preventas. La fecha de sacrificio ya venció o el cerdo ya fue procesado.";
+/* "procesado" = ya sacrificado/liquidado · "vencido" = hoy ≥ fecha programada · "" = preventa abierta */
+function pvCierre(nombre,arete){
+  const rc=D.cerdos.find(c=>esCerdo(c,nombre)||esCerdo(c,arete));
+  if(rc&&!(rc.sinPesaje&&!(rc.canalKg>0))) return "procesado";   /* ya pesado / despiezado */
+  const f=sacProgDe(nombre); return (f&&hoy()>=f)?"vencido":"";
+}
+function avisoPCerdo(msg,ok){ const a=$("pCerdoAviso"); if(!a) return; a.className=ok?"okbox":"alerta"; a.textContent=msg||""; a.style.display=msg?"":"none"; }
 function llenarPCerdo(){
   const sel=$("pCerdo"),cur=sel.value;
-  sel.innerHTML='<option value="">-- Sin asignar / Cualquiera --</option>'+cerdosVivos().map(v=>`<option value="${esc(v.valor)}">${esc(v.label)}</option>`).join("");
+  sel.innerHTML='<option value="">-- Sin asignar / Cualquiera --</option>'+plantelCerdos().map(e=>{
+    const cierre=pvCierre(e.nombre,e.arete), f=sacProgDe(e.nombre), base=e.nombre+(e.arete?" - Arete "+e.arete:"");
+    return `<option value="${esc(pvValor(e))}"${cierre?" disabled":""}>${esc(cierre?base+" · 🔴 Preventa Cerrada - Cerdo Procesado":base+(f?" · 📅 "+dmCorta(f):""))}</option>`;
+  }).join("");
+  sel.value=cur;
+  if(sel.value!==cur||(sel.selectedOptions[0]&&sel.selectedOptions[0].disabled)){ sel.selectedIndex=0; if(cur) avisoPCerdo(MSG_PV_CERRADA); }
+}
+/* Costo y encargado programados (proyectos_cerdos/{id}.sacProgGasto[clave] = {gastoId,costo,matarife}) */
+const sacProgEntrada = nombre => { const py=proyActual(), m=py&&py.sacProgGasto; return (m&&m[sacKey(nombre)])||null; };
+const sacProgDatos = nombre => {
+  const p=cerdoPendDe(nombre);
+  if(p){ const g=gastoDeCerdo(p), n=(g&&(g.cerdosIds||[]).length)||1;
+    return {gastoId:g?g.id:(p.gastoId||""), costo:p.costoBeneficio>0?p.costoBeneficio:(g?Math.round((g.costo||0)/n):0), matarife:nombreOk(p.matarife)||(g?respMat(g):""), inversion:true}; }
+  return sacProgEntrada(nombre);
+};
+/* Gasto creado al PROGRAMAR (aún sin cerdo sacrificado): se reemplaza si luego se registra el gasto en Inversión */
+const gastoProgDe = nombre => { const d=sacProgEntrada(nombre); return d&&d.gastoId?(D.insumos.find(x=>x.id===d.gastoId&&x.programado)||null):null; };
+function ponerMat(selId,otroId,mat){
+  const s=$(selId); if(!mat) s.selectedIndex=0; else if([...s.options].some(o=>o.value===mat)) s.value=mat; else { s.value="__otro"; $(otroId).value=mat; }
+  otroCampo(selId,otroId,true); if(s.value==="__otro") $(otroId).value=mat;
+}
+function abrirProgSac(){
+  if(!proyActual()) return toast("Primero crea o selecciona un proyecto");
+  $("psMatSel").innerHTML=matListaHtml();
+  psLlenar(); $("psFecha").min=hoy(); psCambio();
+  $("mProgSac").classList.add("open"); $("mProgSac").querySelector(".sheet").scrollTop=0;
+}
+function psLlenar(){
+  const sel=$("psCerdo"),cur=sel.value, l=plantelCerdos().filter(e=>!D.cerdos.some(c=>esCerdo(c,e.nombre)||esCerdo(c,e.arete)));
+  sel.innerHTML='<option value="">'+(l.length?"-- Selecciona un cerdo --":"-- No hay cerdos disponibles --")+'</option>'+l.map(e=>{const f=sacProgDe(e.nombre);return `<option value="${esc(e.nombre)}">${esc(e.nombre+(e.arete?" - Arete "+e.arete:"")+(f?" · 📅 "+dmCorta(f):""))}</option>`;}).join("");
   sel.value=cur; if(sel.value!==cur) sel.selectedIndex=0;
+}
+const cerdoVivoDe = valor => { const t=norm(valor); return t?(cerdosVivos().find(x=>norm(x.valor)===t||norm(x.nombre)===t||(!!x.arete&&norm(x.arete)===t))||null):null; };
+function cerdoPorRegistrar(valor){
+  if(!norm(valor)) return null;
+  const v=cerdoVivoDe(valor); if(v) return v.valor;
+  const p=cerdosPend().find(c=>esCerdo(c,valor)); return p?"pend:"+p.id:null;
+}
+function abrirSacrificioDe(valor){
+  const opt=cerdoPorRegistrar(valor);
+  if(!opt) return toast("Ese cerdo ya fue sacrificado o no está disponible");
+  abrirNuevo("mSacrificio");
+  if(!$("mSacrificio").classList.contains("open")) return;   /* lote completo: abrirNuevo ya avisó */
+  $("cNombre").value=opt;
+  if($("cNombre").value!==opt) return;
+  cerdoDespieceCambio();            /* rellena fecha, costo y encargado (de la programación o del gasto de Inversión) y el aviso de preventas */
+}
+function psCambio(){
+  const n=$("psCerdo").value, d=n?sacProgDatos(n):null;
+  $("psFecha").value=n?(sacProgDe(n)||""):"";
+  $("psCosto").value=d&&d.costo>0?miles(d.costo):"";
+  ponerMat("psMatSel","psMatOtro",d?(d.matarife||""):"");
+}
+function guardarProgSac(){
+  const py=proyActual(); if(!py) return toast("Primero crea o selecciona un proyecto");
+  if(!db) return toast("Conectando con la nube… intenta de nuevo en un momento");
+  const nombre=$("psCerdo").value, f=$("psFecha").value;
+  if(!nombre) return toast("Selecciona el cerdo");
+  if(!f) return toast("Selecciona la fecha de sacrificio");
+  if(f<hoy()) return toast("La fecha de sacrificio no puede ser anterior a hoy");
+  const costo=mval("psCosto"), mat=encargadoForm("psMatSel","psMatOtro");
+  if($("psMatSel").value==="__otro"&&!mat) return toast("Escribe el nombre del matarife");
+  if($("psMatSel").value==="__otro"&&/^otro$/i.test($("psMatOtro").value.trim())) return toast("Escribe el nombre real del matarife, no la palabra Otro");
+  const e=plantelCerdos().find(x=>x.nombre===nombre);
+  if(!e||pvCierre(e.nombre,e.arete)==="procesado") return toast(MSG_PV_CERRADA);
+  if(cerdoPendDe(nombre)) return toast("Este cerdo ya tiene su sacrificio registrado en Inversión y gastos: edítalo allí");
+  const k=sacKey(nombre), otros=pvDe(e.nombre,e.arete).filter(p=>(p.fechaSacrificio||"")!==f), g=gastoProgDe(nombre);
+  let gid=g?g.id:"";
+  const bt=db.batch();
+  /* Costo de sacrificio -> gasto «Sacrificio / Matarife» del Libro de Inversión, asociado al cerdo programado (se crea, se actualiza o se retira si se deja en 0) */
+  if(costo>0){
+    if(g) bt.set(db.collection("gastos_cerdos").doc(g.id),{fecha:f,costo,matarife:mat||"",cerdosNombres:[nombre]},{merge:true});
+    else { const gr=db.collection("gastos_cerdos").doc(); gid=gr.id;
+      bt.set(gr,{tipo:"insumo",fecha:f,concepto:C_SAC,claseConc:"",detalle:"",unidad:"",bultos:1,kilos:0,valorArroba:0,costo,flete:0,proveedor:"",fleteResp:"",matarife:mat||"",cerdosIds:[],cerdosNombres:[nombre],programado:true,proyectoId:proyActivo,creado:Date.now()}); }
+  } else if(g){ bt.delete(db.collection("gastos_cerdos").doc(g.id)); gid=""; }
+  const det={gastoId:gid,costo,matarife:mat||""};
+  py.sacProg={...(py.sacProg||{}),[k]:f}; py.sacProgGasto={...(py.sacProgGasto||{}),[k]:det};   /* refleja el cambio al instante, aun sin red */
+  bt.set(db.collection("proyectos_cerdos").doc(py.id),{sacProg:{[k]:f},sacProgGasto:{[k]:det}},{merge:true});
+  otros.forEach(q=>bt.set(db.collection("preventas_cerdos").doc(q.id),{fechaSacrificio:f},{merge:true}));   /* los encargos abiertos del cerdo adoptan la fecha */
+  bt.commit().catch(err=>toast("Error nube: "+err.code));
+  cerrarForm("mProgSac"); renderAll();
+  toast("📅 "+nombre+" · sacrificio programado el "+fechaTxt(f)+(costo>0?" · gasto de "+money(costo)+" en Inversión":"")+(otros.length?" · fecha actualizada en "+otros.length+" encargo"+(otros.length>1?"s":""):""));
+}
+function quitarProgSac(nombre){
+  const py=proyActual(); if(!py||!db||!sacProgDe(nombre)) return;
+  const g=gastoProgDe(nombre);
+  if(!confirm("¿Quitar la fecha de sacrificio programada de "+nombre+"?\n\nLas preventas de ese cerdo volverán a quedar abiertas."+(g?"\nTambién se eliminará su gasto de sacrificio ("+money(g.costo||0)+") de Inversión.":""))) return;
+  const k=sacKey(nombre), bt=db.batch();
+  if(py.sacProg) delete py.sacProg[k]; if(py.sacProgGasto) delete py.sacProgGasto[k];
+  bt.update(db.collection("proyectos_cerdos").doc(py.id),{["sacProg."+k]:firebase.firestore.FieldValue.delete(),["sacProgGasto."+k]:firebase.firestore.FieldValue.delete()});
+  if(g){ bt.delete(db.collection("gastos_cerdos").doc(g.id)); R.insumos=R.insumos.filter(x=>x.id!==g.id); }
+  bt.commit().catch(err=>toast("Error nube: "+err.code));
+  renderAll(); toast("Programación quitada · "+nombre);
+}
+function renderProgSac(){
+  const box=$("pvProgLista"); if(!box) return;
+  const l=plantelCerdos().map(e=>({e,f:sacProgDe(e.nombre)})).filter(x=>x.f).sort((a,b)=>a.f.localeCompare(b.f));
+  box.innerHTML=l.length?l.map(({e,f})=>{ const c=pvCierre(e.nombre,e.arete);
+    return `<div class="row"><div><b>${esc(e.nombre)}</b>${e.arete?` <small>Arete ${esc(e.arete)}</small>`:""}<small>📅 ${esc(fechaTxt(f))} · ${c?"🔴 Preventa cerrada":"🟢 Preventa abierta"}</small>${(()=>{const d=sacProgDatos(e.nombre);return d&&(d.costo>0||d.matarife)?`<small>🔪 ${esc([d.costo>0?money(d.costo):"",d.matarife||""].filter(Boolean).join(" · "))}</small>`:"";})()}</div>${c==="procesado"?"":`<span style="display:flex;gap:6px;flex-wrap:wrap"><button class="sm pri" data-n="${esc(e.nombre)}" onclick="abrirSacrificioDe(this.dataset.n)">🔪 Registrar</button><button class="sm del" data-n="${esc(e.nombre)}" onclick="quitarProgSac(this.dataset.n)">Quitar</button></span>`}</div>`; }).join(""):'<div class="empty">Aún no hay sacrificios programados.</div>';
 }
 /* Fecha de sacrificio por cerdo: auto-llenado desde los encargos abiertos del mismo cerdo */
 let fechaAuto=false;
@@ -2289,9 +2435,12 @@ function fechaDeCerdo(valor){
   return l.length?l[0].fechaSacrificio:"";
 }
 function cerdoPVCambio(){
-  const f=fechaDeCerdo($("pCerdo").value);
-  if(f){ $("pFechaSac").value=f; fechaAuto=true; }
-  else if(fechaAuto){ $("pFechaSac").value=hoy(); fechaAuto=false; }
+  const v=$("pCerdo").value, e=plantelCerdos().find(x=>pvValor(x)===v)||null, prog=e?sacProgDe(e.nombre):"", fi=$("pFechaSac");
+  const f=prog||fechaDeCerdo(v);
+  if(f){ fi.value=f; fechaAuto=true; }
+  else if(fechaAuto){ fi.value=hoy(); fechaAuto=false; }
+  fi.readOnly=!!prog;                                          /* con sacrificio programado, la fecha la fija la programación */
+  avisoPCerdo(prog?"📅 Sacrificio programado: "+fechaTxt(prog)+". Las preventas se cierran ese día.":"",true);
 }
 /* ===== Despiece: selector de cerdos disponibles + fecha sincronizada con Preventa ===== */
 let fechaSacAuto=false;
@@ -2316,7 +2465,7 @@ function llenarCNombre(){
 function fechaProgramada(sel){
   if(!sel) return "";
   const l=pvTodasDe(sel.nombre,sel.arete).filter(p=>p.fechaSacrificio).sort((a,b)=>((a.estado==="Despachado")-(b.estado==="Despachado"))||((b.creado||0)-(a.creado||0)));
-  return l.length?l[0].fechaSacrificio:"";
+  return sacProgDe(sel.nombre)||(l.length?l[0].fechaSacrificio:"");
 }
 /* Costo y encargado: si el cerdo ya tiene un gasto de Sacrificio / Matarife ligado, se muestran solos (evita duplicar el gasto) */
 let sacAuto=false;
@@ -2325,7 +2474,14 @@ function gastoDeCerdo(c){ return c&&c.gastoId?D.insumos.find(x=>x.id===c.gastoId
 function autoSacGasto(sel){
   const info=$("cSacInfo"); info.textContent="";
   const c=sel&&sel.pend?D.cerdos.find(x=>x.id===sel.id):null, g=gastoDeCerdo(c);
-  if(!c){ if(sacAuto){ $("cSacCosto").value=""; $("cMatSel").selectedIndex=0; otroCampo("cMatSel","cMatOtro",true); sacAuto=false; } return; }
+  if(!c){
+    const d=sel?sacProgDatos(sel.nombre):null;
+    if(d&&(d.costo>0||d.matarife)){
+      $("cSacCosto").value=d.costo>0?miles(d.costo):""; ponerMat("cMatSel","cMatOtro",d.matarife||""); sacAuto=true;
+      info.textContent="Costo y encargado tomados de la programación del sacrificio. Al guardar se actualiza ese mismo gasto (sin duplicarlo)."; return;
+    }
+    if(sacAuto){ $("cSacCosto").value=""; $("cMatSel").selectedIndex=0; otroCampo("cMatSel","cMatOtro",true); sacAuto=false; } return;
+  }
   const n=g&&(g.cerdosIds||[]).length||1, costo=c.costoBeneficio>0?c.costoBeneficio:(g?Math.round((g.costo||0)/n):0);
   const mat=nombreOk(c.matarife)||(g?respMat(g):"");
   $("cSacCosto").value=costo>0?miles(costo):"";
@@ -2369,13 +2525,13 @@ function cerdoTxt(v){
 }
 function sacTxt(p){ return p.fechaSacrificio ? "Sacrificio: "+fechaTxt(p.fechaSacrificio) : ""; }
 function renderPreventas(){
-  llenarPCerdo();
+  llenarPCerdo(); renderProgSac();
   panelCobertura();
   let l=[...D.preventas].sort((a,b)=>(b.creado||0)-(a.creado||0));
   if(pfiltro==="apartado") l=l.filter(p=>p.estado!=="Despachado"); else if(pfiltro==="despachado") l=l.filter(p=>p.estado==="Despachado");
   $("listaPreventas").innerHTML=l.length?l.map(p=>{const d=p.estado==="Despachado";return `<div class="card pv"><div class="row" style="padding-top:0"><div><b>${esc(p.cliente)}</b> <span class="tag ${d?"Despachado":"Apartado"}">${d?"Despachado":"Apartado"}</span><small>${esc(p.telefono||"Sin teléfono")} · ${fechaTxt(p.fecha)}</small><small>${esc([p.cerdo?cerdoTxt(p.cerdo):"Sin cerdo asignado",sacTxt(p)].filter(Boolean).join(" • "))}</small></div><button class="sm del" onclick="borrarDoc('preventas_cerdos','${p.id}')">✕</button></div>
   ${(p.items||[]).map(i=>`<div class="it2"><span>${esc(pvNombre(i))}</span><b>${peso(i.cantidad)} lb</b></div>`).join("")}
-  <div class="acts2">${d?"":`<button class="sm pri" onclick="confirmarVentaPV('${p.id}')">✅ Confirmar Venta</button>`}<button class="sm" onclick="enviarPV('${p.id}')" style="color:var(--ok)">WhatsApp</button></div></div>`}).join(""):'<div class="card empty">No hay encargos en esta lista.</div>';
+  <div class="acts2">${d?"":`<button class="sm pri" onclick="confirmarVentaPV('${p.id}')">✅ Confirmar Venta</button>`}${(!d&&p.cerdo&&cerdoVivoDe(p.cerdo))?`<button class="sm" data-c="${esc(p.cerdo)}" onclick="abrirSacrificioDe(this.dataset.c)">🔪 Sacrificio</button>`:""}<button class="sm" onclick="enviarPV('${p.id}')" style="color:var(--ok)">WhatsApp</button></div></div>`}).join(""):'<div class="card empty">No hay encargos en esta lista.</div>';
 }
 
 /* Aviso en vivo dentro del formulario de despiece */
@@ -2417,6 +2573,13 @@ function inversionCerdo(e,pl){
   let alim=0,suma=0,excl=0;
   D.insumos.forEach(x=>{
     const m=(x.costo||0)+(x.flete||0);
+    /* Sacrificio / Matarife ligado a cerdos concretos: se carga solo a ellos (en partes iguales si cubre varios), no se reparte entre los demás */
+    { const ids=Array.isArray(x.cerdosIds)?x.cerdosIds:[], nms=Array.isArray(x.cerdosNombres)?x.cerdosNombres:[];
+      if(conceptoIns(x)===C_SAC&&(ids.length||nms.length)){
+        const mio=ids.length?!!(e.c&&ids.includes(e.c.id)):nms.some(n=>norm(n)===norm(e.nombre));   /* programado: aún no hay registro del cerdo, se liga por nombre */
+        if(mio){ alim+=m/(ids.length||nms.length); suma++; } else excl++;
+        return;
+      } }
     if(!activoEn(e,x.fecha)){ excl++; return; }
     const n=pl.filter(q=>activoEn(q,x.fecha)).length||1;
     alim+=m/n; suma++;
