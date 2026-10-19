@@ -361,7 +361,12 @@ input[readonly]{opacity:.7}
 </style>
 <style>
 /* Chrome Android en modo standalone: el gesto de arrastrar hacia abajo recarga la página y borra lo que se está digitando */
-html,body{overscroll-behavior-y:contain}
+html,body{overscroll-behavior-y:none}
+body{-webkit-overflow-scrolling:touch;overscroll-behavior-y:none}
+/* ===== Capa táctil de navegación (iPad/iPhone) ===== */
+header{position:-webkit-sticky;position:sticky;z-index:40} /* sobre el contenido, bajo los modales (50) y el splash */
+nav{scroll-snap-type:none;scroll-behavior:auto} /* el snap/smooth se comen los toques cortos en Safari */
+nav button,.navback,#btnProy,header button{position:relative;z-index:1000;pointer-events:auto!important;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 .navback{border-color:var(--ac)!important;color:var(--ac)!important}#navTit{align-self:center;color:var(--mu);font-size:13px;font-weight:700;white-space:nowrap;padding:0 6px}
 /* ===== Menú principal: tarjetas compactas (menos padding vertical, sub-resúmenes en cuadritos) ===== */
 #panel .dhead{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:0 0 8px}#panel .dhead h2{margin:0}
@@ -894,7 +899,7 @@ function irA(t){
   TABS.forEach(x=>$(x).classList.toggle("act",x===t));
   document.querySelectorAll("#nav button").forEach(b=>b.classList.toggle("act",b.dataset.t===t));
   ajustarNav(t); guardarNav();
-  { const nv=$("nav"), ab=nv.querySelector("button.act"); if(ab&&nv.scrollWidth>nv.clientWidth) nv.scrollTo({left:ab.offsetLeft-(nv.clientWidth-ab.offsetWidth)/2,behavior:"smooth"}); }
+  { try{ const nv=$("nav"), ab=nv.querySelector("button.act"); if(ab&&nv.scrollWidth>nv.clientWidth) nv.scrollLeft=ab.offsetLeft-(nv.clientWidth-ab.offsetWidth)/2; }catch(e){} }
   try{ ccSync(); }catch(e){}   /* primero se añade la entrada de historial y luego se actualiza el hash de ESA entrada */
   if(location.hash!=="#"+t) history.replaceState(null,"","#"+t);
   window.scrollTo(0,0);
@@ -4022,6 +4027,25 @@ window.addEventListener("popstate",()=>{
 });
 window.ccSync=sincronizar;
 sincronizar();
+})();
+</script>
+<script>
+/* Toque tolerante en la barra superior (Menú, etc.): si el dedo se mueve poco, cuenta como toque aunque Safari no dispare "click" */
+(function(){
+  var nv=document.getElementById('nav'); if(!nv) return;
+  var x0=0,y0=0,t0=0,btn=null;
+  nv.addEventListener('touchstart',function(e){
+    btn=(e.target.closest&&e.target.closest('button'))||null; if(!btn) return;
+    var t=e.touches[0]; x0=t.clientX; y0=t.clientY; t0=Date.now();
+  },{passive:true});
+  nv.addEventListener('touchend',function(e){
+    if(!btn) return;
+    var t=e.changedTouches[0], b=btn; btn=null;
+    if(Math.abs(t.clientX-x0)>12||Math.abs(t.clientY-y0)>12||Date.now()-t0>700) return;
+    e.preventDefault();                       /* evita el click duplicado */
+    try{ irA(b.dataset.t); }catch(err){}
+  },{passive:false});
+  nv.addEventListener('touchcancel',function(){ btn=null; },{passive:true});
 })();
 </script>
 </body>
