@@ -358,6 +358,17 @@ input[readonly]{opacity:.7}
 .bl.compact-report .lbr.vt .lc2 b{font-size:10.5px}.bl.compact-report .lbr.vt .lc2 i{font-size:9px}.bl.compact-report .lbr.vt .lv2 b{font-size:11px}
 .bl.compact-report.c2 .lbr.vt .lc2 i{font-size:8.5px}.bl.compact-report.c3 .lbr.vt .lc2 b{font-size:9.5px}.bl.compact-report.c3 .lbr.tot{padding:2px 6px}
 
+
+/* ===== Cortes personalizados (filas dinámicas) ===== */
+.xc-t{margin:16px 0 4px;font-size:15px}
+.xc-list{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.xc-row{display:grid;grid-template-columns:minmax(0,1fr) 92px 42px;gap:8px;align-items:center}
+.xc-row input{min-width:0}
+.xc-del{height:44px;background:#3a1d1f;border:1px solid #7a2f2f;color:#ff8f8f;border-radius:10px;font-size:16px;line-height:1;cursor:pointer}
+.xc-add{width:100%;margin-top:10px;background:none;border:1px dashed var(--ac);color:var(--ac);border-radius:10px;padding:12px;font-size:15px;font-weight:700;cursor:pointer}
+.xc-sub{margin:6px 0 0;font-size:13px;color:var(--mu)}
+.xc-tot{margin:8px 0 0;font-size:13px;color:var(--mu);text-align:right}.xc-tot b{color:var(--tx)}
+@media(max-width:380px){.xc-row{grid-template-columns:minmax(0,1fr) 78px 40px}}
 </style>
 <style>
 /* Chrome Android en modo standalone: el gesto de arrastrar hacia abajo recarga la página y borra lo que se está digitando */
@@ -806,7 +817,9 @@ const CORTES = [["carne","Carne"],["costilla","Costilla"],["lomo","Lomo"],["pesu
 const LEG = {pierna:"Pierna",brazo:"Brazo",tocino:"Tocino / Papada",cabeza:"Cabeza / Vísceras"};
 const GR = {carne:["carne","pierna","brazo"],otros:["otros","cabeza","tocino"]};
 const keysOf = k => GR[k]||[k];
-const nomCorte = k => (CORTES.find(c=>c[0]===k)||[,LEG[k]||k])[1];
+/* Cortes personalizados: clave «x_<nombre>» dentro de cerdo.cortes; su nombre visible va en cerdo.cortesNom */
+const esExtra = k => /^x_/.test(String(k||""));
+const nomCorte = k => (CORTES.find(c=>c[0]===k)||[,LEG[k]||(esExtra(k)?String(k).slice(2).replace(/_/g," "):k)])[1];
 const initCorte = (c,k) => keysOf(k).reduce((a,x)=>a+((c.cortes&&c.cortes[x])||0),0);
 const nomFila = (c,k,n) => (k==="otros"&&c.otrosDesc) ? esc(c.otrosDesc) : n;
 const piezasTxt = c => { const p=c.piezas||{},l=[["pierna1","Pierna 1"],["pierna2","Pierna 2"],["brazo1","Brazo 1"],["brazo2","Brazo 2"],["costilla1","Costilla 1"],["costilla2","Costilla 2"]].filter(([k])=>p[k]>0); return l.length?`<div class="sub" style="margin:8px 0 0">Piezas: ${l.map(([k,n])=>n+" "+peso(p[k])).join(" · ")} lb</div>`:""; };
@@ -1222,7 +1235,7 @@ function sacrificarCerdos(o,sels,id){
   const el=sels.map(v=>vivos.find(x=>x.valor===v));
   if(el.some(x=>!x)||new Set(sels).size!==sels.length) return toast("Revisa los cerdos: alguno ya no está disponible o está repetido");
   const gref=id?db.collection("gastos_cerdos").doc(id):db.collection("gastos_cerdos").doc(), bt=db.batch();
-  const unit=Math.round(o.costo/el.length), ceros={}; BUCKETS.forEach(b=>ceros[b.k]=0);
+  const unit=Math.round(o.costo/el.length), ceros={}; BUCKETS.filter(b=>!esExtra(b.k)).forEach(b=>ceros[b.k]=0);
   const ids=[]; let np=0,nv=0;
   el.forEach((c,i)=>{
     const r=db.collection("cerdos").doc(); ids.push(r.id);
@@ -1302,7 +1315,7 @@ function renderInversion(){
 
 /* ===== Sacrificio ===== */
 const PZ=["c_p1","c_p2","c_b1","c_b2"], KZ=["c_k1","c_k2"];
-const formVal = k => k==="carne" ? val("cCarne") : k==="costilla" ? val("cCostilla") : val("c_"+k);
+const formVal = k => k==="carne" ? val("cCarne") : k==="costilla" ? val("cCostilla") : (k==="otros"||esExtra(k)) ? xcSumaKey("c",k) : val("c_"+k);
 function buildCortesForm(){
   const inp=(id,n,h)=>`<div><label>${n}</label><input type="number" inputmode="decimal" step="0.01" id="${id}" oninput="${h}"></div>`;
   $("cortesForm").innerHTML=
@@ -1312,17 +1325,17 @@ function buildCortesForm(){
     '<h3 style="margin-top:16px">Costilla</h3><div class="g2">'+inp("c_k1","Costilla 1 (lb) · opcional","sumarCostillas()")+inp("c_k2","Costilla 2 (lb) · opcional","sumarCostillas()")+'</div>'+
     '<label>Total Costilla (lb)</label><input type="number" inputmode="decimal" step="0.01" id="cCostilla" oninput="dbn.costillaDirecta()" placeholder="Suma de las 2 piezas">'+
     '<div class="sub" style="margin:6px 0 0">Se suma con las 2 piezas, o escribe el total si las pesaste juntas.</div>'+
-    '<h3 style="margin-top:16px">Demás cortes</h3><div class="g2">'+inp("c_lomo","Lomo (lb)","sumarCortes()")+inp("c_pesuna","Pesuña (lb)","sumarCortes()")+inp("c_orejas","Orejas (lb)","sumarCortes()")+inp("c_otros","Otros (lb)","sumarCortes()")+'</div>'+
-    '<label>Descripción de "Otros" (opcional)</label><input id="cOtrosDesc" placeholder="Ej: Cabeza, Papada, Tocino, Vísceras">';
+    '<h3 style="margin-top:16px">Demás cortes</h3><div class="g2">'+inp("c_lomo","Lomo (lb)","sumarCortes()")+inp("c_pesuna","Pesuña (lb)","sumarCortes()")+inp("c_orejas","Orejas (lb)","sumarCortes()")+'</div>'+xcHTML("c");
 }
 function sumarPiezas(){ const t=PZ.reduce((a,i)=>a+val(i),0); $("cCarne").value=t>0?Math.round(t*100)/100:""; sumarCortes(); }
 function carneDirecta(){ PZ.forEach(i=>$(i).value=""); sumarCortes(); }
 function sumarCostillas(){ const t=KZ.reduce((a,i)=>a+val(i),0); $("cCostilla").value=t>0?Math.round(t*100)/100:""; sumarCortes(); }
 function costillaDirecta(){ KZ.forEach(i=>$(i).value=""); sumarCortes(); }
-function limpiarCortes(){ [...PZ,...KZ,"cCarne","cCostilla","c_lomo","c_pesuna","c_orejas","c_otros","cOtrosDesc"].forEach(i=>$(i).value=""); sumarCortes(); }
+function limpiarCortes(){ [...PZ,...KZ,"cCarne","cCostilla","c_lomo","c_pesuna","c_orejas"].forEach(i=>$(i).value=""); xcLimpiar("c"); sumarCortes(); }
 function sumarCortes(){
-  const s=BUCKETS.reduce((a,b)=>a+formVal(b.k),0),cl=val("cCanal")*2;
+  const s=BUCKETS.filter(b=>!esExtra(b.k)).reduce((a,b)=>a+formVal(b.k),0)+xcTotal("c"),cl=val("cCanal")*2;
   $("canalLb").textContent=peso(cl);$("canalLb2").textContent=peso(cl);$("sumCortes").textContent=peso(s);
+  if($("cXcTot")) $("cXcTot").textContent=peso(xcTotal("c"));
   const d=cl-s,e=$("difCanal");e.textContent=(d<0?"+":"")+peso(Math.abs(d))+" lb";e.className=d<0?"neg":"";
   $("mermaPct").textContent=cl<=0?"Ingresa el peso en canal (kg) para calcular la merma":d<0?"Los cortes superan el canal por "+peso(-d)+" lb: revisa los pesos":"Merma: "+peso(d)+" lb ("+peso(d/cl*100)+"% del canal)";
   panelPVSac();
@@ -1366,8 +1379,10 @@ function guardarCerdo(){
   const canalKg=val("cCanal"); if(canalKg<=0) return toast("Ingresa el peso en canal (kg)");
   const canal=canalKg*2;
   const enCanal=sacTipo==="canal";
-  const cortes={}; BUCKETS.forEach(b=>cortes[b.k]=enCanal?(b.k==="otros"?val("cIntLb"):0):formVal(b.k));
-  const piezas=enCanal?{pierna1:0,pierna2:0,brazo1:0,brazo2:0,costilla1:0,costilla2:0}:{pierna1:val("c_p1"),pierna2:val("c_p2"),brazo1:val("c_b1"),brazo2:val("c_b2"),costilla1:val("c_k1"),costilla2:val("c_k2")},otrosDesc=(enCanal?$("cIntDesc"):$("cOtrosDesc")).value.trim();
+  const xe=enCanal?"":xcValida("c"); if(xe) return toast(xe);
+  const cortes={}, cortesNom={}; BUCKETS.filter(b=>!esExtra(b.k)).forEach(b=>cortes[b.k]=enCanal?(b.k==="otros"?val("cIntLb"):0):formVal(b.k));
+  if(!enCanal) xcFilas("c").forEach(r=>{ cortes[r.k]=r.lb; cortesNom[r.k]=r.n; });   /* cortes personalizados (Papada, Cabeza, Tocino…) */
+  const piezas=enCanal?{pierna1:0,pierna2:0,brazo1:0,brazo2:0,costilla1:0,costilla2:0}:{pierna1:val("c_p1"),pierna2:val("c_p2"),brazo1:val("c_b1"),brazo2:val("c_b2"),costilla1:val("c_k1"),costilla2:val("c_k2")},otrosDesc=enCanal?$("cIntDesc").value.trim():"";
   if(!enCanal&&!Object.values(cortes).some(v=>v>0)) return toast("Ingresa al menos un corte");
   if(arete&&D.cerdos.some(c=>(!pend||c.id!==pend.id)&&norm(c.arete)===norm(arete))) return toast("Ese arete ya fue registrado en otro cerdo");
   const costoS=mval("cSacCosto"), matS=encargadoForm("cMatSel","cMatOtro");
@@ -1381,7 +1396,7 @@ function guardarCerdo(){
   const ref=pend?db.collection("cerdos").doc(pend.id):db.collection("cerdos").doc(), bt=db.batch();
   /* Costo y encargado del sacrificio -> gasto «Sacrificio / Matarife» (se crea, o se actualiza el que ya estaba ligado al cerdo) */
   const sg=sincGastoSac(bt,{cid:ref.id,nombre,fecha,costo:costoS,mat:matS,pend,gProg:pend?null:gastoProgDe(nombre)});
-  bt.set(ref,{nombre,arete,pesoIngresoKg:ing?ing.kg:(pend?(pend.pesoIngresoKg==null?null:pend.pesoIngresoKg):null),fecha,canal,canalKg,sobranteKg:Math.max(val("cSobrante"),0),cortes,piezas,otrosDesc,tipoSalida:enCanal?"canal":"despiece",sinPesaje:false,...sg,proyectoId:proyActivo,...(pend?{}:{creado:Date.now()})},{merge:true});
+  bt.set(ref,{nombre,arete,pesoIngresoKg:ing?ing.kg:(pend?(pend.pesoIngresoKg==null?null:pend.pesoIngresoKg):null),fecha,canal,canalKg,sobranteKg:Math.max(val("cSobrante"),0),cortes,cortesNom,piezas,otrosDesc,tipoSalida:enCanal?"canal":"despiece",sinPesaje:false,...sg,proyectoId:proyActivo,...(pend?{}:{creado:Date.now()})},{merge:true});
   let np=0,nv=0;
   if(fecha){
     const pl=planFechaSac(nombre,arete,ref.id,fecha);
@@ -1389,7 +1404,7 @@ function guardarCerdo(){
     pl.vs.forEach(v=>bt.set(db.collection("ventas_cerdos").doc(v.id),{fechaSacrificio:fecha},{merge:true}));
     np=pl.pvs.length; nv=pl.vs.length;
   }
-  const sobra=BUCKETS.some(b=>pvLb(pvDe(nombre,arete),b.k)>(cortes[b.k]||0)+1e-9);
+  const sobra=BUCKETS.some(b=>pvLb(pvDe(nombre,arete),b.k)>(cortes[b.k]||0)+1e-9);   /* BUCKETS ya incluye los personalizados registrados */
   bt.commit().catch(e=>toast("Error nube: "+e.code)); /* no bloquea si estás sin red */
   $("cNombre").value="";$("cCanal").value="";$("cSobrante").value="";$("cSacCosto").value="";$("cMatSel").selectedIndex=0;$("cMatOtro").value="";otroCampo("cMatSel","cMatOtro",true);$("cSacInfo").textContent="";sacAuto=false;fechaSacAuto=false;$("cFecha").value=hoy();
   limpiarCortes();$("cIntDesc").value="";$("cIntLb").value="";setTipoSalida("despiece");llenarCNombre();infoFechaSac();panelPVSac();cerrarForm("mSacrificio");
@@ -1403,7 +1418,7 @@ function guardarCerdo(){
 let ecId=null;
 const ecVal = id => parseFloat($(id).value)||0;
 const ECP=["ec_p1","ec_p2","ec_b1","ec_b2"], ECK=["ec_k1","ec_k2"];
-const ecForm = k => k==="carne" ? ecVal("ecCarne") : k==="costilla" ? ecVal("ecCostilla") : ecVal("ec_"+k);
+const ecForm = k => k==="carne" ? ecVal("ecCarne") : k==="costilla" ? ecVal("ecCostilla") : (k==="otros"||esExtra(k)) ? xcSumaKey("ec",k) : ecVal("ec_"+k);
 const ecR = n => n>0 ? Math.round(n*100)/100 : "";
 function ecBuild(){
   const inp=(id,n,h)=>`<div><label>${n}</label><input type="number" inputmode="decimal" step="0.01" id="${id}" oninput="${h}"></div>`;
@@ -1412,8 +1427,7 @@ function ecBuild(){
     '<label>Total Carne (lb)</label><input type="number" inputmode="decimal" step="0.01" id="ecCarne" oninput="dbn.ecCarneDir()" placeholder="Suma de las 4 piezas">'+
     '<h3 style="margin-top:16px">Costilla</h3><div class="g2">'+inp("ec_k1","Costilla 1 (lb)","ecCostillas()")+inp("ec_k2","Costilla 2 (lb)","ecCostillas()")+'</div>'+
     '<label>Total Costilla (lb)</label><input type="number" inputmode="decimal" step="0.01" id="ecCostilla" oninput="dbn.ecCostillaDir()" placeholder="Suma de las 2 piezas">'+
-    '<h3 style="margin-top:16px">Demás cortes</h3><div class="g2">'+inp("ec_lomo","Lomo (lb)","ecCalc()")+inp("ec_pesuna","Pesuña (lb)","ecCalc()")+inp("ec_orejas","Orejas (lb)","ecCalc()")+inp("ec_otros","Otros (lb)","ecCalc()")+'</div>'+
-    '<label>Descripción de "Otros" (opcional)</label><input id="ecOtrosDesc" placeholder="Ej: Cabeza, Papada, Tocino, Vísceras">';
+    '<h3 style="margin-top:16px">Demás cortes</h3><div class="g2">'+inp("ec_lomo","Lomo (lb)","ecCalc()")+inp("ec_pesuna","Pesuña (lb)","ecCalc()")+inp("ec_orejas","Orejas (lb)","ecCalc()")+'</div>'+xcHTML("ec");
 }
 function ecPiezas(){ $("ecCarne").value=ecR(ECP.reduce((a,i)=>a+ecVal(i),0)); ecCalc(); }
 function ecCarneDir(){ ECP.forEach(i=>$(i).value=""); ecCalc(); }
@@ -1421,10 +1435,10 @@ function ecCostillas(){ $("ecCostilla").value=ecR(ECK.reduce((a,i)=>a+ecVal(i),0
 function ecCostillaDir(){ ECK.forEach(i=>$(i).value=""); ecCalc(); }
 function ecCalc(){
   const c=D.cerdos.find(x=>x.id===ecId); if(!c) return;
-  const cl=ecVal("ecCanal")*2, s=BUCKETS.reduce((a,b)=>a+ecForm(b.k),0), d=cl-s;
-  $("ecCanalLb").textContent=peso(cl);
+  const cl=ecVal("ecCanal")*2, s=BUCKETS.filter(b=>!esExtra(b.k)).reduce((a,b)=>a+ecForm(b.k),0)+xcTotal("ec",true), d=cl-s;
+  $("ecCanalLb").textContent=peso(cl); if($("ecXcTot")) $("ecXcTot").textContent=peso(xcTotal("ec"));
   $("ecResumen").innerHTML=`Peso en canal: <b>${peso(cl)}</b> lb · Suma de cortes: <b>${peso(s)}</b> lb<br>`+(cl<=0?"Ingresa el peso en canal (kg)":d<0?`<span class="neg">Los cortes superan el canal por ${peso(-d)} lb: revisa los pesos</span>`:`Merma: ${peso(d)} lb (${peso(d/cl*100)}% del canal)`);
-  $("ecStock").innerHTML='<span class="h">Corte</span><span class="h n">Nuevo</span><span class="h n">Vendido</span><span class="h n">Disp.</span>'+BUCKETS.map(b=>{const n=ecForm(b.k),v=vendidoCorte(c.id,b.k),dp=n-v;return `<span>${nomFila(c,b.k,b.n)}</span><span class="n">${peso(n)}</span><span class="n">${peso(v)}</span><span class="n ${dp<0?"neg":"pos"}">${peso(dp)}</span>`}).join("");
+  $("ecStock").innerHTML='<span class="h">Corte</span><span class="h n">Nuevo</span><span class="h n">Vendido</span><span class="h n">Disp.</span>'+ecClaves(c).map(b=>{const n=ecForm(b.k),v=vendidoCorte(c.id,b.k),dp=n-v;return `<span>${nomFila(c,b.k,b.n)}</span><span class="n">${peso(n)}</span><span class="n">${peso(v)}</span><span class="n ${dp<0?"neg":"pos"}">${peso(dp)}</span>`}).join("");
 }
 function editarCerdo(id){
   const c=D.cerdos.find(x=>x.id===id); if(!c) return;
@@ -1435,8 +1449,11 @@ function editarCerdo(id){
   const p=c.piezas||{};
   [["ec_p1","pierna1"],["ec_p2","pierna2"],["ec_b1","brazo1"],["ec_b2","brazo2"],["ec_k1","costilla1"],["ec_k2","costilla2"]].forEach(([i,k])=>$(i).value=ecR(p[k]||0));
   $("ecCarne").value=ecR(initCorte(c,"carne")); $("ecCostilla").value=ecR(initCorte(c,"costilla"));
-  ["lomo","pesuna","orejas","otros"].forEach(k=>$("ec_"+k).value=ecR(initCorte(c,k)));
-  $("ecOtrosDesc").value=c.otrosDesc||"";
+  ["lomo","pesuna","orejas"].forEach(k=>$("ec_"+k).value=ecR(initCorte(c,k)));
+  /* filas dinámicas: personalizados guardados + el «Otros» antiguo (conserva su clave para no descuadrar ventas ya hechas) */
+  xcLimpiar("ec");
+  Object.keys(c.cortesNom||{}).filter(k=>esExtra(k)&&(+(c.cortes||{})[k]||0)>0).forEach(k=>xcAgregar("ec",c.cortesNom[k],c.cortes[k],k));
+  { const lo=initCorte(c,"otros"); if(lo>0) xcAgregar("ec",c.otrosDesc||"Otros",lo,"otros"); }
   ecCalc(); ecAnularEstado(c); $("mEditCerdo").classList.add("open"); $("mEditCerdo").querySelector(".sheet").scrollTop=0;
 }
 /* ===== Anular / deshacer sacrificio (condicional) ===== */
@@ -1482,13 +1499,16 @@ function sanearDespiece(){
 function ecGuardar(){
   const c=D.cerdos.find(x=>x.id===ecId); if(!c) return;
   const canalKg=ecVal("ecCanal"); if(canalKg<=0) return toast("Ingresa el peso en canal (kg)");
-  const cortes={}; BUCKETS.forEach(b=>cortes[b.k]=ecForm(b.k));
+  const xe=xcValida("ec"); if(xe) return toast(xe);
+  const cortes={}, cortesNom={}; BUCKETS.filter(b=>!esExtra(b.k)).forEach(b=>cortes[b.k]=ecForm(b.k));
+  xcFilas("ec").filter(r=>esExtra(r.k)).forEach(r=>{ cortes[r.k]=r.lb; cortesNom[r.k]=r.n; });
+  const lega=xcFilas("ec").find(r=>r.k==="otros");
   if(!Object.values(cortes).some(v=>v>0)) return toast("Ingresa al menos un corte");
   const piezas={pierna1:ecVal("ec_p1"),pierna2:ecVal("ec_p2"),brazo1:ecVal("ec_b1"),brazo2:ecVal("ec_b2"),costilla1:ecVal("ec_k1"),costilla2:ecVal("ec_k2")};
-  const neg=BUCKETS.filter(b=>cortes[b.k]<vendidoCorte(c.id,b.k)-1e-9);
+  const neg=ecClaves(c).filter(b=>(cortes[b.k]||0)<vendidoCorte(c.id,b.k)-1e-9);
   if(neg.length&&!confirm("Ya se vendió más de lo que dejaste en: "+neg.map(b=>b.n).join(", ")+".\nEl stock quedaría en negativo.\n\n¿Guardar de todos modos?")) return;
   if(!db) return toast("Configura Firebase primero");
-  const upd={canalKg,canal:canalKg*2,cortes,piezas,otrosDesc:$("ecOtrosDesc").value.trim()};
+  const upd={canalKg,canal:canalKg*2,cortes,cortesNom,piezas,otrosDesc:lega?lega.n:""};
   /* update() reemplaza el mapa completo de cortes (no mezcla con claves antiguas como pierna/brazo) */
   db.collection("cerdos").doc(ecId).update(upd).catch(e=>toast("Error nube: "+(e.code||e.message)));
   Object.assign(c,upd); /* refleja el cambio al instante, aun sin red */
@@ -1510,7 +1530,7 @@ function renderInventario(){
     const mat=respMat(c)||respMat(gastoDeCerdo(c)||{});   /* encargado del sacrificio: el del cerdo o, si falta, el de su gasto */
     return `<div class="card"><div class="row" style="padding-top:0;align-items:flex-start;gap:8px"><div style="flex:1 1 0;min-width:0"><b>${esc(c.nombre)}</b>${mat?` <span style="color:var(--mu);font-size:13px;font-weight:600">• Matarife: ${esc(mat)}</span>`:""}${c.arete?` <span class="tag ar">Arete ${esc(c.arete)}</span>`:""}<small>${fechaTxt(c.fecha)} · canal ${peso(kgDe(c))} kg (${peso(c.canal)} lb)${c.pesoIngresoKg?` · ingresó ${peso(c.pesoIngresoKg)} kg`:""}</small></div><div style="flex:0 0 auto;margin-left:auto"><button class="sm" onclick="editarCerdo('${c.id}')">✏️ Editar</button></div></div>
   <div class="stock"><span class="h">Corte</span><span class="h n">Inicial</span><span class="h n">Vendido</span><span class="h n">Disp.</span>
-  ${CORTES.map(([k,n])=>{const d=dispCorte(c,k);return `<span>${nomFila(c,k,n)}</span><span class="n">${peso(initCorte(c,k))}</span><span class="n">${peso(vendidoCorte(c.id,k))}</span><span class="n ${d<=0?"neg":"pos"}">${peso(d)}</span>`}).join("")}</div>
+  ${CORTES.filter(([k])=>!esExtra(k)||initCorte(c,k)>0||vendidoCorte(c.id,k)>0).map(([k,n])=>{const d=dispCorte(c,k);return `<span>${nomFila(c,k,n)}</span><span class="n">${peso(initCorte(c,k))}</span><span class="n">${peso(vendidoCorte(c.id,k))}</span><span class="n ${d<=0?"neg":"pos"}">${peso(d)}</span>`}).join("")}</div>
   ${piezasTxt(c)}
   ${bk.length?`<div class="sub" style="margin:10px 0 0">Preventa apartada: ${bk.map(b=>{const a=pvLb(mine,b.k),d=dispBucket(c,b);return `<span class="${a>d+1e-9?"neg":"pos"}">${b.n} ${peso(a)} lb</span>`}).join(" · ")}</div>`:""}
   ${fal.length?`<div class="alerta" style="margin:12px 0 0">⚠️ Falta carne para la preventa: ${fal.map(x=>`${x.n} (−${peso(x.ap-x.d)} lb)`).join(", ")}</div>`:""}</div>`}).join(""):'<div class="card empty">No hay cerdos sacrificados. Toca «➕ Registrar Sacrificio / Despiece» para registrar el primero.</div>';
@@ -1573,7 +1593,7 @@ function renderItems(){
     const c=cs.find(x=>x.id===it.cerdoId);
     return `<div class="item"><div class="ih"><b>Corte ${i+1}</b>${carrito.length>1?`<button class="sm del" onclick="quitarItem(${i})">Quitar</button>`:""}</div>
     <div class="ig">
-    <div class="full"><label>Corte</label><select onchange="setItem(${i},'corte',this.value,true)">${CORTES.map(([k,n])=>`<option value="${k}"${k===it.corte?" selected":""}>${c?nomFila(c,k,n):n}${c?` (${peso(dispCorte(c,k))} lb disp.)`:""}</option>`).join("")}</select></div>
+    <div class="full"><label>Corte</label><select onchange="setItem(${i},'corte',this.value,true)">${CORTES.filter(([k])=>!esExtra(k)||!c||k===it.corte||initCorte(c,k)>0).map(([k,n])=>`<option value="${k}"${k===it.corte?" selected":""}>${c?nomFila(c,k,n):n}${c?` (${peso(dispCorte(c,k))} lb disp.)`:""}</option>`).join("")}</select></div>
     ${(it.corte==="otros"||it.desc)?`<div class="full"><label>Descripción en el comprobante (opcional)</label><input value="${esc(it.desc||"")}" placeholder="${esc((c&&c.otrosDesc)||"Ej: Cabeza, Papada, Asadura")}" oninput="carrito[${i}].desc=this.value"></div>`:""}
     <div><label>Cantidad (lb)</label><input type="number" inputmode="decimal" step="0.01" value="${it.cant||""}" oninput="setItem(${i},'cant',this.value)"></div>
     <div><label>Precio por lb ($)</label><input class="money" inputmode="numeric" value="${it.precio?miles(it.precio):""}" oninput="setItem(${i},'precio',this.value)" placeholder="0"></div>
@@ -1753,7 +1773,7 @@ function renderEV(){
   <div class="g2"><div><label>Cliente (vecino)</label><input id="evCli" value="${esc(ev.cliente)}" oninput="ev.cliente=this.value"></div>
   <div><label>Teléfono</label><input type="tel" inputmode="tel" id="evTel" value="${esc(ev.tel)}" oninput="ev.tel=this.value"></div></div>
   ${ev.items.map((it,i)=>{
-    const c=cs.find(x=>x.id===it.cerdoId),hot=esCaliente(it),ops=[...CORTES]; if(!ops.some(x=>x[0]===it.corte)) ops.push([it.corte,nomCorte(it.corte)]);
+    const c=cs.find(x=>x.id===it.cerdoId),hot=esCaliente(it),ops=CORTES.filter(([k])=>!esExtra(k)||!c||k===it.corte||initCorte(c,k)>0); if(!ops.some(x=>x[0]===it.corte)) ops.push([it.corte,nomCorte(it.corte)]);
     return `<div class="item"><div class="ih"><b>Corte ${i+1}</b>${ev.items.length>1?`<button class="sm del" onclick="evQuitar(${i})">Quitar</button>`:""}</div>
     <div class="ig">
     <div${hot?' class="full"':""}><label>Cerdo</label><select onchange="evItem(${i},'cerdoId',this.value,true)">${cs.map(x=>`<option value="${x.id}"${x.id===it.cerdoId?" selected":""}>${esc(x.nombre)}${x.arete?" · Arete "+esc(x.arete):""}</option>`).join("")}${it.cerdoId&&!c?`<option value="${esc(it.cerdoId)}" selected>${esc(it.cerdoNombre||"Cerdo")} (ya no existe)</option>`:""}<option value=""${it.cerdoId?"":" selected"}>Sin asignar (no descuenta inventario)</option></select></div>
@@ -2147,6 +2167,81 @@ const PV_PROD=[["carne","Carne"],["costilla","Costilla"],["lomo","Lomo"],["pesun
 const BUCKETS=[{k:"carne",n:"Carne"},{k:"costilla",n:"Costilla"},{k:"lomo",n:"Lomo"},{k:"pesuna",n:"Pesuña"},{k:"orejas",n:"Orejas"},{k:"otros",n:"Otros"}];
 const BK={carne:"carne",pierna:"carne",brazo:"carne",costilla:"costilla",lomo:"lomo",pesuna:"pesuna",orejas:"orejas",otros:"otros",cabeza:"otros",tocino:"otros"};
 const CORTE_DE={carne:"carne",costilla:"costilla",lomo:"lomo",pesuna:"pesuna",orejas:"orejas",otros:"otros"};
+
+/* ===== Cortes personalizados =====
+   Cada nombre guardado en cerdo.cortesNom se registra en CORTES, BUCKETS, PV_PROD, BK y CORTE_DE,
+   así aparece solo en Inventario, Preventas, Ventas, comprobantes y reportes (se recalcula en renderAll). */
+function registrarCortesExtra(){
+  [CORTES,PV_PROD].forEach(a=>{ for(let i=a.length-1;i>=0;i--) if(esExtra(a[i][0])) a.splice(i,1); });
+  for(let i=BUCKETS.length-1;i>=0;i--) if(esExtra(BUCKETS[i].k)) BUCKETS.splice(i,1);
+  [BK,CORTE_DE].forEach(o=>Object.keys(o).filter(esExtra).forEach(k=>delete o[k]));
+  const mapa={};
+  (D.cerdos||[]).forEach(c=>{ const m=c.cortesNom||{}; Object.keys(m).forEach(k=>{ if(esExtra(k)&&!mapa[k]) mapa[k]=String(m[k]||"").trim()||nomCorte(k); }); });
+  Object.keys(mapa).sort((a,b)=>mapa[a].localeCompare(mapa[b],"es")).forEach(k=>{
+    const n=mapa[k], ic=CORTES.findIndex(x=>x[0]==="otros"), ip=PV_PROD.findIndex(x=>x[0]==="otros"), ib=BUCKETS.findIndex(x=>x.k==="otros");
+    CORTES.splice(ic<0?CORTES.length:ic,0,[k,n]);
+    PV_PROD.splice(ip<0?PV_PROD.length:ip,0,[k,n]);
+    BUCKETS.splice(ib<0?BUCKETS.length:ib,0,{k,n});
+    BK[k]=k; CORTE_DE[k]=k;
+  });
+}
+
+/* ===== Filas dinámicas «+ Agregar otro corte» (pref «c» = registrar sacrificio, «ec» = editar pesaje) ===== */
+const XC_BASE=["carne","costilla","lomo","pesuna","pesuña","orejas","orejas"];
+const XC_SUG=["Papada","Cabeza","Tocino","Chicharrón","Vísceras","Manteca","Hígado","Asadura","Patas","Rabo","Huesos"];
+const xcNorm = t => String(t||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim();
+const xcClave = n => "x_"+xcNorm(n).replace(/[^a-z0-9]+/g,"_").replace(/^_+|_+$/g,"");
+const xcRecalc = pref => pref==="c" ? sumarCortes() : ecCalc();
+function xcHTML(pref){
+  return '<h3 class="xc-t">Otros cortes <span style="font-weight:400;color:var(--mu)">(opcional)</span></h3>'+
+    '<div class="xc-list" id="'+pref+'XcList"></div>'+
+    '<button type="button" class="xc-add" onclick="xcAgregar(\''+pref+'\')">+ Agregar otro corte</button>'+
+    '<div class="xc-tot">Otros cortes: <b id="'+pref+'XcTot">0</b> lb</div>'+
+    '<div class="xc-sub">Papada, cabeza, tocino, chicharrón, vísceras… Se suman al total y quedan disponibles para Preventas y Ventas.</div>'+
+    '<datalist id="'+pref+'XcSug">'+XC_SUG.map(n=>'<option value="'+n+'">').join("")+'</datalist>';
+}
+function xcAgregar(pref,nombre,lb,k){
+  const box=$(pref+"XcList"); if(!box) return;
+  const r=document.createElement("div"); r.className="xc-row"; if(k) r.dataset.k=k;
+  r.innerHTML='<input class="xc-n" type="text" list="'+pref+'XcSug" maxlength="40" autocomplete="off" placeholder="Nombre del corte (ej. Papada)" aria-label="Nombre del corte" value="'+esc(nombre||"")+'">'+
+    '<input class="xc-w" type="number" inputmode="decimal" step="0.01" min="0" placeholder="lb" aria-label="Peso en libras" value="'+(lb>0?Math.round(lb*100)/100:"")+'">'+
+    '<button type="button" class="xc-del" aria-label="Quitar este corte" title="Quitar">🗑️</button>';
+  r.querySelectorAll("input").forEach(i=>i.addEventListener("input",()=>xcRecalc(pref)));
+  r.querySelector(".xc-del").addEventListener("click",()=>{ r.remove(); xcRecalc(pref); });
+  box.appendChild(r); if(!nombre&&!(lb>0)){ try{ r.querySelector(".xc-n").focus(); }catch(e){} }
+  xcRecalc(pref);
+}
+function xcLimpiar(pref){ const b=$(pref+"XcList"); if(b) b.innerHTML=""; }
+/* Filas con nombre y peso > 0, agrupadas por clave (dos filas con el mismo nombre se suman) */
+function xcFilas(pref){
+  const b=$(pref+"XcList"), m=new Map(); if(!b) return [];
+  b.querySelectorAll(".xc-row").forEach(r=>{
+    const n=r.querySelector(".xc-n").value.trim().replace(/\s+/g," "), lb=parseFloat(r.querySelector(".xc-w").value)||0;
+    if(lb<=0||!n) return;
+    const k=r.dataset.k||xcClave(n), o=m.get(k);
+    if(o) o.lb+=lb; else m.set(k,{k,n,lb});
+  });
+  return [...m.values()].map(o=>({...o,lb:Math.round(o.lb*100)/100}));
+}
+const xcSumaKey = (pref,k) => xcFilas(pref).filter(r=>r.k===k).reduce((a,r)=>a+r.lb,0);
+const xcTotal = (pref,soloExtras) => xcFilas(pref).filter(r=>!soloExtras||esExtra(r.k)).reduce((a,r)=>a+r.lb,0);
+function xcValida(pref){
+  const b=$(pref+"XcList"); if(!b) return "";
+  for(const r of b.querySelectorAll(".xc-row")){
+    const n=r.querySelector(".xc-n").value.trim(), lb=parseFloat(r.querySelector(".xc-w").value)||0;
+    if(lb>0&&!n) return "Escribe el nombre del corte que pesaste";
+    if(!r.dataset.k&&n&&XC_BASE.includes(xcNorm(n))) return "«"+n+"» ya tiene su propio campo arriba";
+    if(!r.dataset.k&&n&&xcClave(n)==="x_") return "Nombre de corte no válido";
+  }
+  return "";
+}
+/* Claves a mostrar en el editor: los 6 cortes base + los personalizados (filas actuales y guardados del cerdo) */
+function ecClaves(c){
+  const out=BUCKETS.filter(b=>!esExtra(b.k)).map(b=>({k:b.k,n:b.n})), vistos=new Set(out.map(b=>b.k));
+  const nom={...(c&&c.cortesNom||{})}; xcFilas("ec").forEach(r=>nom[r.k]=r.n);
+  Object.keys(nom).filter(esExtra).forEach(k=>{ if(!vistos.has(k)){ vistos.add(k); out.push({k,n:nom[k]}); } });
+  return out;
+}
 /* Nombre a mostrar: en "Otros" solo la descripción escrita por el usuario */
 const pvNombre = i => i.corte==="otros" ? ((i.desc||"").trim()||"Sin descripción") : (PV_PROD.find(x=>x[0]===i.corte)||[,nomCorte(i.corte)])[1];
 const nomItem = i => (i.desc&&i.desc.trim()) ? i.desc.trim() : (esCaliente(i) ? "Canal completa (en caliente)" : i.corte==="otros" ? "Varios" : nomCorte(i.corte));
@@ -2684,7 +2779,7 @@ function renderResumen(){
     const monto=D.ventas.reduce((a,v)=>a+itemsDe(v).filter(i=>i.cerdoId===c.id).reduce((b,i)=>b+(i.cantidad||0)*(i.precio||0),0),0);
     return `<div class="card"><b>${esc(c.nombre)}</b>${c.arete?` <span class="tag ar">Arete ${esc(c.arete)}</span>`:""}<div class="sub" style="margin:2px 0 0">Canal: ${peso(kgDe(c))} kg (${peso(c.canal)} lb) · Vendido: ${peso(vend)} · En congelador: ${peso(disp)} · Ventas: ${money(monto)}</div>
     <div class="bar"><i style="width:${pct}%"></i></div>
-    <div class="stock"><span class="h">Corte</span><span class="h n">Inicial</span><span class="h n">Vendido</span><span class="h n">Disp.</span>${CORTES.map(([k,n])=>`<span>${nomFila(c,k,n)}</span><span class="n">${peso(initCorte(c,k))}</span><span class="n">${peso(vendidoCorte(c.id,k))}</span><span class="n">${peso(dispCorte(c,k))}</span>`).join("")}</div></div>`;
+    <div class="stock"><span class="h">Corte</span><span class="h n">Inicial</span><span class="h n">Vendido</span><span class="h n">Disp.</span>${CORTES.filter(([k])=>!esExtra(k)||initCorte(c,k)>0||vendidoCorte(c.id,k)>0).map(([k,n])=>`<span>${nomFila(c,k,n)}</span><span class="n">${peso(initCorte(c,k))}</span><span class="n">${peso(vendidoCorte(c.id,k))}</span><span class="n">${peso(dispCorte(c,k))}</span>`).join("")}</div></div>`;
   }).join(""):(ez?'<div class="card empty">Este cerdo aún está en ceba: todavía no tiene despiece registrado.</div>':'<div class="card empty">Registra un sacrificio para ver el rendimiento.</div>');
 }
 
@@ -4026,7 +4121,7 @@ function irRendimiento(){
   irA("resumen");
   setTimeout(()=>{ const e=$("rendimiento"); if(e) window.scrollTo({top:Math.max(0,e.getBoundingClientRect().top+window.scrollY-140),behavior:"smooth"}); },80);
 }
-function renderAll(){filtrarProyecto();renderInversion();renderInventario();refrescarItems();renderVentas();renderDeudores();renderResumen();renderPreventas();llenarCNombre();infoFechaSac();panelPVSac();estadoBtnSacrificio();renderHistorico();renderPanel();renderCeba();renderInicio();asegurarInicial();sanearDespiece();try{ccSync();}catch(e){}}
+function renderAll(){filtrarProyecto();registrarCortesExtra();renderInversion();renderInventario();refrescarItems();renderVentas();renderDeudores();renderResumen();renderPreventas();llenarCNombre();infoFechaSac();panelPVSac();estadoBtnSacrificio();renderHistorico();renderPanel();renderCeba();renderInicio();asegurarInicial();sanearDespiece();try{ccSync();}catch(e){}}
 
 /* ===== Arranque ===== */
 function net(){const on=navigator.onLine,l=$("ledNet");l.className="led "+(on?"on":"");l.querySelector("span").textContent=on?"En línea":"Sin red";}
