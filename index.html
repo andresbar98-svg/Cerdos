@@ -954,7 +954,23 @@ function estadoBtnSacrificio(){
 }
 function abrirNuevo(id){
   if(id==="mSacrificio"&&loteCompleto()){ estadoBtnSacrificio(); return toast(MSG_LOTE_COMPLETO); }
-  if(id==="mEncargo"){ if(!$("pFechaSac").value){ $("pFechaSac").value=hoy(); try{fechaManual();}catch(e){} } renderPItems(); }
+  if(id==="mEncargo"){
+    try{ llenarPCerdo(); }catch(e){}                       /* opciones al día antes de preseleccionar */
+    /* Cerdo con sacrificio programado y preventa abierta cuya fecha sea la más próxima */
+    const prox=(()=>{ try{
+      return plantelCerdos()
+        .map(e=>({e,f:sacProgDe(e.nombre)}))
+        .filter(x=>x.f&&!pvCierre(x.e.nombre,x.e.arete))   /* pvCierre vacío = preventa abierta */
+        .sort((a,b)=>a.f.localeCompare(b.f))[0]||null;
+    }catch(e){ return null; } })();
+    /* Solo si el formulario está limpio (no pisa un cerdo ya elegido ni un borrador restaurado) */
+    if(prox&&!$("pCerdo").value){
+      $("pCerdo").value=pvValor(prox.e);
+      if($("pCerdo").value===pvValor(prox.e)) cerdoPVCambio();   /* autocompleta la fecha, la bloquea y muestra el aviso */
+    }
+    if(!$("pFechaSac").value){ $("pFechaSac").value=hoy(); try{fechaManual();}catch(e){} }
+    renderPItems();
+  }
   else if(id==="mSacrificio"){ if(!$("cFecha").value) $("cFecha").value=hoy(); try{matOpcionesC();llenarCNombre();infoFechaSac();}catch(e){}
     try{ if(!$("cNombre").value){ const c=[...cerdosVivos().filter(v=>{const f=sacProgDe(v.nombre);return f&&f<=hoy();}).map(v=>v.valor),...cerdosPend().map(x=>"pend:"+x.id)]; if(c.length===1){ $("cNombre").value=c[0]; cerdoDespieceCambio(); } } }catch(e){}
     setTipoSalida("despiece"); sumarCortes(); }
