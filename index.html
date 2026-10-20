@@ -119,6 +119,21 @@ nav button.act{background:linear-gradient(135deg,#f0a35a,#f0c36a);border-color:#
 .warn{background:#3a2a1c;border:1px solid var(--wa);color:var(--wa);padding:10px;border-radius:10px;font-size:12.5px;margin-bottom:14px;display:none}
 .item{background:var(--s2);border:1px solid var(--line);border-radius:12px;padding:10px 12px 12px;margin-top:12px}
 .item select,.item input{background:var(--s1)}
+input:disabled{opacity:.55;cursor:not-allowed}
+.ut{display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--s1)}
+.ut button{flex:1;border:0;background:none;color:var(--mu);padding:11px 4px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer}
+.ut button.act{background:var(--ac);color:#2a1a12}
+.ihR{display:flex;align-items:center;gap:8px}
+.ihR .ut{width:auto}.ihR .ut button{flex:none;padding:7px 11px;font-size:12px}
+.ut button.u-lb.act{background:#3b82f6;color:#fff}
+.ut button.u-pr.act{background:#e88d67;color:#2a1a12}
+.ut button.u-un.act{background:#e88d67;color:#2a1a12}   /* Confirmar venta: modo Cantidad / Unidad */
+.cvIt .ih{gap:8px}.cvIt .ih b{font-size:13px}.cvIt .ihR .ut button{padding:6px 10px;font-size:12px}
+.cvIt .cvTx{display:flex;justify-content:space-between;align-items:center;margin-top:10px}.cvIt .cvTx label{margin:0}
+.pOtroRow{align-items:end;gap:8px}.pOtroRow select{font-size:14px;padding:11px 6px 11px 8px;text-overflow:ellipsis}.pOtroIn{padding:11px 10px}.pOtroIn:placeholder-shown{border-color:var(--ac)}
+.pnote{font-size:12px;color:var(--wa);margin:6px 0 0}
+.pv .pz{font-style:normal;font-size:11px;background:var(--s2);border:1px solid var(--line);border-radius:6px;padding:1px 6px;margin-left:4px;color:var(--ac)}
+.pv .it2 .rt{display:flex;gap:6px;align-items:center;text-align:right}
 .ih{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--ac)}
 /* Cortes en 2 columnas (Editar / Nueva venta): menos scroll en móvil */
 .item{padding:8px 10px 10px;margin-top:10px}
@@ -129,6 +144,22 @@ nav button.act{background:linear-gradient(135deg,#f0a35a,#f0c36a);border-color:#
 .ig select,.ig input{padding:9px 10px}
 .ig .sub{margin:8px 0 0}
 .btn.add{background:none;border:1px dashed var(--ac);color:var(--ac)}
+/* ===== Nuevo encargo: tarjetas de producto compactas en 2 columnas ===== */
+#pItems .item{padding:8px 12px;margin:0 0 8px}
+#pItems .item:first-child{margin-top:10px}
+#pItems .ih{gap:6px}
+#pItems .ih b{font-size:12.5px}
+#pItems .ihR{gap:6px}
+#pItems .ihR .ut button{padding:5px 9px;font-size:11.5px}
+#pItems .ihR .sm{padding:4px 8px;font-size:11.5px}
+.pc-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}
+.pc-grid>div{min-width:0}
+.pc-grid .full{grid-column:1/-1}
+.pc-grid label{margin:0 0 2px;font-size:10.5px;line-height:1.2}
+.pc-grid select,.pc-grid input{padding:7px 8px;border-radius:8px;text-overflow:ellipsis}
+.pc-grid .pOtroIn:placeholder-shown{border-color:var(--ac)}
+.pc-grid .pnote{margin:0;font-size:11px}
+.pvBtns{display:flex;gap:6px;align-items:flex-start;align-self:flex-start;flex:0 0 auto;margin-left:auto}
 .tk{background:var(--s1);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:10px}
 .tkh{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;cursor:pointer;padding-bottom:8px;border-bottom:1px dashed var(--line)}
 .tkh b{font-size:15px}.tkh small{display:block;color:var(--mu);font-size:11.5px;margin-top:2px;line-height:1.35}
@@ -614,8 +645,8 @@ nav button,.navback,#btnProy,header button{position:relative;z-index:1000;pointe
 </div></div>
 
 <div class="modal" id="mEncargo"><div class="sheet">
-  <div class="mh"><h2>➕ Nuevo encargo</h2><button class="sm" onclick="cerrarForm('mEncargo')">Cerrar</button></div>
-<p class="sub">Anota lo que los vecinos apartan antes del sacrificio. Cantidades en libras (lb).</p>
+  <div class="mh"><h2 id="pvTitulo">➕ Nuevo encargo</h2><button class="sm" onclick="cerrarForm('mEncargo')">Cerrar</button></div>
+<p class="sub">Anota lo que los vecinos apartan antes del sacrificio. Cantidades en libras (lb) o por presa completa.</p>
     <div class="g2"><div><label>Cliente (vecino)</label><input id="pCliente" placeholder="Nombre"></div>
     <div><label>Teléfono</label><input type="tel" inputmode="tel" id="pTel" placeholder="3001234567"></div></div>
     <label>Cerdo o N° de arete (opcional)</label><select id="pCerdo" onchange="cerdoPVCambio()"><option value="">-- Sin asignar / Cualquiera --</option></select>
@@ -624,7 +655,7 @@ nav button,.navback,#btnProy,header button{position:relative;z-index:1000;pointe
     <div id="pItems"></div>
     <button class="btn add" onclick="agregarPItem()">+ Agregar otro producto</button>
     <label>Estado del pedido</label><select id="pEstado"><option value="Apartado">Apartado / Preventa</option><option value="Despachado">Despachado / Entregado</option></select>
-    <button class="btn" onclick="guardarPreventa()">Guardar encargo</button>
+    <button class="btn" id="pvGuardar" onclick="guardarPreventa()">Guardar encargo</button>
 </div></div>
 
 <div class="modal" id="mVenta"><div class="sheet">
@@ -914,7 +945,7 @@ function borrarDoc(col,id){ if(db&&confirm("¿Eliminar este registro?")) db.coll
 const totLech = () => D.lotes.reduce((a,x)=>a+(x.valor||0)+(x.flete||0),0);
 const totIns = () => D.insumos.reduce((a,x)=>a+(x.costo||0)+(x.flete||0),0);
 const itemsDe = v => v.items || [{cerdoId:v.cerdoId,cerdoNombre:v.cerdoNombre,corte:v.corte,cantidad:v.cantidad,precio:v.precio}];
-const vendidoCorte = (cid,k) => D.ventas.reduce((a,v)=>a+itemsDe(v).filter(i=>i.cerdoId===cid&&keysOf(k).includes(i.corte)).reduce((b,i)=>b+(i.cantidad||0),0),0);
+const vendidoCorte = (cid,k) => D.ventas.reduce((a,v)=>a+itemsDe(v).filter(i=>i.cerdoId===cid&&i.unidad!=="und"&&keysOf(k).includes(i.corte)).reduce((b,i)=>b+(i.cantidad||0),0),0);
 const kgDe = c => c.canalKg!=null ? c.canalKg : (c.canal||0)/2;
 const dispCorte = (c,k) => initCorte(c,k) - vendidoCorte(c.id,k);
 const abonado = v => v.abonado||0;
@@ -955,6 +986,7 @@ function estadoBtnSacrificio(){
 function abrirNuevo(id){
   if(id==="mSacrificio"&&loteCompleto()){ estadoBtnSacrificio(); return toast(MSG_LOTE_COMPLETO); }
   if(id==="mEncargo"){
+    if(pvEdit) pvResetForm();                              /* venía de editar un encargo: formulario limpio */
     try{ llenarPCerdo(); }catch(e){}                       /* opciones al día antes de preseleccionar */
     /* Cerdo con sacrificio programado y preventa abierta cuya fecha sea la más próxima */
     const prox=(()=>{ try{
@@ -1420,7 +1452,7 @@ function guardarCerdo(){
     pl.vs.forEach(v=>bt.set(db.collection("ventas_cerdos").doc(v.id),{fechaSacrificio:fecha},{merge:true}));
     np=pl.pvs.length; nv=pl.vs.length;
   }
-  const sobra=BUCKETS.some(b=>pvLb(pvDe(nombre,arete),b.k)>(cortes[b.k]||0)+1e-9);   /* BUCKETS ya incluye los personalizados registrados */
+  const sobra=BUCKETS.some(b=>pvLb(pvDe(nombre,arete),b.k,{...cortes,...piezas})>(cortes[b.k]||0)+1e-9);   /* BUCKETS ya incluye los personalizados registrados */
   bt.commit().catch(e=>toast("Error nube: "+e.code)); /* no bloquea si estás sin red */
   $("cNombre").value="";$("cCanal").value="";$("cSobrante").value="";$("cSacCosto").value="";$("cMatSel").selectedIndex=0;$("cMatOtro").value="";otroCampo("cMatSel","cMatOtro",true);$("cSacInfo").textContent="";sacAuto=false;fechaSacAuto=false;$("cFecha").value=hoy();
   limpiarCortes();$("cIntDesc").value="";$("cIntLb").value="";setTipoSalida("despiece");llenarCNombre();infoFechaSac();panelPVSac();cerrarForm("mSacrificio");
@@ -1584,7 +1616,7 @@ const tipoSacrificio = c => (c.tipoSalida==="canal"||c.tipoSalida==="despiece") 
 const modoDeTipo = c => tipoSacrificio(c)==="canal" ? "caliente" : "despiece";
 /* Un cerdo solo se puede vender en la modalidad de su tipo de sacrificio */
 const aptoVenta = c => modoDeTipo(c)===(vModo==="caliente"?"caliente":"despiece") && (vModo==="caliente" ? canalDisp(c)>1e-9 : cerdoConStock(c));
-const uItem = i => i.unidad==="kg"||esCaliente(i) ? "kg" : "lb";
+const uItem = i => i.unidad==="und" ? "und" : (i.unidad==="kg"||esCaliente(i) ? "kg" : "lb");
 const MSG_SIN_STOCK="No hay cerdos con inventario disponible para venta";
 /* Texto del cerdo en el selector de Ventas: «Cerdo #1 (Arete: 125)»; si no se puede vender, la razón */
 function etiquetaVenta(c){
@@ -1750,7 +1782,7 @@ function reporteCerdo(id){
   vs.forEach(v=>{
     const x=ventaCerdo(v,id), k=norm(v.cliente)||"sin nombre", o=cl[k]=cl[k]||{nom:v.cliente||"Sin nombre",total:0,abonado:0,saldo:0};
     o.total+=x.total; o.abonado+=x.abonado; o.saldo+=x.saldo; tot+=x.total; cob+=x.abonado; sal+=x.saldo;
-    x.items.forEach(i=>{ const q=i.cantidad||0,m=subItem(i); if(esCaliente(i)){ kgC+=q; vC+=m; } else { const n=nomItem(i), z=cor[n]=cor[n]||{lb:0,v:0}; z.lb+=q; z.v+=m; } });
+    x.items.forEach(i=>{ const q=i.cantidad||0,m=subItem(i); if(esCaliente(i)){ kgC+=q; vC+=m; } else { const n=nomItem(i), z=cor[n]=cor[n]||{lb:0,v:0}; z.lb+=(i.unidad==="und"?0:q); z.v+=m; } });
   });
   const lbCortes=CORTES.reduce((a,[k])=>a+initCorte(c,k),0), vD=Object.values(cor).reduce((a,z)=>a+z.v,0), ing=c.pesoIngresoKg||0;
   const pl=plantelCerdos(), ez=pl.find(e=>e.c&&e.c.id===id), iv=ez?inversionCerdo(ez,pl):null;
@@ -1774,7 +1806,7 @@ function reporteCerdo(id){
 let ev=null;
 const baseCorte = k => CORTES.map(x=>x[0]).find(b=>keysOf(b).includes(k))||k;
 /* Disponible de un corte excluyendo lo que esta misma venta ya descontaba */
-const evDisp = (c,k) => dispCorte(c,k)+ev.orig.filter(i=>i.cerdoId===c.id&&keysOf(k).includes(i.corte)).reduce((a,i)=>a+(i.cantidad||0),0);
+const evDisp = (c,k) => dispCorte(c,k)+ev.orig.filter(i=>i.cerdoId===c.id&&i.unidad!=="und"&&keysOf(k).includes(i.corte)).reduce((a,i)=>a+(i.cantidad||0),0);
 function editarVenta(id){
   const v=D.ventas.find(x=>x.id===id); if(!v) return;
   const orig=itemsDe(v);
@@ -1795,8 +1827,8 @@ function renderEV(){
     <div${hot?' class="full"':""}><label>Cerdo</label><select onchange="evItem(${i},'cerdoId',this.value,true)">${cs.map(x=>`<option value="${x.id}"${x.id===it.cerdoId?" selected":""}>${esc(x.nombre)}${x.arete?" · Arete "+esc(x.arete):""}</option>`).join("")}${it.cerdoId&&!c?`<option value="${esc(it.cerdoId)}" selected>${esc(it.cerdoNombre||"Cerdo")} (ya no existe)</option>`:""}<option value=""${it.cerdoId?"":" selected"}>Sin asignar (no descuenta inventario)</option></select></div>
     ${hot?'<div class="full sub" style="margin:8px 0 0">🔥 Venta en caliente · Canal (por kilos)</div>':""}<div${hot?' style="display:none"':""}><label>Corte</label><select onchange="evItem(${i},'corte',this.value,true)">${ops.map(([k,n])=>`<option value="${k}"${k===it.corte?" selected":""}>${c?nomFila(c,k,n):n}${c?` (${peso(evDisp(c,k))} lb disp.)`:""}</option>`).join("")}</select></div>
     ${(it.corte==="otros"||it.desc)?`<div class="full"><label>Descripción en el comprobante (opcional)</label><input value="${esc(it.desc||"")}" placeholder="${esc((c&&c.otrosDesc)||"Ej: Cabeza, Papada, Asadura")}" oninput="ev.items[${i}].desc=this.value"></div>`:""}
-    <div><label>${hot?"Kilos (kg)":"Libras (lb)"}</label><input type="number" inputmode="decimal" step="0.01" id="evL${i}" value="${it.cant||""}" oninput="evSet(${i},'cant',this.value)"></div>
-    <div><label>${hot?"Precio por kg ($)":"Precio por lb ($)"}</label><input class="money" inputmode="numeric" id="evP${i}" value="${it.precio>0?miles(it.precio):""}" placeholder="0" oninput="evSet(${i},'precio',this.value)"></div>
+    <div><label>${hot?"Kilos (kg)":(it.unidad==="und"?"Cantidad":"Libras (lb)")}</label><input type="number" inputmode="decimal" step="0.01" id="evL${i}" value="${it.cant||""}" oninput="evSet(${i},'cant',this.value)"></div>
+    <div><label>${hot?"Precio por kg ($)":(it.unidad==="und"?"Precio por unidad ($)":"Precio por lb ($)")}</label><input class="money" inputmode="numeric" id="evP${i}" value="${it.precio>0?miles(it.precio):""}" placeholder="0" oninput="evSet(${i},'precio',this.value)"></div>
     <div class="full"><label>Total del ítem ($)</label><input class="money" inputmode="numeric" id="evT${i}" value="${it.total>0?miles(it.total):""}" placeholder="0" oninput="evSet(${i},'total',this.value)"></div>
     </div></div>`;}).join("")}
   <button class="btn add" onclick="evAgregar()">+ Agregar otro corte</button>
@@ -1834,11 +1866,11 @@ function evGuardar(){
   if(!ev.items.length||ev.items.some(it=>!(it.cant>0)||!(it.total>0))) return toast("Completa libras y precio de cada corte");
   const ped={};
   for(const it of ev.items){
-    const c=D.cerdos.find(x=>x.id===it.cerdoId); if(!c||esCaliente(it)) continue;
+    const c=D.cerdos.find(x=>x.id===it.cerdoId); if(!c||esCaliente(it)||it.unidad==="und") continue;
     const b=baseCorte(it.corte),key=c.id+"|"+b; ped[key]=(ped[key]||0)+it.cant;
   }
   const aviso=avisoStock(Object.entries(ped).map(([key,cant])=>{const [cid,k]=key.split("|"),c=D.cerdos.find(x=>x.id===cid);return {c,k,cant,disp:evDisp(c,k)};}));
-  const items=ev.items.map(it=>{const c=D.cerdos.find(x=>x.id===it.cerdoId);return{cerdoId:it.cerdoId,cerdoNombre:c?c.nombre:(it.cerdoId?it.cerdoNombre:""),arete:c?(c.arete||""):(it.cerdoId?it.arete:""),corte:it.corte,desc:(it.desc||"").trim(),cantidad:it.cant,precio:it.precio,subtotal:it.total,...(esCaliente(it)?{modo:"caliente",unidad:"kg"}:{})};});
+  const items=ev.items.map(it=>{const c=D.cerdos.find(x=>x.id===it.cerdoId);return{cerdoId:it.cerdoId,cerdoNombre:c?c.nombre:(it.cerdoId?it.cerdoNombre:""),arete:c?(c.arete||""):(it.cerdoId?it.arete:""),corte:it.corte,desc:(it.desc||"").trim(),cantidad:it.cant,precio:it.precio,subtotal:it.total,...(esCaliente(it)?{modo:"caliente",unidad:"kg"}:(it.unidad==="und"?{unidad:"und"}:{}))};});
   const total=items.reduce((a,i)=>a+i.subtotal,0);
   if(ev.estado==="Abonado"&&mval("evAb")<=0) return toast("Ingresa el valor abonado");
   const ab=ev.estado==="Pagado"?total:ev.estado==="Pendiente"?0:Math.min(mval("evAb"),total);
@@ -2259,73 +2291,260 @@ function ecClaves(c){
   return out;
 }
 /* Nombre a mostrar: en "Otros" solo la descripción escrita por el usuario */
-const pvNombre = i => i.corte==="otros" ? ((i.desc||"").trim()||"Sin descripción") : (PV_PROD.find(x=>x[0]===i.corte)||[,nomCorte(i.corte)])[1];
+const pvNombre = i => (i.presa&&i.presa!==PRESA_OTRO&&presaNom(i.presa))||(i.corte==="otros" ? ((i.desc||"").trim()||"Sin descripción") : (PV_PROD.find(x=>x[0]===i.corte)||[,nomCorte(i.corte)])[1]);
 const nomItem = i => (i.desc&&i.desc.trim()) ? i.desc.trim() : (esCaliente(i) ? "Canal completa (en caliente)" : i.corte==="otros" ? "Varios" : nomCorte(i.corte));
 const dispBucket = (c,b) => dispCorte(c,b.k);
 const pvAbiertas = () => D.preventas.filter(p=>p.estado!=="Despachado");
-const pvLb = (arr,b) => arr.reduce((a,p)=>a+(p.items||[]).filter(i=>!b||(BK[i.corte]||"otros")===b).reduce((s,i)=>s+(i.cantidad||0),0),0);
+/* ===== Reserva por Presa =====
+   unidad:"presa" = pieza completa (Costilla, Lomo, Carne/Pierna…). Si las libras están vacías/0, la cantidad se vincula al peso real
+   de esa pieza en la canal (Despiece / Sacrificio). Si el usuario escribe libras, ese valor manual manda. */
+const esPresa = i => !!i && i.unidad==="presa";
+/* Presas físicas del cerdo: [clave, etiqueta, corte (bucket de inventario)] */
+const PRESAS=[["pierna1","Pierna 1","carne"],["pierna2","Pierna 2","carne"],["brazo1","Brazo 1","carne"],["brazo2","Brazo 2","carne"],["lomo","Lomo","lomo"],["costilla1","Costilla 1","costilla"],["costilla2","Costilla 2","costilla"],["pesuna","Pesuñas","pesuna"],["cabeza","Cabeza","otros"],["orejas","Orejas","orejas"],["visceras","Vísceras (Asadura / Hígado, bofe, corazón)","otros"],["chunchullo","Chunchullo","otros"],["otro","Otro (especificar nombre)","otros"]];
+/* Piezas únicas que se cuentan por unidad (no por libras): etiqueta «Cantidad» y valor 1 automático */
+const PRESA_UNID=new Set(["visceras","chunchullo"]);
+const esUnid = i => !!i && esPresa(i) && PRESA_UNID.has(i.presa);
+const PRESA_OTRO="otro";                                   /* presa libre: el usuario escribe el nombre (Tocino, Espinazo, Asadura…) · se puede repetir, nunca se marca «Ya apartado» */
+const PRESA_IND=/^(pierna|brazo|costilla)[12]$/;           /* presas con peso individual en el despiece */
+const PRESAS_LEGADO={costilla:["costilla1","costilla2"],otros:["pesuna","cabeza","orejas"]};   /* registros antiguos: «Costilla» entera y «Pesuñas / Cabeza / Orejas / Otros» ocupan sus piezas nuevas */
+const presaNom = k => k==="visceras"?"Vísceras":(PRESAS.find(x=>x[0]===k)||[])[1]||(k==="otros"?"Pesuñas / Cabeza / Orejas / Otros":"")||"";
+const presaCorte = k => (PRESAS.find(x=>x[0]===k)||[])[2]||(PRESAS_LEGADO[k]?k:"carne");
+/* Presas ya apartadas para el cerdo elegido (en cualquier encargo guardado de ese cerdo) + las ya elegidas en otras filas de este formulario.
+   idx = fila que se está dibujando (se excluye a sí misma) · soloPrevias = al normalizar solo cuentan las filas anteriores */
+function presasTomadas(valorCerdo,idx,soloPrevias){
+  const set=new Set(), v=norm(valorCerdo);
+  if(v){
+    const e=plantelCerdos().find(x=>norm(pvValor(x))===v)||null;
+    D.preventas.filter(p=>p.id!==pvEdit).forEach(p=>{ const t=norm(p.cerdo);
+      if(t&&(t===v||(e&&(t===norm(e.nombre)||(!!norm(e.arete)&&t===norm(e.arete)))))) (p.items||[]).forEach(j=>{ if(esPresa(j)&&j.presa&&j.presa!==PRESA_OTRO) (PRESAS_LEGADO[j.presa]||[j.presa]).forEach(k=>set.add(k)); }); });
+  }
+  pcarrito.forEach((it,n)=>{ if(n!==idx&&(!soloPrevias||n<idx)&&esPresa(it)&&it.presa&&it.presa!==PRESA_OTRO) set.add(it.presa); });
+  return set;
+}
+/* Peso real de la pieza k en la canal ya pesada del cerdo del encargo (null = aún sin despiece) */
+function pvPesoReal(p,i){
+  if(!p||!norm(p.cerdo)) return null;
+  const c=D.cerdos.find(x=>esCerdo(x,p.cerdo)); if(!c||(c.sinPesaje&&!(c.canalKg>0))) return null;
+  if(i.presa&&PRESA_IND.test(i.presa)) return (c.piezas&&+c.piezas[i.presa])||0;   /* Pierna 1/2, Brazo 1/2 y Costilla 1/2: peso individual pesado */
+  return initCorte(c,i.corte);                                                                    /* Lomo, Otros y registros antiguos de «Costilla» entera (suma de las dos) */
+}
+/* Libras efectivas de un ítem. live = {corte:lb} del formulario de despiece abierto (vinculación en vivo) */
+function pvCant(p,i,live){
+  if(esUnid(i)) return 0;   /* Vísceras / Chunchullo van por unidad: no suman libras ni reparten el peso de «Otros» */
+  const m=+i.cantidad||0;
+  if(!esPresa(i)||m>0) return m;
+  const lk=(i.presa&&PRESA_IND.test(i.presa))?i.presa:i.corte;
+  const real=(live&&live[lk]!=null)?live[lk]:pvPesoReal(p,i);
+  if(!(real>0)) return 0;
+  if(i.presa&&i.corte!=="otros") return real;   /* presa física única: su propio peso · Cabeza/Otro comparten el peso de «Otros» y se reparten abajo */
+  let n=0;   /* varias presas pendientes de la misma pieza y cerdo se reparten el peso real en partes iguales */
+  pvAbiertas().forEach(q=>{ if(norm(q.cerdo)===norm(p.cerdo)) (q.items||[]).forEach(j=>{ if(esPresa(j)&&j.corte===i.corte&&!(+j.cantidad>0)&&!PRESA_UNID.has(j.presa)) n++; }); });
+  return real/Math.max(n,1);
+}
+const pvLb = (arr,b,live) => arr.reduce((a,p)=>a+(p.items||[]).filter(i=>!b||(BK[i.corte]||"otros")===b).reduce((s,i)=>s+pvCant(p,i,live),0),0);
 const pvDe = (nombre,arete) => pvAbiertas().filter(p=>{const t=norm(p.cerdo);return !!t&&(t===norm(nombre)||(!!norm(arete)&&t===norm(arete)));});
 const pvTodasDe = (nombre,arete) => D.preventas.filter(p=>{const t=norm(p.cerdo);return !!t&&(t===norm(nombre)||(!!norm(arete)&&t===norm(arete)));});
 const pvSin = () => pvAbiertas().filter(p=>!norm(p.cerdo));
 const faltantes = c => BUCKETS.map(b=>({k:b.k,n:b.n,ap:pvLb(pvDe(c.nombre,c.arete),b.k),d:dispBucket(c,b)})).filter(x=>x.ap>x.d+1e-9);
 
-let pcarrito=[{corte:"carne",desc:"",cant:0}], pfiltro="apartado", ventaDesde=null;
-function agregarPItem(){pcarrito.push({corte:PV_PROD[pcarrito.length%PV_PROD.length][0],desc:"",cant:0});renderPItems();}
+let pvEdit=null;   /* id del encargo que se está editando (null = encargo nuevo) */
+let pcarrito=[{corte:"carne",desc:"",cant:0,unidad:"lb"}], pfiltro="apartado", ventaDesde=null;
+function agregarPItem(){pcarrito.push({corte:PV_PROD[pcarrito.length%PV_PROD.length][0],desc:"",cant:0,unidad:"lb"});renderPItems();}
 function quitarPItem(i){pcarrito.splice(i,1);renderPItems();}
 function setPItem(i,k,v){pcarrito[i][k]=v;renderPItems();}
+function setPUnidad(i,u){
+  const it=pcarrito[i], antesUnid=esUnid(it); it.unidad=u; it.desc="";
+  if(antesUnid&&u==="lb") it.cant=0;                              /* el 1 automático no pasa a libras */
+  if(u==="presa") it.presa="";                                      /* renderPItems elige la primera presa libre */
+  else { delete it.presa; if(!PV_PROD.some(x=>x[0]===it.corte)) it.corte="carne"; }
+  renderPItems();
+}
+function setPPresa(i,k){
+  const it=pcarrito[i], antesUnid=esUnid(it); it.presa=k; it.corte=presaCorte(k); it.desc="";
+  if(esUnid(it)){ if(!antesUnid||!(it.cant>0)) it.cant=1; }      /* Vísceras / Chunchullo → Cantidad = 1 */
+  else if(antesUnid) it.cant=0;                                    /* de unidad a presa normal: libras vacías (Pendiente) */
+  renderPItems();
+}
+/* Opciones del menú según la unidad del renglón. t = presas ya apartadas para el cerdo (guardadas + otras filas del formulario)
+   · Presa (pieza entera): la presa apartada queda DESHABILITADA → «Pierna 1 (Ya apartado)»
+   · Libras (peso parcial): NUNCA se deshabilita; si una presa equivalente ya se apartó completa solo se añade el aviso → «Carne · Pierna (Ya apartado por presa)» */
+function pvOpcionesProducto(it,t,pr){
+  if(pr){
+    const legado=(it.presa&&!PRESAS.some(x=>x[0]===it.presa))?`<option value="${esc(it.presa)}" selected>${esc(presaNom(it.presa))}</option>`:"";
+    return (it.presa?"":'<option value="" selected disabled>Sin presas disponibles</option>')+legado+
+      PRESAS.map(([k,n])=>{ const tk=t.has(k);
+        return `<option value="${k}"${k===it.presa?" selected":""}${tk?" disabled":""}>${esc(tk?n+" (Ya apartado)":n)}</option>`; }).join("");
+  }
+  const extra=PV_PROD.some(x=>x[0]===it.corte)?"":`<option value="${esc(it.corte)}" selected>${esc(nomCorte(it.corte))}</option>`;
+  return extra+PV_PROD.map(([k,n])=>{
+    const bases=[...new Set(PRESAS.filter(([pk,,pc])=>pc===k&&pk!==PRESA_OTRO&&t.has(pk)).map(([pk])=>presaNom(pk).replace(/\s*\d+$/,"")))].filter(b=>b.toLowerCase()!==n.toLowerCase());
+    const hay=PRESAS.some(([pk,,pc])=>pc===k&&pk!==PRESA_OTRO&&t.has(pk));
+    const txt=hay?n+(bases.length?" · "+bases.join("/"):"")+" (Ya apartado por presa)":n;
+    return `<option value="${k}"${k===it.corte?" selected":""}>${esc(txt)}</option>`;     /* sin disabled: se elige libre y se escriben las libras */
+  }).join("");
+}
+/* Dibuja los productos del encargo. En «Presa» el menú lista las presas físicas del cerdo y deshabilita las ya apartadas */
 function renderPItems(){
-  $("pItems").innerHTML=pcarrito.map((it,i)=>`<div class="item"><div class="ih"><b>Producto ${i+1}</b>${pcarrito.length>1?`<button class="sm del" onclick="quitarPItem(${i})">Quitar</button>`:""}</div>
-  <div class="g2"><div><label>Producto</label><select onchange="setPItem(${i},'corte',this.value)">${PV_PROD.map(([k,n])=>`<option value="${k}"${k===it.corte?" selected":""}>${n}</option>`).join("")}</select></div>
-  <div><label>Cantidad (lb)</label><input type="number" inputmode="decimal" step="0.5" value="${it.cant||""}" placeholder="0" oninput="pcarrito[${i}].cant=parseFloat(this.value)||0"></div></div>
-  ${it.corte==="otros"?`<label>Descripción del producto</label><input value="${esc(it.desc||"")}" placeholder="Ej: Asadura, Hígado, Manteca" oninput="pcarrito[${i}].desc=this.value">`:""}</div>`).join("");
+  const cerdo=$("pCerdo")?$("pCerdo").value:"";
+  /* 1) normaliza: toda fila en «Presa» queda con una presa libre (si la elegida ya la tiene otro encargo, pasa a la primera libre) */
+  let ajustada=false;
+  pcarrito.forEach((it,n)=>{
+    if(!esPresa(it)) return;
+    const t=presasTomadas(cerdo,n,true);
+    if(!it.presa||t.has(it.presa)){
+      const libre=PRESAS.find(x=>x[0]!==PRESA_OTRO&&!t.has(x[0]))||PRESAS.find(x=>x[0]===PRESA_OTRO);
+      if(it.presa&&libre) ajustada=true;
+      it.presa=libre?libre[0]:""; if(libre) it.corte=libre[2];
+      if(esUnid(it)) it.cant=1;
+    } else { it.corte=presaCorte(it.presa); if(esUnid(it)&&!(it.cant>0)) it.cant=1; }
+  });
+  /* 2) dibuja */
+  $("pItems").innerHTML=pcarrito.map((it,i)=>{
+    const pr=esPresa(it), t=presasTomadas(cerdo,i,false), otro=pr&&it.presa===PRESA_OTRO;
+    /* Columna izquierda: selector de Presa / Producto */
+    const sel=pr
+      ?`<label>Presa</label><select onchange="setPPresa(${i},this.value)">${pvOpcionesProducto(it,t,true)}</select>`
+      :`<label>Producto</label><select onchange="setPItem(${i},'corte',this.value)">${pvOpcionesProducto(it,t,false)}</select>`;
+    /* Columna derecha: cantidad (lb) · en Presa es opcional y muestra «Pendiente» como placeholder */
+    const qty=esUnid(it)
+      ?`<label>Cantidad</label><input type="number" inputmode="numeric" step="1" min="1" value="${it.cant>0?it.cant:1}" oninput="pcarrito[${i}].cant=parseInt(this.value,10)||0">`
+      :pr
+      ?`<label>Libras (opc.)</label><input type="number" inputmode="decimal" step="0.5" value="${it.cant||""}" placeholder="Pendiente" title="Pendiente · se toma del despiece" oninput="pcarrito[${i}].cant=parseFloat(this.value)||0">`
+      :`<label>Cantidad (lb)</label><input type="number" inputmode="decimal" step="0.5" value="${it.cant||""}" placeholder="0" oninput="pcarrito[${i}].cant=parseFloat(this.value)||0">`;
+    /* Fila extra (ancho completo) solo cuando hay que escribir un nombre: «Otro» o corte «Otros» */
+    const extra=otro
+      ?`<div class="full"><input class="pOtroIn" type="text" required maxlength="40" aria-label="Nombre del producto" value="${esc(it.desc||"")}" placeholder="Nombre: Ej. Tocino, Espinazo" oninput="pcarrito[${i}].desc=this.value"></div>`
+      :(!pr&&it.corte==="otros")
+        ?`<div class="full"><input type="text" aria-label="Descripción del producto" value="${esc(it.desc||"")}" placeholder="Descripción: Ej. Asadura, Hígado, Manteca" oninput="pcarrito[${i}].desc=this.value"></div>`
+        :"";
+    const aviso=(pr&&!it.presa)?'<div class="pnote full">⚠️ Todas las presas ya están apartadas</div>':"";
+    const uni=`<div class="ut" role="group" aria-label="Unidad"><button type="button" class="u-lb${pr?"":" act"}" onclick="setPUnidad(${i},'lb')">Libras</button><button type="button" class="u-pr${pr?" act":""}" onclick="setPUnidad(${i},'presa')">Presa</button></div>`;
+    return `<div class="item"><div class="ih"><b>Producto ${i+1}</b><div class="ihR">${uni}${pcarrito.length>1?`<button class="sm del" onclick="quitarPItem(${i})">Quitar</button>`:""}</div></div>
+  <div class="pc-grid"><div>${sel}</div><div>${qty}</div>${extra}${aviso}</div></div>`;
+  }).join("");
+  return ajustada;
+}
+/* ===== Editar encargo (modo edición del modal «Nuevo encargo») ===== */
+function pvModoUI(){
+  const t=$("pvTitulo"), b=$("pvGuardar");
+  if(t) t.textContent=pvEdit?"✏️ Editar encargo":"➕ Nuevo encargo";
+  if(b) b.textContent=pvEdit?"Guardar cambios":"Guardar encargo";
+}
+/* Deja el formulario limpio y en modo «nuevo» */
+function pvResetForm(){
+  pvEdit=null;
+  ["pCliente","pTel","pCerdo"].forEach(i=>$(i).value=""); $("pEstado").value="Apartado";
+  $("pFechaSac").value=hoy(); fechaManual(); try{ pFechaEstado(); }catch(e){}
+  avisoPCerdo(""); pcarrito=[{corte:"carne",desc:"",cant:0,unidad:"lb"}]; pvModoUI();
+}
+/* Abre el modal con los datos actuales del encargo: cliente, teléfono, cerdo, fecha, estado y cada producto/presa con su unidad */
+function editarEncargo(id){
+  const p=D.preventas.find(x=>x.id===id); if(!p) return toast("No se encontró el encargo");
+  pvEdit=id;
+  pcarrito=(p.items||[]).map(i=>esPresa(i)
+    ?{corte:i.corte||presaCorte(i.presa),desc:i.presa===PRESA_OTRO?(i.desc||""):"",cant:PRESA_UNID.has(i.presa)?(+i.unidades>0?+i.unidades:1):(+i.cantidad>0?+i.cantidad:0),unidad:"presa",presa:i.presa||""}
+    :{corte:i.corte||"carne",desc:i.desc||"",cant:+i.cantidad||0,unidad:"lb"});
+  if(!pcarrito.length) pcarrito=[{corte:"carne",desc:"",cant:0,unidad:"lb"}];
+  try{ llenarPCerdo(); }catch(e){}                              /* opciones al día (el cerdo del encargo no se bloquea) */
+  $("pCliente").value=p.cliente||""; $("pTel").value=p.telefono||"";
+  $("pCerdo").value=p.cerdo||"";
+  $("pEstado").value=p.estado==="Despachado"?"Despachado":"Apartado";
+  $("pFechaSac").value=p.fechaSacrificio||hoy(); fechaManual(); try{ pFechaEstado(); }catch(e){}
+  avisoPCerdo("");
+  renderPItems(); pvModoUI();
+  $("mEncargo").classList.add("open"); $("mEncargo").querySelector(".sheet").scrollTop=0;
 }
 function guardarPreventa(){
   const cliente=$("pCliente").value.trim();
   if(!cliente) return toast("Ingresa el nombre del cliente");
   { const v0=$("pCerdo").value.trim(), e0=v0?plantelCerdos().find(x=>pvValor(x)===v0):null;
-    if(e0&&pvCierre(e0.nombre,e0.arete)){ avisoPCerdo(MSG_PV_CERRADA); llenarPCerdo(); return toast(MSG_PV_CERRADA); } }
+    if(e0&&pvCierreEd(e0.nombre,e0.arete)){ avisoPCerdo(MSG_PV_CERRADA); llenarPCerdo(); return toast(MSG_PV_CERRADA); } }
   const items=[];
-  for(const it of pcarrito){
-    if(!(it.cant>0)) continue;
-    if(it.corte==="otros"&&!(it.desc||"").trim()) return toast("Escribe la descripción del producto");
-    items.push({corte:it.corte,desc:it.corte==="otros"?it.desc.trim():"",cantidad:it.cant});
+  for(let n=0;n<pcarrito.length;n++){
+    const it=pcarrito[n], presa=esPresa(it), unid=esUnid(it), lb=(!unid&&it.cant>0)?it.cant:0;
+    if(!presa&&!(lb>0)) continue;                         /* por libras: la cantidad sigue siendo obligatoria */
+    if(presa){
+      if(!it.presa) return toast("Elige la presa del producto "+(n+1)+" (ya no quedan presas libres)");
+      /* anti-duplicado: la presa no puede estar apartada en otro encargo del mismo cerdo ni repetida en este formulario */
+      if(presasTomadas($("pCerdo").value,n,false).has(it.presa)){ renderPItems(); return toast(presaNom(it.presa)+" ya está apartado para este cerdo"); }
+      if(it.presa===PRESA_OTRO&&!(it.desc||"").trim()) return toast("Escribe el nombre del producto "+(n+1));
+    } else if(it.corte==="otros"&&!(it.desc||"").trim()) return toast("Escribe la descripción del producto");
+    const o={corte:presa?presaCorte(it.presa):it.corte,desc:presa?(it.presa===PRESA_OTRO?it.desc.trim():""):(it.corte==="otros"?it.desc.trim():""),cantidad:lb};
+    if(presa){ o.unidad="presa"; o.presa=it.presa; o.pesoPendiente=!(lb>0); }
+    if(unid){ o.unidades=Math.max(1,Math.round(it.cant)||1); o.pesoPendiente=false; }   /* se cuenta por unidad, sin libras */   /* por presa: se guarda aunque las libras estén vacías o en 0 */
+    items.push(o);
   }
-  if(!items.length) return toast("Agrega al menos un producto con cantidad");
+  if(!items.length) return toast("Agrega al menos un producto (libras o presa)");
   /* Cascada: los demás encargos abiertos del mismo cerdo adoptan la fecha guardada */
+  pFechaEstado();
   const cerdoSel=$("pCerdo").value.trim(),fSac=$("pFechaSac").value||"";
-  const otros=(cerdoSel&&fSac)?pvAbiertas().filter(p=>norm(p.cerdo)===norm(cerdoSel)&&(p.fechaSacrificio||"")!==fSac):[];
-  guardarDoc("preventas_cerdos",{cliente,telefono:$("pTel").value.trim(),cerdo:$("pCerdo").value.trim(),fechaSacrificio:$("pFechaSac").value||"",items,estado:$("pEstado").value,fecha:hoy(),creado:Date.now()}).then(ok=>{
-    if(ok){["pCliente","pTel","pCerdo"].forEach(i=>$(i).value="");$("pFechaSac").value=hoy();fechaManual();if(otros.length&&db){const bt=db.batch();otros.forEach(q=>bt.set(db.collection("preventas_cerdos").doc(q.id),{fechaSacrificio:fSac},{merge:true}));bt.commit().catch(e=>toast("Error nube: "+e.code));}pcarrito=[{corte:"carne",desc:"",cant:0}];renderPItems();cerrarForm("mEncargo");toast(otros.length?"Encargo guardado · fecha de sacrificio actualizada en "+otros.length+" encargo"+(otros.length>1?"s":""):"Encargo guardado");}
+  const otros=(cerdoSel&&fSac)?pvAbiertas().filter(p=>p.id!==pvEdit&&norm(p.cerdo)===norm(cerdoSel)&&(p.fechaSacrificio||"")!==fSac):[];
+  /* Edición: se actualiza el mismo documento y se conservan fecha y creado originales; nuevo: se crean */
+  const esEd=!!pvEdit, OKT=esEd?"Encargo actualizado":"Encargo guardado";
+  const datos={cliente,telefono:$("pTel").value.trim(),cerdo:$("pCerdo").value.trim(),fechaSacrificio:$("pFechaSac").value||"",items,estado:$("pEstado").value};
+  if(!esEd){ datos.fecha=hoy(); datos.creado=Date.now(); }
+  guardarDoc("preventas_cerdos",datos,esEd?pvEdit:undefined).then(ok=>{
+    if(ok){["pCliente","pTel","pCerdo"].forEach(i=>$(i).value="");$("pFechaSac").value=hoy();fechaManual();pFechaEstado();if(otros.length&&db){const bt=db.batch();otros.forEach(q=>bt.set(db.collection("preventas_cerdos").doc(q.id),{fechaSacrificio:fSac},{merge:true}));bt.commit().catch(e=>toast("Error nube: "+e.code));}pcarrito=[{corte:"carne",desc:"",cant:0,unidad:"lb"}];pvEdit=null;pvModoUI();$("pEstado").value="Apartado";renderPItems();cerrarForm("mEncargo");toast(otros.length?OKT+" · fecha de sacrificio actualizada en "+otros.length+" encargo"+(otros.length>1?"s":""):OKT);}
   });
+}
+/* Editar a mano las libras de una presa (vacío = volver a vincularla al peso real del despiece) */
+function editarLbPresa(id,ix){
+  const p=D.preventas.find(x=>x.id===id); if(!p||!p.items||!p.items[ix]) return;
+  const act=+p.items[ix].cantidad>0?String(p.items[ix].cantidad):"";
+  const r=prompt("Libras de esta presa.\nDéjalo vacío para vincularlo al peso real del despiece:",act); if(r===null) return;
+  const v=parseFloat(String(r).replace(",","."))||0;
+  const items=p.items.map((x,n)=>n===ix?{...x,cantidad:v>0?v:0,pesoPendiente:!(v>0)}:x);
+  guardarDoc("preventas_cerdos",{items},id);
+  toast(v>0?"Libras actualizadas":"Presa vinculada al peso real del despiece");
 }
 /* ===== Confirmar venta desde una preventa ===== */
 let cv=null;
 function confirmarVentaPV(id){
   const p=D.preventas.find(x=>x.id===id); if(!p) return;
   const cs=[...D.cerdos].sort((x,y)=>(x.creado||0)-(y.creado||0)),c0=cs.find(x=>esCerdo(x,p.cerdo))||(norm(p.cerdo)?null:cs[0]);   /* si el encargo es de un cerdo concreto que aún no se sacrifica, NO se asigna a otro cerdo */
-  cv={id,cliente:p.cliente,tel:p.telefono||"",cerdoId:c0?c0.id:"",items:(p.items||[]).map(i=>({corte:CORTE_DE[i.corte]||(CORTES.some(x=>x[0]===i.corte)?i.corte:"otros"),nombre:pvNombre(i),otros:i.corte==="otros",cant:i.cantidad||0,precio:0,total:0,ult:"precio"}))};
+  cv={id,cliente:p.cliente,tel:p.telefono||"",cerdoId:c0?c0.id:"",items:(p.items||[]).map(i=>({corte:CORTE_DE[i.corte]||(CORTES.some(x=>x[0]===i.corte)?i.corte:"otros"),nombre:pvNombre(i),otros:i.corte==="otros",
+    u:esUnid(i)?"und":"lb",                                   /* Vísceras / Chunchullo arrancan en Cantidad */
+    cant:esUnid(i)?(+i.unidades>0?+i.unidades:1):Math.round(pvCant(p,i)*100)/100,
+    cantLb:esUnid(i)?0:Math.round(pvCant(p,i)*100)/100,       /* libras de referencia para volver al modo lb */
+    precio:0,total:0,ult:"precio"}))};
   renderCV(); cvAviso(); $("modal").classList.add("open");
 }
 function cvAviso(){ const a=$("cvAviso"); if(a) a.style.display=cv&&!cv.cerdoId?"":"none"; }
 function renderCV(){
   const cs=[...D.cerdos].sort((x,y)=>(x.creado||0)-(y.creado||0));
   $("sheet").innerHTML=`<div class="mh"><h2>✅ Confirmar venta</h2><button class="sm" onclick="cerrar()">Cerrar</button></div>
-  <p class="sub"><b>${esc(cv.cliente)}</b> · ajusta las libras entregadas, el precio y el abono antes de registrar la venta.</p>
+  <p class="sub"><b>${esc(cv.cliente)}</b> · elige si cada ítem se liquida por libras o por cantidad, y ajusta entrega, precio y abono antes de registrar la venta.</p>
   <label>Descontar del inventario de</label><select onchange="cv.cerdoId=this.value;cvAviso()">${cs.map(x=>`<option value="${x.id}"${x.id===cv.cerdoId?" selected":""}>${esc(x.nombre)}${x.arete?" · Arete "+esc(x.arete):""}</option>`).join("")}<option value=""${cv.cerdoId?"":" selected"}>Sin asignar (no descuenta inventario)</option></select>
   <div id="cvAviso" class="alerta" style="display:none;margin:8px 0 0">⚠️ Sin cerdo asignado: la venta no descuenta inventario ni suma al Libro/Balance de un cerdo. Solo aparecerá en «Todas las ventas» y en el Balance del lote. Elige el cerdo sacrificado para vincularla.</div>
-  ${cv.items.map((it,i)=>`<div class="item"><div class="ih"><b>${esc(it.nombre)}</b></div>
-    <div class="g2"><div><label>Libras entregadas</label><input type="number" inputmode="decimal" step="0.01" id="cvL${i}" value="${it.cant||""}" oninput="cvSet(${i},'cant',this.value)"></div>
-    <div><label>Precio por lb ($)</label><input class="money" inputmode="numeric" id="cvP${i}" placeholder="0" oninput="cvSet(${i},'precio',this.value)"></div></div>
-    <label>Total del ítem ($)</label><input class="money" inputmode="numeric" id="cvT${i}" placeholder="0" oninput="cvSet(${i},'total',this.value)"></div>`).join("")}
+  <div id="cvItems">${cvItemsHTML()}</div>
   <div class="kpi" style="margin-top:12px"><span>Total venta</span><b id="cvTotal">$0</b></div>
   <label>Abono recibido ($)</label><div style="display:flex;gap:8px"><input class="money" inputmode="numeric" id="cvAbono" placeholder="0" oninput="dbn.cvTot()"><button class="sm" onclick="cvPagoCompleto()">Pagó todo</button></div>
   <div class="sub" style="margin:8px 0 0">Saldo pendiente: <b id="cvSaldo" class="neg">$0</b></div>
   <button class="btn" onclick="guardarVentaPV()">Registrar venta</button>
   <button class="btn sec" onclick="cerrar()">Cancelar</button>`;
 }
+/* Dibuja los ítems a liquidar con su selector de unidad: [ Libras (lb) | Cantidad ] */
+function cvItemsHTML(){
+  return cv.items.map((it,i)=>{
+    const un=it.u==="und";
+    return `<div class="item cvIt"><div class="ih"><b>${esc(it.nombre)}</b><div class="ihR"><div class="ut" role="group" aria-label="Unidad de liquidación"><button type="button" class="u-lb${un?"":" act"}" onclick="cvUnidad(${i},'lb')">Libras (lb)</button><button type="button" class="u-un${un?" act":""}" onclick="cvUnidad(${i},'und')">Cantidad</button></div></div></div>
+    <div class="g2"><div><label>${un?"Cantidad entregada":"Libras entregadas"}</label><input type="number" inputmode="${un?"numeric":"decimal"}" step="${un?"1":"0.01"}" min="0" id="cvL${i}" value="${it.cant||""}" oninput="cvSet(${i},'cant',this.value)"></div>
+    <div><label>${un?"Precio por unidad ($)":"Precio por lb ($)"}</label><input class="money" inputmode="numeric" id="cvP${i}" value="${it.precio>0?miles(Math.round(it.precio)):""}" placeholder="0" oninput="cvSet(${i},'precio',this.value)"></div></div>
+    <label>Total del ítem ($)</label><input class="money" inputmode="numeric" id="cvT${i}" value="${it.total>0?miles(it.total):""}" placeholder="0" oninput="cvSet(${i},'total',this.value)"></div>`;
+  }).join("");
+}
+/* Cambia el modo de un ítem. Solo se redibujan los ítems (no se pierde el abono ni el cerdo elegido).
+   Al cambiar de modo el precio se limpia: un precio por lb no sirve como precio por unidad. */
+function cvUnidad(i,u){
+  const it=cv.items[i]; if(it.u===u) return;
+  if(it.u==="lb") it.cantLb=it.cant;                      /* recuerda las libras para poder volver */
+  it.u=u; it.cant=(u==="und")?1:(it.cantLb||0);           /* Cantidad arranca en 1 */
+  it.precio=0; it.total=0; it.ult="precio";
+  $("cvItems").innerHTML=cvItemsHTML(); cvTot();
+}
 function cvSet(i,k,v){
   const it=cv.items[i],f=n=>n>0?miles(n):"",num=x=>parseInt(String(x).replace(/\D/g,""))||0;
-  if(k==="cant"){ it.cant=parseFloat(v)||0; if(it.ult==="total"&&it.total>0){ if(it.cant>0) it.precio=it.total/it.cant; } else it.total=Math.round(it.cant*it.precio); }
+  if(k==="cant"){ it.cant=it.u==="und"?(parseInt(v,10)||0):(parseFloat(v)||0); if(it.ult==="total"&&it.total>0){ if(it.cant>0) it.precio=it.total/it.cant; } else it.total=Math.round(it.cant*it.precio); }   /* lb o unidades: mismo cálculo cantidad × precio = total */
   else if(k==="precio"){ it.ult="precio"; it.precio=num(v); it.total=Math.round(it.cant*it.precio); }
   else { it.ult="total"; it.total=num(v); it.precio=it.cant>0?it.total/it.cant:0; }
   if(k!=="precio") $("cvP"+i).value=f(it.precio);
@@ -2340,10 +2559,10 @@ function guardarVentaPV(){
   if(!db) return toast("Conectando con la nube… intenta de nuevo en un momento");
   if(!proyActivo) return toast("Primero crea o selecciona un proyecto");
   const c=D.cerdos.find(x=>x.id===cv.cerdoId)||null;
-  if(cv.items.some(it=>!(it.cant>0)||!(it.total>0))) return toast("Completa libras y precio de cada ítem");
-  let aviso=""; if(c){ const ped={}; for(const it of cv.items){ ped[it.corte]=(ped[it.corte]||0)+it.cant; } aviso=avisoStock(Object.entries(ped).map(([k,cant])=>({c,k,cant,disp:dispCorte(c,k)}))); }
+  if(cv.items.some(it=>!(it.cant>0)||!(it.total>0))) return toast("Completa cantidad (o libras) y precio de cada ítem");
+  let aviso=""; if(c){ const ped={}; for(const it of cv.items){ if(it.u==="und") continue; ped[it.corte]=(ped[it.corte]||0)+it.cant; }   /* lo liquidado por unidad no descuenta libras */ aviso=avisoStock(Object.entries(ped).map(([k,cant])=>({c,k,cant,disp:dispCorte(c,k)}))); }
   /* cada ítem: cerdoId, corte, cantidad (lb), precio por lb y subtotal */
-  const items=cv.items.map(it=>({cerdoId:c?c.id:"",cerdoNombre:c?c.nombre:"",arete:c?(c.arete||""):"",corte:it.corte,desc:it.otros?it.nombre:"",cantidad:it.cant,precio:it.precio,subtotal:it.total}));
+  const items=cv.items.map(it=>({cerdoId:c?c.id:"",cerdoNombre:c?c.nombre:"",arete:c?(c.arete||""):"",corte:it.corte,desc:it.otros?it.nombre:"",cantidad:it.cant,precio:it.precio,subtotal:it.total,...(it.u==="und"?{unidad:"und"}:{})}));
   const total=items.reduce((a,i)=>a+i.subtotal,0),ab=Math.min(mval("cvAbono"),total),f=hoy(),pid=cv.id,pv0=D.preventas.find(x=>x.id===pid)||{};
   const venta={cliente:cv.cliente,telefono:cv.tel,cerdoId:c?c.id:"",cerdoNombre:c?c.nombre:"",items,total,abonado:ab,abonos:ab>0?[{fecha:f,valor:ab}]:[],fecha:f,creado:Date.now(),preventaId:pid,origen:"preventa",fechaSacrificio:fechasSacItems(items)[0]||pv0.fechaSacrificio||"",proyectoId:proyActivo};
   /* Un solo lote atómico: la venta entra al Libro de Ventas y la preventa pasa a Despachada; o se guardan las dos, o ninguna */
@@ -2356,7 +2575,7 @@ function guardarVentaPV(){
   irA("ventas"); if(c) abrirVentasCerdo(c.id); else abrirVentasTodas();   /* la tarjeta de Clientes, Ventas y Balance se redibujan solas con el listener de la nube */
 }
 function textoPV(p){
-  const det=(p.items||[]).map(i=>`• ${pvNombre(i)}: ${peso(i.cantidad)} lb`).join("\n");
+  const det=(p.items||[]).map(i=>{const q=pvCant(p,i); return `• ${pvNombre(i)}${esPresa(i)?" (presa)":""}: ${esPresa(i)&&!(q>0)?"peso por definir en despiece":peso(q)+" lb"}`;}).join("\n");
   return `🐖 *Encargo / Preventa*\nCliente: ${p.cliente}\nFecha: ${fechaTxt(p.fecha)}${p.cerdo?`\nCerdo: ${cerdoTxt(p.cerdo)}`:""}${p.fechaSacrificio?`\nSacrificio programado: ${fechaTxt(p.fechaSacrificio)}`:""}\n\n*Detalle:*\n${det}\n\nEstado: ${p.estado==="Despachado"?"Despachado / Entregado":"Apartado"}\n\n¡Gracias por apartar con nosotros!`;
 }
 async function enviarPV(id){
@@ -2427,7 +2646,16 @@ const cerdoPendDe = nombre => D.cerdos.find(c=>c.sinPesaje&&!(c.canalKg>0)&&esCe
 const sacProgDe = nombre => { const p=cerdoPendDe(nombre); if(p&&p.fecha) return p.fecha; const py=proyActual(), m=py&&py.sacProg; return (m&&m[sacKey(nombre)])||""; };
 const pvValor = e => e.arete||e.nombre;                       /* mismo valor que ya guarda el encargo en p.cerdo */
 const dmCorta = f => f?f.slice(8,10)+"/"+f.slice(5,7):"";
+/* 2026-10-23 → "23 Oct 2026" (resumida, para el selector en pantallas móviles) */
+const MES3=["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
+const fechaResumida = f => { const q=String(f||"").split("-"); return (q.length===3&&+q[1]>=1&&+q[1]<=12)?(+q[2])+" "+MES3[+q[1]-1]+" "+q[0]:""; };
 const MSG_PV_CERRADA="No se pueden agregar más preventas. La fecha de sacrificio ya venció o el cerdo ya fue procesado.";
+/* Igual que pvCierre, pero el cerdo del encargo que se está editando no se bloquea (solo se cambian datos, no se agrega preventa) */
+function pvCierreEd(nombre,arete){
+  if(pvEdit){ const pe=D.preventas.find(x=>x.id===pvEdit), t=pe?norm(pe.cerdo):"";
+    if(t&&(t===norm(nombre)||(!!norm(arete)&&t===norm(arete)))) return ""; }
+  return pvCierre(nombre,arete);
+}
 /* "procesado" = ya sacrificado/liquidado · "vencido" = hoy ≥ fecha programada · "" = preventa abierta */
 function pvCierre(nombre,arete){
   const rc=D.cerdos.find(c=>esCerdo(c,nombre)||esCerdo(c,arete));
@@ -2438,11 +2666,14 @@ function avisoPCerdo(msg,ok){ const a=$("pCerdoAviso"); if(!a) return; a.classNa
 function llenarPCerdo(){
   const sel=$("pCerdo"),cur=sel.value;
   sel.innerHTML='<option value="">-- Sin asignar / Cualquiera --</option>'+plantelCerdos().map(e=>{
-    const cierre=pvCierre(e.nombre,e.arete), f=sacProgDe(e.nombre), base=e.nombre+(e.arete?" - Arete "+e.arete:"");
-    return `<option value="${esc(pvValor(e))}"${cierre?" disabled":""}>${esc(cierre?base+" · 🔴 Preventa Cerrada - Cerdo Procesado":base+(f?" · 📅 "+dmCorta(f):""))}</option>`;
+    const cierre=pvCierreEd(e.nombre,e.arete), f=sacProgDe(e.nombre), base=e.nombre+(e.arete?" - Arete "+e.arete:"");
+    return `<option value="${esc(pvValor(e))}"${cierre?" disabled":""}>${esc(cierre?base+" · 🔴 Preventa Cerrada - Cerdo Procesado":base+(f?" • 📅 "+fechaResumida(f):""))}</option>`;
   }).join("");
+  if(pvEdit){ const pe=D.preventas.find(x=>x.id===pvEdit);   /* cerdo del encargo que ya no está en el plantel: se conserva para no perder la asignación */
+    if(pe&&pe.cerdo&&![...sel.options].some(o=>o.value===pe.cerdo)) sel.insertAdjacentHTML("beforeend",`<option value="${esc(pe.cerdo)}">${esc(pe.cerdo)}</option>`); }
   sel.value=cur;
   if(sel.value!==cur||(sel.selectedOptions[0]&&sel.selectedOptions[0].disabled)){ sel.selectedIndex=0; if(cur) avisoPCerdo(MSG_PV_CERRADA); }
+  try{ pFechaEstado(); }catch(e){}
 }
 /* Costo y encargado programados (proyectos_cerdos/{id}.sacProgGasto[clave] = {gastoId,costo,matarife}) */
 const sacProgEntrada = nombre => { const py=proyActual(), m=py&&py.sacProgGasto; return (m&&m[sacKey(nombre)])||null; };
@@ -2545,12 +2776,20 @@ function fechaDeCerdo(valor){
   const l=pvAbiertas().filter(p=>norm(p.cerdo)===norm(valor)&&p.fechaSacrificio).sort((a,b)=>(b.creado||0)-(a.creado||0));
   return l.length?l[0].fechaSacrificio:"";
 }
+/* Cerdo con sacrificio programado → fecha amarrada y bloqueada · Sin asignar / no programado → fecha editable */
+function pFechaEstado(){
+  const v=$("pCerdo").value, e=v?plantelCerdos().find(x=>pvValor(x)===v):null, prog=e?sacProgDe(e.nombre):"", fi=$("pFechaSac");
+  if(prog) fi.value=prog;
+  fi.disabled=!!prog;
+  return prog;
+}
 function cerdoPVCambio(){
   const v=$("pCerdo").value, e=plantelCerdos().find(x=>pvValor(x)===v)||null, prog=e?sacProgDe(e.nombre):"", fi=$("pFechaSac");
   const f=prog||fechaDeCerdo(v);
   if(f){ fi.value=f; fechaAuto=true; }
   else if(fechaAuto){ fi.value=hoy(); fechaAuto=false; }
-  fi.readOnly=!!prog;                                          /* con sacrificio programado, la fecha la fija la programación */
+  pFechaEstado();                                              /* con sacrificio programado el campo queda deshabilitado; si no, se habilita para escribir la fecha */
+  if(renderPItems()) toast("Una presa elegida ya estaba apartada para este cerdo; se cambió a otra libre");   /* recalcula presas apartadas del cerdo */
   avisoPCerdo(prog?"📅 Sacrificio programado: "+fechaTxt(prog)+". Las preventas se cierran ese día.":"",true);
 }
 /* ===== Despiece: selector de cerdos disponibles + fecha sincronizada con Preventa ===== */
@@ -2640,18 +2879,22 @@ function renderPreventas(){
   panelCobertura();
   let l=[...D.preventas].sort((a,b)=>(b.creado||0)-(a.creado||0));
   if(pfiltro==="apartado") l=l.filter(p=>p.estado!=="Despachado"); else if(pfiltro==="despachado") l=l.filter(p=>p.estado==="Despachado");
-  $("listaPreventas").innerHTML=l.length?l.map(p=>{const d=p.estado==="Despachado";return `<div class="card pv"><div class="row" style="padding-top:0"><div><b>${esc(p.cliente)}</b> <span class="tag ${d?"Despachado":"Apartado"}">${d?"Despachado":"Apartado"}</span><small>${esc(p.telefono||"Sin teléfono")} · ${fechaTxt(p.fecha)}</small><small>${esc([p.cerdo?cerdoTxt(p.cerdo):"Sin cerdo asignado",sacTxt(p)].filter(Boolean).join(" • "))}</small></div><button class="sm del" onclick="borrarDoc('preventas_cerdos','${p.id}')">✕</button></div>
-  ${(p.items||[]).map(i=>`<div class="it2"><span>${esc(pvNombre(i))}</span><b>${peso(i.cantidad)} lb</b></div>`).join("")}
+  $("listaPreventas").innerHTML=l.length?l.map(p=>{const d=p.estado==="Despachado";return `<div class="card pv"><div class="row" style="padding-top:0"><div><b>${esc(p.cliente)}</b> <span class="tag ${d?"Despachado":"Apartado"}">${d?"Despachado":"Apartado"}</span><small>${esc(p.telefono||"Sin teléfono")} · ${fechaTxt(p.fecha)}</small><small>${esc([p.cerdo?cerdoTxt(p.cerdo):"Sin cerdo asignado",sacTxt(p)].filter(Boolean).join(" • "))}</small></div><div class="pvBtns"><button class="sm" onclick="editarEncargo('${p.id}')" aria-label="Editar encargo">✏️ Editar</button><button class="sm del" onclick="borrarDoc('preventas_cerdos','${p.id}')" aria-label="Eliminar encargo">✕</button></div></div>
+  ${(p.items||[]).map((i,ix)=>{const pr=esPresa(i),q=pvCant(p,i),man=+i.cantidad>0;return `<div class="it2"><span>${esc(pvNombre(i))}${pr?'<em class="pz">Presa</em>':""}</span><span class="rt"><b>${pr&&!(q>0)?"⏳ Peso por definir":peso(q)+" lb"+(pr&&!man?" · peso real":"")}</b>${pr&&!d?`<button class="sm" onclick="editarLbPresa('${p.id}',${ix})" aria-label="Editar libras">✏️</button>`:""}</span></div>`}).join("")}
   <div class="acts2">${d?"":`<button class="sm pri" onclick="confirmarVentaPV('${p.id}')">✅ Confirmar Venta</button>`}${(!d&&p.cerdo&&cerdoVivoDe(p.cerdo))?`<button class="sm" data-c="${esc(p.cerdo)}" onclick="abrirSacrificioDe(this.dataset.c)">🔪 Sacrificio</button>`:""}<button class="sm" onclick="enviarPV('${p.id}')" style="color:var(--ok)">WhatsApp</button></div></div>`}).join(""):'<div class="card empty">No hay encargos en esta lista.</div>';
 }
 
 /* Aviso en vivo dentro del formulario de despiece */
+/* Pesos que se están escribiendo en el formulario de despiece: por corte y por presa individual */
+function liveDespiece(){ const l={}; BUCKETS.forEach(b=>l[b.k]=formVal(b.k)); l.pierna1=val("c_p1"); l.pierna2=val("c_p2"); l.brazo1=val("c_b1"); l.brazo2=val("c_b2"); l.costilla1=val("c_k1"); l.costilla2=val("c_k2"); return l; }
 function panelPVSac(){
   const sel=cerdoDespiece(); if(!sel){$("pvSac").innerHTML="";return;}
   const nombre=sel.nombre;
-  const mine=pvDe(nombre,sel.arete||""),tot=pvLb(mine),sin=pvLb(pvSin());
+  const mine=pvDe(nombre,sel.arete||""),live0=liveDespiece();
+  const tot=pvLb(mine,null,live0),sin=pvLb(pvSin());
   if(!tot&&!sin){$("pvSac").innerHTML="";return;}
-  const filas=BUCKETS.map(b=>({n:b.n,ap:pvLb(mine,b.k),ob:formVal(b.k)})).filter(x=>x.ap>0);
+  const live=liveDespiece();
+  const filas=BUCKETS.map(b=>({n:b.n,ap:pvLb(mine,b.k,live),ob:formVal(b.k)})).filter(x=>x.ap>0);
   const falta=filas.some(x=>x.ap>x.ob+1e-9);
   $("pvSac").innerHTML=`<div class="${falta?"alerta":"okbox"}"><b>Preventa de ${esc(nombre)}: ${peso(tot)} lb apartadas</b>`+
     (filas.length?"<br>"+filas.map(x=>`${x.n}: apartado ${peso(x.ap)} / pesado ${peso(x.ob)} lb`+(x.ap>x.ob+1e-9?` ⚠️ faltan ${peso(x.ap-x.ob)}`:" ✓")).join("<br>"):"")+
@@ -3509,7 +3752,7 @@ function datosVentas(){
   l.forEach(v=>{
     const x=m(v), k=norm(v.cliente)||"sin nombre", o=mp[k]=mp[k]||{nom:v.cliente||"Sin nombre",cat:{},total:0,abonado:0,saldo:0};
     o.total+=x.total; o.abonado+=x.abonado; o.saldo+=x.saldo;
-    (x.items||itemsDe(v)).forEach(i=>{ const c=catVenta(i.corte), q=i.cantidad||0, c0=o.cat[c]=o.cat[c]||{lb:0,v:0}; c0.lb+=q; c0.v+=Math.round(q*(i.precio||0)); });
+    (x.items||itemsDe(v)).forEach(i=>{ const c=catVenta(i.corte), q=i.cantidad||0, c0=o.cat[c]=o.cat[c]||{lb:0,v:0}; c0.lb+=(i.unidad==="und"?0:q); c0.v+=Math.round(q*(i.precio||0)); });
   });
   const cls=Object.values(mp).sort((a,b)=>a.nom.localeCompare(b.nom,"es"));
   const B=[]; if(filtro!=="todos") B.push({html:`<div class="nt">${palabras(filtro==="pagados"?"Mostrando: clientes pagados":"Mostrando: clientes deudores")}</div>`});
@@ -3747,12 +3990,12 @@ function datosLibroVentas(orden){
     its.forEach((i,k)=>{
       const val=vals[k], cb=k===its.length-1?cobR-acum:(tot>0?R(cobR*val/tot):0); acum+=cb;
       const canal=i.corte==="canal", q=+i.cantidad||0;
-      E.push({f:v.fecha,co:canal?"Canal":etqCorte(i.corte),cli:v.cliente||"Sin nombre",q,u:canal?"kg":"lb",pr:+i.precio||0,val,cb,pen:val-cb});
+      E.push({f:v.fecha,co:canal?"Canal":etqCorte(i.corte),cli:v.cliente||"Sin nombre",q,u:canal?"kg":(i.unidad==="und"?"und":"lb"),pr:+i.precio||0,val,cb,pen:val-cb});
     });
   });
   const S=orden==="desc"?[...E].reverse():E;
   const T={tot:0,cob:0,pen:0,kgC:0,lbD:0};
-  E.forEach(e=>{ T.tot+=e.val; T.cob+=e.cb; T.pen+=e.pen; if(e.u==="kg") T.kgC+=e.q; else T.lbD+=e.q; });
+  E.forEach(e=>{ T.tot+=e.val; T.cob+=e.cb; T.pen+=e.pen; if(e.u==="kg") T.kgC+=e.q; else if(e.u==="lb") T.lbD+=e.q; });
   const bloques=S.map(e=>{
     const fp=e.f?fechaPNG(e.f).split("\u00a0"):["","",""];
     const cant=peso(e.q)+NB+e.u+NB+"×"+NB+money(e.pr)+"/"+e.u;
@@ -4185,6 +4428,7 @@ function capturar(id){
     if(id==="mLote"&&loteEdit) return null;      /* editando una compra existente: sin borrador */
     if(id==="mInsumo"&&insEdit) return null;
     if(id==="mProy"&&pyEdit) return null;
+    if(id==="mEncargo"&&pvEdit) return null;
     m.querySelectorAll("input[id],select[id],textarea[id]").forEach(el=>{
       if(el.readOnly||["button","submit","file","password"].includes(el.type)) return;
       campos[el.id]=(el.type==="checkbox"||el.type==="radio")?el.checked:el.value;
