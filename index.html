@@ -257,6 +257,7 @@ input:disabled{opacity:.55;cursor:not-allowed}
 .prev{display:block;max-width:100%;margin:8px auto 0;border-radius:10px;border:1px solid var(--line)}
 .tag.Apartado{color:var(--wa);border-color:var(--wa)}.tag.Despachado{color:var(--ok);border-color:var(--ok)}
 .stock.s5{grid-template-columns:1fr auto auto auto auto}
+.stock.s5{gap:6px 8px;font-size:12.5px}.stock .pv{color:var(--wa)}
 .alerta,.okbox{border-radius:12px;padding:10px 12px;font-size:13px;margin-bottom:14px;line-height:1.55}
 .alerta{background:#3b1f1f;border:1px solid var(--er);color:#ffb4b4}.okbox{background:#1d3328;border:1px solid var(--ok);color:#a9e6c3}
 #pvSac .alerta,#pvSac .okbox{margin:12px 0 0}
@@ -393,13 +394,31 @@ input[readonly]{opacity:.7}
 /* ===== Cortes personalizados (filas dinámicas) ===== */
 .xc-t{margin:16px 0 4px;font-size:15px}
 .xc-list{display:flex;flex-direction:column;gap:8px;margin-top:8px}
-.xc-row{display:grid;grid-template-columns:minmax(0,1fr) 92px 42px;gap:8px;align-items:center}
+.xc-row{display:grid;grid-template-columns:minmax(0,1fr) 92px 42px;grid-template-areas:"n n d" "t w w";gap:6px 8px;align-items:center}
+.xc-row .xc-n{grid-area:n}.xc-row .xc-sw{grid-area:t;justify-self:start}.xc-row .xc-w{grid-area:w}.xc-row .xc-del{grid-area:d}
 .xc-row input{min-width:0}
 .xc-del{height:44px;background:#3a1d1f;border:1px solid #7a2f2f;color:#ff8f8f;border-radius:10px;font-size:16px;line-height:1;cursor:pointer}
 .xc-add{width:100%;margin-top:10px;background:none;border:1px dashed var(--ac);color:var(--ac);border-radius:10px;padding:12px;font-size:15px;font-weight:700;cursor:pointer}
 .xc-sub{margin:6px 0 0;font-size:13px;color:var(--mu)}
 .xc-tot{margin:8px 0 0;font-size:13px;color:var(--mu);text-align:right}.xc-tot b{color:var(--tx)}
-@media(max-width:380px){.xc-row{grid-template-columns:minmax(0,1fr) 78px 40px}}
+@media(max-width:380px){.xc-row{grid-template-columns:minmax(0,1fr) 84px 40px}}
+/* Modal «Agregar nuevo corte» */
+#mXc{z-index:70}
+#mXc .sheet{padding:12px 14px calc(12px + env(safe-area-inset-bottom))}
+#mXc input{padding:9px 11px}
+.xm-h{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.xm-h h2{flex:1;margin:0;font-size:17px;white-space:nowrap}
+.xm-sw{display:flex;flex:none;background:var(--s2);border:1px solid var(--line);border-radius:999px;padding:2px}
+.xm-sw button{background:none;border:0;color:var(--mu);border-radius:999px;padding:5px 10px;font-size:12px;font-weight:600;line-height:1.2}
+.xm-sw button.act{background:var(--ac);color:#2a1a12}
+.xm-row{display:grid;grid-template-columns:3fr 2fr;gap:8px}
+.xm-row input{min-width:0}
+.xc-row[data-a] .xc-n{border-color:var(--ac)}
+.as-h{display:flex;align-items:center;justify-content:space-between;gap:6px;height:29px;margin:0}.as-h label{margin:0;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.as-h .xm-sw{flex:none}
+.as-h .xm-sw button{padding:3px 9px}
+.xm-err{min-height:16px;margin:4px 0 0;font-size:12px;color:#ff8f8f}
+.xm-acts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.xm-acts .btn{margin-top:4px;padding:11px}
 </style>
 <style>
 /* Chrome Android en modo standalone: el gesto de arrastrar hacia abajo recarga la página y borra lo que se está digitando */
@@ -720,6 +739,17 @@ nav button,.navback,#btnProy,header button{position:relative;z-index:1000;pointe
     <button class="btn" onclick="guardarCerdo()">Guardar cerdo</button>
 </div></div>
 
+<div class="modal" id="mXc" onclick="if(event.target===this)xcCerrar()"><div class="sheet">
+  <div class="xm-h"><h2>➕ Nuevo corte</h2>
+    <div class="xm-sw" role="group" aria-label="Tipo de medida"><button type="button" id="xmTL" class="act" onclick="xcModalTipo('lb')">Libras (lb)</button><button type="button" id="xmTU" onclick="xcModalTipo('und')">Unidad</button></div>
+    <button class="sm" type="button" onclick="xcCerrar()" aria-label="Cerrar">✕</button></div>
+  <div class="xm-row">
+    <input id="xmNom" type="text" maxlength="40" autocomplete="off" list="xmSug" placeholder="Ej. Menudo, Tocino" aria-label="Nombre del corte (obligatorio)"><datalist id="xmSug"></datalist>
+    <input id="xmVal" type="number" inputmode="decimal" step="0.01" min="0" placeholder="Peso (lb)" aria-label="Peso en libras">
+  </div>
+  <div class="xm-err" id="xmErr" role="alert"></div>
+  <div class="xm-acts"><button class="btn sec" type="button" onclick="xcCerrar()">Cancelar</button><button class="btn" type="button" onclick="xcModalGuardar()">Guardar corte</button></div>
+</div></div>
 <div class="modal" id="mEditCerdo"><div class="sheet">
   <div class="mh"><h2 id="ecTitulo">✏️ Editar despiece</h2><button class="sm" onclick="cerrarForm('mEditCerdo')">Cerrar</button></div>
   <p class="sub" id="ecInfo"></p>
@@ -728,7 +758,7 @@ nav button,.navback,#btnProy,header button{position:relative;z-index:1000;pointe
   <h3 style="margin-top:16px">Pesaje del despiece (en libras, lb)</h3><div id="ecCortes"></div>
   <div class="kpi" style="margin-top:14px"><span>Balance del despiece vs canal</span><div class="sub" style="margin:6px 0 0" id="ecResumen"></div></div>
   <h3 style="margin-top:16px">Stock resultante</h3>
-  <div class="stock" id="ecStock"></div>
+  <div class="stock s5" id="ecStock"></div>
   <button class="btn" onclick="ecGuardar()">Guardar cambios</button>
   <!-- Anular sacrificio: solo si el cerdo NO tiene un gasto de Sacrificio / Matarife en Inversión y gastos -->
   <button class="btn" id="ecAnular" onclick="anularSacrificio()" style="background:#3a1a1a;color:#ff8a80;border:1px solid #6b2a2a;margin-top:10px">↩️ Anular / Deshacer sacrificio</button>
@@ -850,9 +880,13 @@ const GR = {carne:["carne","pierna","brazo"],otros:["otros","cabeza","tocino"]};
 const keysOf = k => GR[k]||[k];
 /* Cortes personalizados: clave «x_<nombre>» dentro de cerdo.cortes; su nombre visible va en cerdo.cortesNom */
 const esExtra = k => /^x_/.test(String(k||""));
+const UND_KEYS = new Set();   /* claves de cortes personalizados que se miden por unidad (cerdo.cortesUnd) */
+/* ¿Este corte está registrado por unidad en este cerdo? (sin cerdo: solo cortes personalizados) */
+const undCorte = (c,k) => c ? !!(c.cortesUnd&&c.cortesUnd[k]) : UND_KEYS.has(k);
+const undId = (cid,k) => undCorte(D.cerdos.find(x=>x.id===cid),k);
 const nomCorte = k => (CORTES.find(c=>c[0]===k)||[,LEG[k]||(esExtra(k)?String(k).slice(2).replace(/_/g," "):k)])[1];
 const initCorte = (c,k) => keysOf(k).reduce((a,x)=>a+((c.cortes&&c.cortes[x])||0),0);
-const nomFila = (c,k,n) => (k==="otros"&&c.otrosDesc) ? esc(c.otrosDesc) : n;
+const nomFila = (c,k,n) => (k==="otros"&&c.otrosDesc) ? esc(c.otrosDesc) : undCorte(c,k) ? n+" (und)" : n;
 const piezasTxt = c => { const p=c.piezas||{},l=[["pierna1","Pierna 1"],["pierna2","Pierna 2"],["brazo1","Brazo 1"],["brazo2","Brazo 2"],["costilla1","Costilla 1"],["costilla2","Costilla 2"]].filter(([k])=>p[k]>0); return l.length?`<div class="sub" style="margin:8px 0 0">Piezas: ${l.map(([k,n])=>n+" "+peso(p[k])).join(" · ")} lb</div>`:""; };
 const esc = s => String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const hoy = () => { const d=new Date(); d.setMinutes(d.getMinutes()-d.getTimezoneOffset()); return d.toISOString().slice(0,10); };
@@ -945,7 +979,7 @@ function borrarDoc(col,id){ if(db&&confirm("¿Eliminar este registro?")) db.coll
 const totLech = () => D.lotes.reduce((a,x)=>a+(x.valor||0)+(x.flete||0),0);
 const totIns = () => D.insumos.reduce((a,x)=>a+(x.costo||0)+(x.flete||0),0);
 const itemsDe = v => v.items || [{cerdoId:v.cerdoId,cerdoNombre:v.cerdoNombre,corte:v.corte,cantidad:v.cantidad,precio:v.precio}];
-const vendidoCorte = (cid,k) => D.ventas.reduce((a,v)=>a+itemsDe(v).filter(i=>i.cerdoId===cid&&i.unidad!=="und"&&keysOf(k).includes(i.corte)).reduce((b,i)=>b+(i.cantidad||0),0),0);
+const vendidoCorte = (cid,k) => D.ventas.reduce((a,v)=>a+itemsDe(v).filter(i=>i.cerdoId===cid&&(undId(cid,k)?i.unidad==="und":i.unidad!=="und")&&keysOf(k).includes(i.corte)).reduce((b,i)=>b+(i.cantidad||0),0),0);
 const kgDe = c => c.canalKg!=null ? c.canalKg : (c.canal||0)/2;
 const dispCorte = (c,k) => initCorte(c,k) - vendidoCorte(c.id,k);
 const abonado = v => v.abonado||0;
@@ -1363,7 +1397,7 @@ function renderInversion(){
 
 /* ===== Sacrificio ===== */
 const PZ=["c_p1","c_p2","c_b1","c_b2"], KZ=["c_k1","c_k2"];
-const formVal = k => k==="carne" ? val("cCarne") : k==="costilla" ? val("cCostilla") : (k==="otros"||esExtra(k)) ? xcSumaKey("c",k) : val("c_"+k);
+const formVal = k => k==="carne" ? val("cCarne") : k==="costilla" ? val("cCostilla") : k===AS_KEY ? asValor("c") : (k==="pesuna"||k==="orejas") ? fxValor("c",k) : (k==="otros"||esExtra(k)) ? xcSumaKey("c",k) : val("c_"+k);
 function buildCortesForm(){
   const inp=(id,n,h)=>`<div><label>${n}</label><input type="number" inputmode="decimal" step="0.01" id="${id}" oninput="${h}"></div>`;
   $("cortesForm").innerHTML=
@@ -1373,15 +1407,15 @@ function buildCortesForm(){
     '<h3 style="margin-top:16px">Costilla</h3><div class="g2">'+inp("c_k1","Costilla 1 (lb) · opcional","sumarCostillas()")+inp("c_k2","Costilla 2 (lb) · opcional","sumarCostillas()")+'</div>'+
     '<label>Total Costilla (lb)</label><input type="number" inputmode="decimal" step="0.01" id="cCostilla" oninput="dbn.costillaDirecta()" placeholder="Suma de las 2 piezas">'+
     '<div class="sub" style="margin:6px 0 0">Se suma con las 2 piezas, o escribe el total si las pesaste juntas.</div>'+
-    '<h3 style="margin-top:16px">Demás cortes</h3><div class="g2">'+inp("c_lomo","Lomo (lb)","sumarCortes()")+inp("c_pesuna","Pesuña (lb)","sumarCortes()")+inp("c_orejas","Orejas (lb)","sumarCortes()")+'</div>'+xcHTML("c");
+    '<h3 style="margin-top:16px">Demás cortes</h3><div class="g2">'+inp("c_lomo","Lomo (lb)","sumarCortes()")+fxHTML("c","pesuna")+fxHTML("c","orejas")+fxHTML("c","asadura")+'</div>'+xcHTML("c");
 }
 function sumarPiezas(){ const t=PZ.reduce((a,i)=>a+val(i),0); $("cCarne").value=t>0?Math.round(t*100)/100:""; sumarCortes(); }
 function carneDirecta(){ PZ.forEach(i=>$(i).value=""); sumarCortes(); }
 function sumarCostillas(){ const t=KZ.reduce((a,i)=>a+val(i),0); $("cCostilla").value=t>0?Math.round(t*100)/100:""; sumarCortes(); }
 function costillaDirecta(){ KZ.forEach(i=>$(i).value=""); sumarCortes(); }
-function limpiarCortes(){ [...PZ,...KZ,"cCarne","cCostilla","c_lomo","c_pesuna","c_orejas"].forEach(i=>$(i).value=""); xcLimpiar("c"); sumarCortes(); }
+function limpiarCortes(){ [...PZ,...KZ,"cCarne","cCostilla","c_lomo","c_pesuna","c_orejas"].forEach(i=>$(i).value=""); xcLimpiar("c"); fxResetTodo("c"); sumarCortes(); }
 function sumarCortes(){
-  const s=BUCKETS.filter(b=>!esExtra(b.k)).reduce((a,b)=>a+formVal(b.k),0)+xcTotal("c"),cl=val("cCanal")*2;
+  const s=BUCKETS.filter(b=>!esExtra(b.k)).reduce((a,b)=>a+lbForm(b.k),0)+xcTotal("c")+asLb("c"),cl=val("cCanal")*2;
   $("canalLb").textContent=peso(cl);$("canalLb2").textContent=peso(cl);$("sumCortes").textContent=peso(s);
   if($("cXcTot")) $("cXcTot").textContent=peso(xcTotal("c"));
   const d=cl-s,e=$("difCanal");e.textContent=(d<0?"+":"")+peso(Math.abs(d))+" lb";e.className=d<0?"neg":"";
@@ -1428,8 +1462,10 @@ function guardarCerdo(){
   const canal=canalKg*2;
   const enCanal=sacTipo==="canal";
   const xe=enCanal?"":xcValida("c"); if(xe) return toast(xe);
-  const cortes={}, cortesNom={}; BUCKETS.filter(b=>!esExtra(b.k)).forEach(b=>cortes[b.k]=enCanal?(b.k==="otros"?val("cIntLb"):0):formVal(b.k));
-  if(!enCanal) xcFilas("c").forEach(r=>{ cortes[r.k]=r.lb; cortesNom[r.k]=r.n; });   /* cortes personalizados (Papada, Cabeza, Tocino…) */
+  const cortes={}, cortesNom={}, cortesUnd={}; BUCKETS.filter(b=>!esExtra(b.k)).forEach(b=>cortes[b.k]=enCanal?(b.k==="otros"?val("cIntLb"):0):formVal(b.k));
+  if(!enCanal) xcFilas("c").forEach(r=>{ cortes[r.k]=r.lb; cortesNom[r.k]=r.n; if(r.u) cortesUnd[r.k]=true; });
+  if(!enCanal&&asValor("c")>0){ cortes[AS_KEY]=asValor("c"); cortesNom[AS_KEY]=AS_NOM; if(asEsUnd("c")) cortesUnd[AS_KEY]=true; }   /* Asadura fija: libras o unidad */
+  if(!enCanal) ["pesuna","orejas"].forEach(k=>{ if(cortes[k]>0&&fxEsUnd("c",k)) cortesUnd[k]=true; });   /* Pesuña / Orejas por unidad */   /* cortes personalizados (Papada, Cabeza, Tocino…) */
   const piezas=enCanal?{pierna1:0,pierna2:0,brazo1:0,brazo2:0,costilla1:0,costilla2:0}:{pierna1:val("c_p1"),pierna2:val("c_p2"),brazo1:val("c_b1"),brazo2:val("c_b2"),costilla1:val("c_k1"),costilla2:val("c_k2")},otrosDesc=enCanal?$("cIntDesc").value.trim():"";
   if(!enCanal&&!Object.values(cortes).some(v=>v>0)) return toast("Ingresa al menos un corte");
   if(arete&&D.cerdos.some(c=>(!pend||c.id!==pend.id)&&norm(c.arete)===norm(arete))) return toast("Ese arete ya fue registrado en otro cerdo");
@@ -1444,7 +1480,7 @@ function guardarCerdo(){
   const ref=pend?db.collection("cerdos").doc(pend.id):db.collection("cerdos").doc(), bt=db.batch();
   /* Costo y encargado del sacrificio -> gasto «Sacrificio / Matarife» (se crea, o se actualiza el que ya estaba ligado al cerdo) */
   const sg=sincGastoSac(bt,{cid:ref.id,nombre,fecha,costo:costoS,mat:matS,pend,gProg:pend?null:gastoProgDe(nombre)});
-  bt.set(ref,{nombre,arete,pesoIngresoKg:ing?ing.kg:(pend?(pend.pesoIngresoKg==null?null:pend.pesoIngresoKg):null),fecha,canal,canalKg,sobranteKg:Math.max(val("cSobrante"),0),cortes,cortesNom,piezas,otrosDesc,tipoSalida:enCanal?"canal":"despiece",sinPesaje:false,...sg,proyectoId:proyActivo,...(pend?{}:{creado:Date.now()})},{merge:true});
+  bt.set(ref,{nombre,arete,pesoIngresoKg:ing?ing.kg:(pend?(pend.pesoIngresoKg==null?null:pend.pesoIngresoKg):null),fecha,canal,canalKg,sobranteKg:Math.max(val("cSobrante"),0),cortes,cortesNom,cortesUnd,piezas,otrosDesc,tipoSalida:enCanal?"canal":"despiece",sinPesaje:false,...sg,proyectoId:proyActivo,...(pend?{}:{creado:Date.now()})},{merge:true});
   let np=0,nv=0;
   if(fecha){
     const pl=planFechaSac(nombre,arete,ref.id,fecha);
@@ -1466,7 +1502,7 @@ function guardarCerdo(){
 let ecId=null;
 const ecVal = id => parseFloat($(id).value)||0;
 const ECP=["ec_p1","ec_p2","ec_b1","ec_b2"], ECK=["ec_k1","ec_k2"];
-const ecForm = k => k==="carne" ? ecVal("ecCarne") : k==="costilla" ? ecVal("ecCostilla") : (k==="otros"||esExtra(k)) ? xcSumaKey("ec",k) : ecVal("ec_"+k);
+const ecForm = k => k==="carne" ? ecVal("ecCarne") : k==="costilla" ? ecVal("ecCostilla") : k===AS_KEY ? asValor("ec") : (k==="pesuna"||k==="orejas") ? fxValor("ec",k) : (k==="otros"||esExtra(k)) ? xcSumaKey("ec",k) : ecVal("ec_"+k);
 const ecR = n => n>0 ? Math.round(n*100)/100 : "";
 function ecBuild(){
   const inp=(id,n,h)=>`<div><label>${n}</label><input type="number" inputmode="decimal" step="0.01" id="${id}" oninput="${h}"></div>`;
@@ -1475,7 +1511,7 @@ function ecBuild(){
     '<label>Total Carne (lb)</label><input type="number" inputmode="decimal" step="0.01" id="ecCarne" oninput="dbn.ecCarneDir()" placeholder="Suma de las 4 piezas">'+
     '<h3 style="margin-top:16px">Costilla</h3><div class="g2">'+inp("ec_k1","Costilla 1 (lb)","ecCostillas()")+inp("ec_k2","Costilla 2 (lb)","ecCostillas()")+'</div>'+
     '<label>Total Costilla (lb)</label><input type="number" inputmode="decimal" step="0.01" id="ecCostilla" oninput="dbn.ecCostillaDir()" placeholder="Suma de las 2 piezas">'+
-    '<h3 style="margin-top:16px">Demás cortes</h3><div class="g2">'+inp("ec_lomo","Lomo (lb)","ecCalc()")+inp("ec_pesuna","Pesuña (lb)","ecCalc()")+inp("ec_orejas","Orejas (lb)","ecCalc()")+'</div>'+xcHTML("ec");
+    '<h3 style="margin-top:16px">Demás cortes</h3><div class="g2">'+inp("ec_lomo","Lomo (lb)","ecCalc()")+fxHTML("ec","pesuna")+fxHTML("ec","orejas")+fxHTML("ec","asadura")+'</div>'+xcHTML("ec");
 }
 function ecPiezas(){ $("ecCarne").value=ecR(ECP.reduce((a,i)=>a+ecVal(i),0)); ecCalc(); }
 function ecCarneDir(){ ECP.forEach(i=>$(i).value=""); ecCalc(); }
@@ -1483,10 +1519,64 @@ function ecCostillas(){ $("ecCostilla").value=ecR(ECK.reduce((a,i)=>a+ecVal(i),0
 function ecCostillaDir(){ ECK.forEach(i=>$(i).value=""); ecCalc(); }
 function ecCalc(){
   const c=D.cerdos.find(x=>x.id===ecId); if(!c) return;
-  const cl=ecVal("ecCanal")*2, s=BUCKETS.filter(b=>!esExtra(b.k)).reduce((a,b)=>a+ecForm(b.k),0)+xcTotal("ec",true), d=cl-s;
+  const cl=ecVal("ecCanal")*2, s=BUCKETS.filter(b=>!esExtra(b.k)).reduce((a,b)=>a+lbEc(b.k),0)+xcTotal("ec",true)+asLb("ec"), d=cl-s;
   $("ecCanalLb").textContent=peso(cl); if($("ecXcTot")) $("ecXcTot").textContent=peso(xcTotal("ec"));
   $("ecResumen").innerHTML=`Peso en canal: <b>${peso(cl)}</b> lb · Suma de cortes: <b>${peso(s)}</b> lb<br>`+(cl<=0?"Ingresa el peso en canal (kg)":d<0?`<span class="neg">Los cortes superan el canal por ${peso(-d)} lb: revisa los pesos</span>`:`Merma: ${peso(d)} lb (${peso(d/cl*100)}% del canal)`);
-  $("ecStock").innerHTML='<span class="h">Corte</span><span class="h n">Nuevo</span><span class="h n">Vendido</span><span class="h n">Disp.</span>'+ecClaves(c).map(b=>{const n=ecForm(b.k),v=vendidoCorte(c.id,b.k),dp=n-v;return `<span>${nomFila(c,b.k,b.n)}</span><span class="n">${peso(n)}</span><span class="n">${peso(v)}</span><span class="n ${dp<0?"neg":"pos"}">${peso(dp)}</span>`}).join("");
+  renderStockResultante();
+}
+/* ===== Stock resultante: Corte | Nuevo | Preventa | Vendido | Disp. (un renglón por cada corte, estándar o personalizado) ===== */
+/* Filas del stock por corte (una sola fuente para: Stock resultante del editor, Inventario de cortes y Rendimiento).
+   live=true → valores del formulario abierto (editor); live=false → lo guardado en el cerdo. */
+function stockFilas(c,live){
+  const ap=pvDe(c.nombre,c.arete), nom={...(c.cortesNom||{})};
+  let filasXc=[];
+  if(live){
+    filasXc=[...document.querySelectorAll("#ecXcList .xc-row")].map(r=>{
+      const n=r.querySelector(".xc-n").value.trim().replace(/\s+/g," "); if(!n||XC_BASE.includes(xcNorm(n))) return null;
+      const k=r.dataset.k||xcClave(n); return k==="x_"?null:{k,n,u:!!r.dataset.u};
+    }).filter(Boolean);
+    filasXc.forEach(r=>nom[r.k]=r.n);
+    if(asValor("ec")>0) nom[AS_KEY]=AS_NOM;
+  } else {
+    Object.keys(c.cortes||{}).filter(k=>esExtra(k)&&!nom[k]&&(+c.cortes[k]||0)>0).forEach(k=>nom[k]=nomCorte(k));
+  }
+  const extras=Object.keys(nom).filter(esExtra).map(k=>({k,n:nom[k]||nomCorte(k)}))
+    .sort((a,b)=>a.k===AS_KEY?-1:b.k===AS_KEY?1:a.n.localeCompare(b.n,"es"));
+  const existe=new Set(extras.map(x=>x.k));
+  const claveItem=i=>{
+    if(esExtra(i.corte)) return i.corte;
+    if(i.presa==="visceras") return existe.has(AS_KEY)?AS_KEY:existe.has("x_visceras")?"x_visceras":AS_KEY;
+    if(i.presa==="chunchullo"||i.presa==="cabeza"){ const k="x_"+i.presa; if(existe.has(k)) return k; }
+    if(i.presa===PRESA_OTRO&&i.desc){ const k=xcClave(i.desc); if(existe.has(k)) return k; }
+    return BK[i.corte]||"otros";
+  };
+  const esUnd=k=>{
+    if(!live) return undCorte(c,k);
+    if(k===AS_KEY) return asEsUnd("ec");
+    if(k==="pesuna"||k==="orejas") return fxEsUnd("ec",k);
+    const f=filasXc.find(r=>r.k===k); return f?!!f.u:undCorte(c,k);
+  };
+  const reservado=(k,und)=>ap.reduce((a,p)=>a+(p.items||[]).reduce((t,i)=>{
+    if(claveItem(i)!==k||esUnid(i)!==und) return t;
+    return t+(und?Math.max(1,Math.round(+i.unidades||1)):pvCant(p,i));
+  },0),0);
+  const lista=["carne","costilla","lomo","pesuna","orejas"].map(k=>({k,n:nomCorte(k)})).concat(extras,[{k:"otros",n:"Otros"}]);
+  const out=[];
+  lista.forEach(b=>{
+    const und=esUnd(b.k), n=live?ecForm(b.k):initCorte(c,b.k), v=vendidoCorte(c.id,b.k), r=reservado(b.k,und), dp=n-v;
+    if(b.k==="otros"&&!(n>0||v>0||r>0)) return;                        /* «Otros» solo en registros antiguos con datos */
+    out.push({k:b.k,nombre:(b.k==="otros"&&c.otrosDesc)?esc(c.otrosDesc):esc(b.n)+(und?" (und)":""),n,r,v,dp});
+  });
+  return out;
+}
+const stockCabHTML=h=>'<span class="h">Corte</span><span class="h n">'+(h||"Nuevo")+'</span><span class="h n">Preventa</span><span class="h n">Vendido</span><span class="h n">Disp.</span>';
+const stockFilasHTML=(c,live)=>stockFilas(c,live).map(f=>`<span>${f.nombre}</span><span class="n">${peso(f.n)}</span><span class="n pv">${peso(f.r)}</span><span class="n">${peso(f.v)}</span><span class="n ${f.dp<0?"neg":"pos"}">${peso(f.dp)}</span>`).join("");
+/* Tabla completa Corte | Nuevo | Preventa | Vendido | Disp. */
+const stockTablaHTML=(c,live,h)=>'<div class="stock s5">'+stockCabHTML(h)+stockFilasHTML(c,live)+'</div>';
+function renderStockResultante(){
+  const el=$("ecStock"); if(!el) return;
+  const c=D.cerdos.find(x=>x.id===ecId); if(!c){ el.innerHTML=""; return; }
+  el.innerHTML=stockCabHTML("Nuevo")+stockFilasHTML(c,true);
 }
 function editarCerdo(id){
   const c=D.cerdos.find(x=>x.id===id); if(!c) return;
@@ -1497,11 +1587,18 @@ function editarCerdo(id){
   const p=c.piezas||{};
   [["ec_p1","pierna1"],["ec_p2","pierna2"],["ec_b1","brazo1"],["ec_b2","brazo2"],["ec_k1","costilla1"],["ec_k2","costilla2"]].forEach(([i,k])=>$(i).value=ecR(p[k]||0));
   $("ecCarne").value=ecR(initCorte(c,"carne")); $("ecCostilla").value=ecR(initCorte(c,"costilla"));
-  ["lomo","pesuna","orejas"].forEach(k=>$("ec_"+k).value=ecR(initCorte(c,k)));
+  $("ec_lomo").value=ecR(initCorte(c,"lomo"));
   /* filas dinámicas: personalizados guardados + el «Otros» antiguo (conserva su clave para no descuadrar ventas ya hechas) */
   xcLimpiar("ec");
-  Object.keys(c.cortesNom||{}).filter(k=>esExtra(k)&&(+(c.cortes||{})[k]||0)>0).forEach(k=>xcAgregar("ec",c.cortesNom[k],c.cortes[k],k));
+  Object.keys(c.cortesNom||{}).filter(k=>esExtra(k)&&k!==AS_KEY&&k!=="x_visceras"&&(+(c.cortes||{})[k]||0)>0).forEach(k=>xcAgregar("ec",c.cortesNom[k],c.cortes[k],k,!!(c.cortesUnd&&c.cortesUnd[k])));
   { const lo=initCorte(c,"otros"); if(lo>0) xcAgregar("ec",c.otrosDesc||"Otros",lo,"otros"); }
+  ["asadura","pesuna","orejas"].forEach(f=>{   /* casillas fijas: lo guardado (con su medida) o, si no hay nada, lo pedido en preventa */
+    const ak=f==="asadura"?((+(c.cortes||{})[AS_KEY]||0)>0?AS_KEY:(+(c.cortes||{}).x_visceras||0)>0?"x_visceras":AS_KEY):f,
+          v=f==="asadura"?(+(c.cortes||{})[ak]||0):initCorte(c,f);
+    if(v>0) fxModo("ec",f,!!(c.cortesUnd&&c.cortesUnd[ak]),String(Math.round(v*100)/100),false);
+    else { fxModo("ec",f,false,"",false); const a=fxDesdePreventa(c,f); if(a) fxModo("ec",f,a.u,a.u?String(a.q):"",false); }
+  });
+  xcSyncPreventa("ec",c);   /* cortes especiales pedidos en preventa */
   ecCalc(); ecAnularEstado(c); $("mEditCerdo").classList.add("open"); $("mEditCerdo").querySelector(".sheet").scrollTop=0;
 }
 /* ===== Anular / deshacer sacrificio (condicional) ===== */
@@ -1548,15 +1645,17 @@ function ecGuardar(){
   const c=D.cerdos.find(x=>x.id===ecId); if(!c) return;
   const canalKg=ecVal("ecCanal"); if(canalKg<=0) return toast("Ingresa el peso en canal (kg)");
   const xe=xcValida("ec"); if(xe) return toast(xe);
-  const cortes={}, cortesNom={}; BUCKETS.filter(b=>!esExtra(b.k)).forEach(b=>cortes[b.k]=ecForm(b.k));
-  xcFilas("ec").filter(r=>esExtra(r.k)).forEach(r=>{ cortes[r.k]=r.lb; cortesNom[r.k]=r.n; });
+  const cortes={}, cortesNom={}, cortesUnd={}; BUCKETS.filter(b=>!esExtra(b.k)).forEach(b=>cortes[b.k]=ecForm(b.k));
+  xcFilas("ec").filter(r=>esExtra(r.k)).forEach(r=>{ cortes[r.k]=r.lb; cortesNom[r.k]=r.n; if(r.u) cortesUnd[r.k]=true; });
+  if(asValor("ec")>0){ cortes[AS_KEY]=asValor("ec"); cortesNom[AS_KEY]=AS_NOM; if(asEsUnd("ec")) cortesUnd[AS_KEY]=true; }   /* Asadura fija */
+  ["pesuna","orejas"].forEach(k=>{ if(cortes[k]>0&&fxEsUnd("ec",k)) cortesUnd[k]=true; });   /* Pesuña / Orejas por unidad */
   const lega=xcFilas("ec").find(r=>r.k==="otros");
   if(!Object.values(cortes).some(v=>v>0)) return toast("Ingresa al menos un corte");
   const piezas={pierna1:ecVal("ec_p1"),pierna2:ecVal("ec_p2"),brazo1:ecVal("ec_b1"),brazo2:ecVal("ec_b2"),costilla1:ecVal("ec_k1"),costilla2:ecVal("ec_k2")};
   const neg=ecClaves(c).filter(b=>(cortes[b.k]||0)<vendidoCorte(c.id,b.k)-1e-9);
   if(neg.length&&!confirm("Ya se vendió más de lo que dejaste en: "+neg.map(b=>b.n).join(", ")+".\nEl stock quedaría en negativo.\n\n¿Guardar de todos modos?")) return;
   if(!db) return toast("Configura Firebase primero");
-  const upd={canalKg,canal:canalKg*2,cortes,cortesNom,piezas,otrosDesc:lega?lega.n:""};
+  const upd={canalKg,canal:canalKg*2,cortes,cortesNom,cortesUnd,piezas,otrosDesc:lega?lega.n:""};
   /* update() reemplaza el mapa completo de cortes (no mezcla con claves antiguas como pierna/brazo) */
   db.collection("cerdos").doc(ecId).update(upd).catch(e=>toast("Error nube: "+(e.code||e.message)));
   Object.assign(c,upd); /* refleja el cambio al instante, aun sin red */
@@ -1577,8 +1676,7 @@ function renderInventario(){
     const mine=pvDe(c.nombre,c.arete),fal=faltantes(c),bk=BUCKETS.filter(b=>pvLb(mine,b.k)>0);
     const mat=respMat(c)||respMat(gastoDeCerdo(c)||{});   /* encargado del sacrificio: el del cerdo o, si falta, el de su gasto */
     return `<div class="card"><div class="row" style="padding-top:0;align-items:flex-start;gap:8px"><div style="flex:1 1 0;min-width:0"><b>${esc(c.nombre)}</b>${mat?` <span style="color:var(--mu);font-size:13px;font-weight:600">• Matarife: ${esc(mat)}</span>`:""}${c.arete?` <span class="tag ar">Arete ${esc(c.arete)}</span>`:""}<small>${fechaTxt(c.fecha)} · canal ${peso(kgDe(c))} kg (${peso(c.canal)} lb)${c.pesoIngresoKg?` · ingresó ${peso(c.pesoIngresoKg)} kg`:""}</small></div><div style="flex:0 0 auto;margin-left:auto"><button class="sm" onclick="editarCerdo('${c.id}')">✏️ Editar</button></div></div>
-  <div class="stock"><span class="h">Corte</span><span class="h n">Inicial</span><span class="h n">Vendido</span><span class="h n">Disp.</span>
-  ${CORTES.filter(([k])=>!esExtra(k)||initCorte(c,k)>0||vendidoCorte(c.id,k)>0).map(([k,n])=>{const d=dispCorte(c,k);return `<span>${nomFila(c,k,n)}</span><span class="n">${peso(initCorte(c,k))}</span><span class="n">${peso(vendidoCorte(c.id,k))}</span><span class="n ${d<=0?"neg":"pos"}">${peso(d)}</span>`}).join("")}</div>
+  ${stockTablaHTML(c,false,"Inicial")}
   ${piezasTxt(c)}
   ${bk.length?`<div class="sub" style="margin:10px 0 0">Preventa apartada: ${bk.map(b=>{const a=pvLb(mine,b.k),d=dispBucket(c,b);return `<span class="${a>d+1e-9?"neg":"pos"}">${b.n} ${peso(a)} lb</span>`}).join(" · ")}</div>`:""}
   ${fal.length?`<div class="alerta" style="margin:12px 0 0">⚠️ Falta carne para la preventa: ${fal.map(x=>`${x.n} (−${peso(x.ap-x.d)} lb)`).join(", ")}</div>`:""}</div>`}).join(""):'<div class="card empty">No hay cerdos sacrificados. Toca «➕ Registrar Sacrificio / Despiece» para registrar el primero.</div>';
@@ -1604,7 +1702,7 @@ function refrescarItems(){
   if(a&&a.tagName==="INPUT"&&$("vItems").contains(a)) calcVenta(); else renderItems();
 }
 /* Inventario disponible de un cerdo: suma de lo que queda en cada corte (sin contar negativos) */
-const stockTotalCerdo = c => BUCKETS.reduce((a,b)=>a+Math.max(0,dispCorte(c,b.k)),0);
+const stockTotalCerdo = c => BUCKETS.reduce((a,b)=>a+(undCorte(c,b.k)?0:Math.max(0,dispCorte(c,b.k))),0);
 const cerdoConStock = c => stockTotalCerdo(c)>1e-9;
 /* Venta en caliente: se vende la canal por kilos (no descuenta cortes) */
 const esCaliente = i => i.modo==="caliente"||i.corte==="canal";
@@ -1641,7 +1739,7 @@ function renderItems(){
     const c=cs.find(x=>x.id===it.cerdoId);
     return `<div class="item"><div class="ih"><b>Corte ${i+1}</b>${carrito.length>1?`<button class="sm del" onclick="quitarItem(${i})">Quitar</button>`:""}</div>
     <div class="ig">
-    <div class="full"><label>Corte</label><select onchange="setItem(${i},'corte',this.value,true)">${CORTES.filter(([k])=>!esExtra(k)||!c||k===it.corte||initCorte(c,k)>0).map(([k,n])=>`<option value="${k}"${k===it.corte?" selected":""}>${c?nomFila(c,k,n):n}${c?` (${peso(dispCorte(c,k))} lb disp.)`:""}</option>`).join("")}</select></div>
+    <div class="full"><label>Corte</label><select onchange="setItem(${i},'corte',this.value,true)">${CORTES.filter(([k])=>!esExtra(k)||!c||k===it.corte||initCorte(c,k)>0).map(([k,n])=>`<option value="${k}"${k===it.corte?" selected":""}>${c?nomFila(c,k,n):n}${c?` (${peso(dispCorte(c,k))} ${undCorte(c,k)?"und":"lb"} disp.)`:""}</option>`).join("")}</select></div>
     ${(it.corte==="otros"||it.desc)?`<div class="full"><label>Descripción en el comprobante (opcional)</label><input value="${esc(it.desc||"")}" placeholder="${esc((c&&c.otrosDesc)||"Ej: Cabeza, Papada, Asadura")}" oninput="carrito[${i}].desc=this.value"></div>`:""}
     <div><label>Cantidad (lb)</label><input type="number" inputmode="decimal" step="0.01" value="${it.cant||""}" oninput="setItem(${i},'cant',this.value)"></div>
     <div><label>Precio por lb ($)</label><input class="money" inputmode="numeric" value="${it.precio?miles(it.precio):""}" oninput="setItem(${i},'precio',this.value)" placeholder="0"></div>
@@ -1749,7 +1847,7 @@ function panelCerdo(c){
   if(!segDef.some(x=>x[0]===vLista)) vLista="todas";
   const lista=all.filter(v=>vLista==="todas"||(vLista==="caliente"?modosVenta(v,c.id).cal:modosVenta(v,c.id).des));
   const seg=segDef.map(([k,n,q])=>`<button class="${vLista===k?"act":""}" onclick="setListaVenta('${k}')">${n} (${q})</button>`).join("");
-  const cortes=CORTES.filter(([k])=>initCorte(c,k)>0||vendidoCorte(c.id,k)>0).map(([k,n])=>{const d=dispCorte(c,k);return `<span>${nomFila(c,k,n)}</span><b class="${d<=0?"neg":"pos"}">${peso(d)}<em> / ${peso(initCorte(c,k))} lb</em></b>`;}).join("");
+  const cortes=CORTES.filter(([k])=>initCorte(c,k)>0||vendidoCorte(c.id,k)>0).map(([k,n])=>{const d=dispCorte(c,k);return `<span>${nomFila(c,k,n)}</span><b class="${d<=0?"neg":"pos"}">${peso(d)}<em> / ${peso(initCorte(c,k))} ${undCorte(c,k)?"und":"lb"}</em></b>`;}).join("");
   return `<div class="vp-head"><button class="sm" onclick="volverVentasCerdos()">← Cerdos</button><div class="vt"><h2>🐖 Ventas ${esc(c.nombre)}</h2><div class="sub" style="margin:2px 0 0">${c.arete?"Arete "+esc(c.arete)+" · ":""}Sacrificio ${fechaTxt(c.fecha)}</div></div></div>
   <div class="vmodos" style="grid-template-columns:1fr">${esCan?`<button class="vmodo cal" onclick="abrirVentaModo('caliente')"><b>🔥 Venta en caliente</b><small>Canal completa · por kilos</small></button>`:`<button class="vmodo des" onclick="abrirVentaModo('despiece')"><b>🔪 Venta por despiece</b><small>Cortes · por libras</small></button>`}</div>
   <div class="vp-cols"><div class="card"><h3>📦 Inventario disponible</h3><div class="vstock">${esCan?`<span>🔥 Canal</span><b class="${kgD<=0?"neg":"pos"}">${peso(kgD)}<em> / ${peso(kgT)} kg</em></b>`:(cortes||'<span style="grid-column:1/-1;color:var(--mu)">Sin despiece registrado</span>')}</div></div>
@@ -1784,7 +1882,7 @@ function reporteCerdo(id){
     o.total+=x.total; o.abonado+=x.abonado; o.saldo+=x.saldo; tot+=x.total; cob+=x.abonado; sal+=x.saldo;
     x.items.forEach(i=>{ const q=i.cantidad||0,m=subItem(i); if(esCaliente(i)){ kgC+=q; vC+=m; } else { const n=nomItem(i), z=cor[n]=cor[n]||{lb:0,v:0}; z.lb+=(i.unidad==="und"?0:q); z.v+=m; } });
   });
-  const lbCortes=CORTES.reduce((a,[k])=>a+initCorte(c,k),0), vD=Object.values(cor).reduce((a,z)=>a+z.v,0), ing=c.pesoIngresoKg||0;
+  const lbCortes=CORTES.reduce((a,[k])=>a+(undCorte(c,k)?0:initCorte(c,k)),0), vD=Object.values(cor).reduce((a,z)=>a+z.v,0), ing=c.pesoIngresoKg||0;
   const pl=plantelCerdos(), ez=pl.find(e=>e.c&&e.c.id===id), iv=ez?inversionCerdo(ez,pl):null;
   const B=[bSec("Rendimiento del cerdo"),bFila("Peso de la canal",peso(kgDe(c))+" kg",peso(kgDe(c)*2)+" lb")];
   if(ing>0){ B.push(bFila("Peso al ingreso",peso(ing)+" kg"),bFila("Rendimiento en canal",pct1(kgDe(c)/ing*100))); }
@@ -1806,7 +1904,7 @@ function reporteCerdo(id){
 let ev=null;
 const baseCorte = k => CORTES.map(x=>x[0]).find(b=>keysOf(b).includes(k))||k;
 /* Disponible de un corte excluyendo lo que esta misma venta ya descontaba */
-const evDisp = (c,k) => dispCorte(c,k)+ev.orig.filter(i=>i.cerdoId===c.id&&i.unidad!=="und"&&keysOf(k).includes(i.corte)).reduce((a,i)=>a+(i.cantidad||0),0);
+const evDisp = (c,k) => dispCorte(c,k)+ev.orig.filter(i=>i.cerdoId===c.id&&(undCorte(c,k)?i.unidad==="und":i.unidad!=="und")&&keysOf(k).includes(i.corte)).reduce((a,i)=>a+(i.cantidad||0),0);
 function editarVenta(id){
   const v=D.ventas.find(x=>x.id===id); if(!v) return;
   const orig=itemsDe(v);
@@ -2220,6 +2318,7 @@ const CORTE_DE={carne:"carne",costilla:"costilla",lomo:"lomo",pesuna:"pesuna",or
    Cada nombre guardado en cerdo.cortesNom se registra en CORTES, BUCKETS, PV_PROD, BK y CORTE_DE,
    así aparece solo en Inventario, Preventas, Ventas, comprobantes y reportes (se recalcula en renderAll). */
 function registrarCortesExtra(){
+  UND_KEYS.clear(); (D.cerdos||[]).forEach(c=>Object.keys(c.cortesUnd||{}).forEach(k=>{ if(c.cortesUnd[k]&&esExtra(k)) UND_KEYS.add(k); }));
   [CORTES,PV_PROD].forEach(a=>{ for(let i=a.length-1;i>=0;i--) if(esExtra(a[i][0])) a.splice(i,1); });
   for(let i=BUCKETS.length-1;i>=0;i--) if(esExtra(BUCKETS[i].k)) BUCKETS.splice(i,1);
   [BK,CORTE_DE].forEach(o=>Object.keys(o).filter(esExtra).forEach(k=>delete o[k]));
@@ -2235,51 +2334,199 @@ function registrarCortesExtra(){
 }
 
 /* ===== Filas dinámicas «+ Agregar otro corte» (pref «c» = registrar sacrificio, «ec» = editar pesaje) ===== */
-const XC_BASE=["carne","costilla","lomo","pesuna","pesuña","orejas","orejas"];
-const XC_SUG=["Papada","Cabeza","Tocino","Chicharrón","Vísceras","Manteca","Hígado","Asadura","Patas","Rabo","Huesos"];
+const XC_BASE=["carne","costilla","lomo","pesuna","pesuña","orejas","asadura","visceras","vísceras"];   /* nombres con casilla propia fija */
+const XC_SUG=["Menudo","Chunchullo","Papada","Cabeza","Tocino","Chicharrón","Manteca","Hígado","Patas","Rabo","Huesos"];
 const xcNorm = t => String(t||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim();
 const xcClave = n => "x_"+xcNorm(n).replace(/[^a-z0-9]+/g,"_").replace(/^_+|_+$/g,"");
-const xcRecalc = pref => pref==="c" ? sumarCortes() : ecCalc();
+function xcRecalc(pref){
+  if(pref==="c") sumarCortes(); else ecCalc();
+  const e=$(pref+"XcTotU"); if(e){ const u=xcFilas(pref).filter(r=>r.u).reduce((a,r)=>a+r.lb,0); e.textContent=u>0?" · "+peso(u)+" und":""; }
+}
 function xcHTML(pref){
   return '<h3 class="xc-t">Otros cortes <span style="font-weight:400;color:var(--mu)">(opcional)</span></h3>'+
     '<div class="xc-list" id="'+pref+'XcList"></div>'+
-    '<button type="button" class="xc-add" onclick="xcAgregar(\''+pref+'\')">+ Agregar otro corte</button>'+
-    '<div class="xc-tot">Otros cortes: <b id="'+pref+'XcTot">0</b> lb</div>'+
+    '<button type="button" class="xc-add" onclick="xcAbrir(\''+pref+'\')">+ Agregar otro corte</button>'+
+    '<div class="xc-tot">Otros cortes: <b id="'+pref+'XcTot">0</b> lb<span id="'+pref+'XcTotU"></span></div>'+
     '<div class="xc-sub">Papada, cabeza, tocino, chicharrón, vísceras… Se suman al total y quedan disponibles para Preventas y Ventas.</div>'+
     '<datalist id="'+pref+'XcSug">'+XC_SUG.map(n=>'<option value="'+n+'">').join("")+'</datalist>';
 }
-function xcAgregar(pref,nombre,lb,k){
+/* Fila de un corte personalizado. und=true → se mide por unidad (cantidad entera) y no suma libras ni merma */
+function xcAgregar(pref,nombre,val,k,und,auto){
   const box=$(pref+"XcList"); if(!box) return;
-  const r=document.createElement("div"); r.className="xc-row"; if(k) r.dataset.k=k;
+  const r=document.createElement("div"); r.className="xc-row"; if(k) r.dataset.k=k; if(auto){ r.dataset.a=auto; r.title="Pedido en preventa"; }
   r.innerHTML='<input class="xc-n" type="text" list="'+pref+'XcSug" maxlength="40" autocomplete="off" placeholder="Nombre del corte (ej. Papada)" aria-label="Nombre del corte" value="'+esc(nombre||"")+'">'+
-    '<input class="xc-w" type="number" inputmode="decimal" step="0.01" min="0" placeholder="lb" aria-label="Peso en libras" value="'+(lb>0?Math.round(lb*100)/100:"")+'">'+
+    '<div class="xm-sw xc-sw" role="group" aria-label="Tipo de medida"><button type="button" class="xc-tl">Libras (lb)</button><button type="button" class="xc-tu">Unidad</button></div>'+
+    '<input class="xc-w" type="number">'+
     '<button type="button" class="xc-del" aria-label="Quitar este corte" title="Quitar">🗑️</button>';
+  const w=r.querySelector(".xc-w");
+  /* Cambia la fila a libras (u=false) o unidad (u=true): etiqueta, paso y valor del campo */
+  const modo=(u,v)=>{
+    if(u) r.dataset.u="1"; else delete r.dataset.u;
+    r.querySelector(".xc-tl").classList.toggle("act",!u); r.querySelector(".xc-tu").classList.toggle("act",u);
+    w.step=u?"1":"0.01"; w.min=u?"1":"0"; w.setAttribute("inputmode",u?"numeric":"decimal");
+    w.placeholder=u?"Cantidad (unid)":"Peso (lb)"; w.setAttribute("aria-label",u?"Cantidad de unidades":"Peso en libras");
+    if(v!==undefined) w.value=v;
+  };
+  r.querySelector(".xc-tl").addEventListener("click",()=>{ if(!r.dataset.u) return; modo(false,""); xcRecalc(pref); });     /* a libras: se digita el peso obtenido */
+  r.querySelector(".xc-tu").addEventListener("click",()=>{ if(r.dataset.u) return; modo(true,"1"); xcRecalc(pref); });       /* a unidad: cantidad en 1 */
+  modo(!!und, und?(val>0?Math.round(val):1):(val>0?Math.round(val*100)/100:""));
   r.querySelectorAll("input").forEach(i=>i.addEventListener("input",()=>xcRecalc(pref)));
-  r.querySelector(".xc-del").addEventListener("click",()=>{ r.remove(); xcRecalc(pref); });
-  box.appendChild(r); if(!nombre&&!(lb>0)){ try{ r.querySelector(".xc-n").focus(); }catch(e){} }
-  xcRecalc(pref);
+  r.querySelector(".xc-del").addEventListener("click",()=>{ if(r.dataset.a) xcOcultos.add(r.dataset.a); r.remove(); xcRecalc(pref); });   /* quitada a mano: no vuelve a aparecer para este cerdo */
+  box.appendChild(r); xcRecalc(pref);
 }
-function xcLimpiar(pref){ const b=$(pref+"XcList"); if(b) b.innerHTML=""; }
+/* ===== Preventa → casillas de pesaje en Sacrificio / Despiece =====
+   Lee los encargos abiertos del cerdo elegido y habilita una fila por cada corte NO estándar pedido
+   (Vísceras/Asadura, Chunchullo, Cabeza, «Otro» con nombre, «Otros» con descripción o cortes personalizados).
+   Respeta la medida de la preventa: por unidad → fila en «und» con la cantidad pedida; por libras → fila en «lb» vacía para pesar. */
+/* ===== Casillas FIJAS con selector [ lb | Unidad ]: Pesuña, Orejas y Asadura (junto a Lomo en «Demás cortes») =====
+   Pesuña y Orejas se guardan en cerdo.cortes.pesuna / .orejas · Asadura como «x_asadura» · la medida va en cerdo.cortesUnd[clave].
+   f = "asadura" | "pesuna" | "orejas" · pref = "c" (Registrar sacrificio) | "ec" (editor de despiece) */
+const AS_KEY="x_asadura", AS_NOM="Asadura";
+function fxEtq(f,u){ const n={asadura:"Asadura",pesuna:"Pesuña",orejas:"Orejas"}[f]; return f==="asadura"?n:(u?n:n+" (lb)"); }
+function fxHTML(pref,f){
+  const n={asadura:"Asadura",pesuna:"Pesuña",orejas:"Orejas"}[f], h=pref==="c"?"sumarCortes()":"ecCalc()", a="'"+pref+"','"+f+"'";
+  return '<div id="'+pref+'Fx_'+f+'"><div class="as-h"><label id="'+pref+'FxL_'+f+'" for="'+pref+'_'+f+'">'+fxEtq(f,false)+'</label>'+
+    '<div class="xm-sw" role="group" aria-label="Medida de '+n+'"><button type="button" class="as-l act" onclick="fxModo('+a+',false)">lb</button><button type="button" class="as-u" onclick="fxModo('+a+',true)">Unidad</button></div></div>'+
+    '<input id="'+pref+'_'+f+'" type="number" inputmode="decimal" step="0.01" min="0" placeholder="Peso (lb)" aria-label="'+n+': peso en libras" oninput="'+h+'"></div>';
+}
+function fxEsUnd(pref,f){ const w=$(pref+"Fx_"+f); return !!w&&w.dataset.u==="1"; }
+function fxValor(pref,f){ const i=$(pref+"_"+f); if(!i) return 0; const v=parseFloat(i.value)||0; return fxEsUnd(pref,f)?Math.round(v):v; }
+function fxLb(pref,f){ return fxEsUnd(pref,f)?0:fxValor(pref,f); }          /* solo libras: la unidad no entra a la merma */
+/* Cambia la medida: Unidad → etiqueta sin «(lb)», cantidad entera y 1 por defecto · lb → peso libre. v = valor (opcional) · rec=false no recalcula */
+function fxModo(pref,f,u,v,rec){
+  const w=$(pref+"Fx_"+f), i=$(pref+"_"+f); if(!w||!i) return;
+  const n={asadura:"Asadura",pesuna:"Pesuña",orejas:"Orejas"}[f];
+  if(u){ w.dataset.u="1"; } else { delete w.dataset.u; }
+  w.querySelector(".as-l").classList.toggle("act",!u); w.querySelector(".as-u").classList.toggle("act",u);
+  $(pref+"FxL_"+f).textContent=fxEtq(f,u);
+  i.step=u?"1":"0.01"; i.min=u?"1":"0"; i.setAttribute("inputmode",u?"numeric":"decimal");
+  i.placeholder=u?"Cantidad (unid)":"Peso (lb)"; i.setAttribute("aria-label",n+(u?": cantidad de unidades":": peso en libras"));
+  i.value=(v!==undefined)?v:(u?"1":"");
+  if(rec!==false){ if(pref==="c") sumarCortes(); else ecCalc(); }
+}
+function fxResetTodo(pref){ ["asadura","pesuna","orejas"].forEach(f=>fxModo(pref,f,false,"",false)); }
+/* Alias de la Asadura */
+function asHTML(pref){ return fxHTML(pref,"asadura"); }
+function asEsUnd(pref){ return fxEsUnd(pref,"asadura"); }
+function asValor(pref){ return fxValor(pref,"asadura"); }
+function asLb(pref){ return fxLb(pref,"asadura"); }
+function asModo(pref,u,v,rec){ fxModo(pref,"asadura",u,v,rec); }
+function asReset(pref){ fxModo(pref,"asadura",false,"",false); }
+/* Libras de Pesuña/Orejas/Asadura que cuentan en el balance (en modo Unidad no suman) */
+function lbForm(k){ return (k==="pesuna"||k==="orejas")&&fxEsUnd("c",k)?0:formVal(k); }
+function lbEc(k){ return (k==="pesuna"||k==="orejas")&&fxEsUnd("ec",k)?0:ecForm(k); }
+/* Preventas: lo apartado de un corte fijo (por unidad o por libras) → {und, lb} */
+const asEsItem = i => !!i && (i.presa==="visceras" || ((i.presa===PRESA_OTRO||(!i.presa&&i.corte==="otros")) && xcNorm(i.desc)==="asadura"));
+function fxApartada(arr,f){
+  const o={und:0,lb:0};
+  arr.forEach(p=>(p.items||[]).forEach(i=>{
+    const ok=f==="asadura"?asEsItem(i):((BK[i.corte]||i.corte)===f&&!(i.presa&&i.presa==="otro"));
+    if(!ok) return; if(esUnid(i)) o.und+=Math.max(1,Math.round(+i.unidades||1)); else o.lb+=pvCant(p,i);
+  }));
+  return o;
+}
+function asApartada(arr){ return fxApartada(arr,"asadura"); }
+/* Medida pedida en la preventa del cerdo (y de los encargos sin asignar) → {u,q} o null */
+function fxDesdePreventa(sel,f){
+  const a=fxApartada([...pvDe(sel.nombre,sel.arete||""),...pvSin()],f);
+  return a.und>0?{u:true,q:a.und}:a.lb>0?{u:false,q:0}:null;
+}
+function asDesdePreventa(sel){ return fxDesdePreventa(sel,"asadura"); }
+/* Corte de inventario al que se liquida un ítem de preventa: la Asadura (o Papada, Tocino…) ya pesada en el despiece descuenta de su propia casilla */
+function pvCorteInv(i,c){
+  const base=CORTE_DE[i.corte]||(CORTES.some(x=>x[0]===i.corte)?i.corte:"otros");
+  if(!c||base!=="otros") return base;
+  const n=i.presa==="visceras"?AS_NOM:(i.presa&&i.presa!==PRESA_OTRO&&i.presa!=="otros")?presaNom(i.presa):(i.desc||"").trim();
+  const ks=n?[xcClave(n)].concat(xcClave(n)===AS_KEY?["x_visceras"]:[]):[];
+  return ks.find(k=>k!=="x_"&&(+((c.cortes||{})[k])||0)>0)||base;
+}
+
+const xcOcultos=new Set(); let xcCerdoAct="";
+function pvCortesEspeciales(nombre,arete){
+  const m=new Map(), ESP=new Set(["cabeza","visceras","chunchullo",PRESA_OTRO]);
+  [...pvDe(nombre,arete),...pvSin()].forEach(p=>(p.items||[]).forEach(i=>{   /* encargos de este cerdo + los «sin asignar» */
+    let n="", k="";
+    if(esExtra(i.corte)){ k=i.corte; n=nomCorte(k); }                                   /* corte personalizado ya en el catálogo */
+    else if(i.presa&&ESP.has(i.presa)){ n=i.presa===PRESA_OTRO?(i.desc||"").trim():presaNom(i.presa).replace(/\s*\(.*\)\s*$/,""); }   /* «Asadura» */
+    else if(!i.presa&&i.corte==="otros"){ n=(i.desc||"").trim(); }
+    else if(!i.presa&&(i.corte==="cabeza"||i.corte==="tocino")){ n=(i.desc||"").trim()||(i.corte==="cabeza"?"Cabeza":"Tocino"); }   /* claves antiguas de preventa */                       /* «Otros» con descripción: Asadura, Papada, Tocino… */
+    n=n.replace(/\s+/g," ").trim(); if(!n) return;
+    if(!k) k=xcClave(n); if(k==="x_"||XC_BASE.includes(xcNorm(n))) return;              /* nombre inválido o ya tiene su campo propio */
+    const u=esUnid(i), q=u?Math.max(1,Math.round(+i.unidades||1)):0, o=m.get(k);
+    if(!o) m.set(k,{k,n,u,q});
+    else if(o.u===u&&u) o.q+=q;                                                         /* dos encargos del mismo corte por unidad se suman */
+  }));
+  return [...m.values()];
+}
+const xcAlias = k => k==="x_visceras" ? "x_asadura" : k;   /* «Vísceras» pasó a llamarse «Asadura»: misma casilla */
+/* pref «c» = formulario Registrar sacrificio (cerdo elegido en el selector) · pref «ec» = editor de despiece de un cerdo ya sacrificado (cerdo = su registro) */
+function xcSyncPreventa(pref,cerdo){
+  pref=pref||"c";
+  const box=$(pref+"XcList"); if(!box) return;
+  let sel=cerdo||null;
+  if(pref==="c"){
+    const md=$("mSacrificio"); if(!md||!md.classList.contains("open")) return;
+    sel=cerdoDespiece();
+    const id=sel?norm(sel.nombre)+"|"+norm(sel.arete||""):"";
+    if(id!==xcCerdoAct){ xcCerdoAct=id; box.querySelectorAll(".xc-row[data-a]").forEach(r=>r.remove()); xcOcultos.clear(); xcRecalc("c"); if(sel) ["asadura","pesuna","orejas"].forEach(f=>{ const a=fxDesdePreventa(sel,f); if(a) fxModo("c",f,a.u,a.u?String(a.q):"",false); else if(fxEsUnd("c",f)) fxModo("c",f,false,"",false); }); sumarCortes(); }   /* otro cerdo: se descartan las filas del anterior y la Asadura toma la medida pedida */
+  }
+  if(!sel) return;
+  const hay=new Set(); box.querySelectorAll(".xc-row").forEach(r=>{ hay.add(xcAlias(r.dataset.a||"")); hay.add(xcAlias(r.dataset.k||"")); hay.add(xcAlias(xcClave(r.querySelector(".xc-n").value))); });
+  const nuevos=pvCortesEspeciales(sel.nombre,sel.arete||"").filter(c=>!hay.has(xcAlias(c.k))&&!xcOcultos.has(c.k));
+  nuevos.forEach(c=>xcAgregar(pref,c.n,c.u?c.q:0,null,c.u,c.k));
+  if(nuevos.length) toast("Habilitado por preventa: "+nuevos.map(c=>c.n+(c.u?" ("+c.q+" und)":"")).join(", "));
+}
+
+/* ----- Modal «Agregar nuevo corte» ----- */
+let xmPref="c", xmTipo="lb";
+function xcAbrir(pref){
+  xmPref=pref; $("xmSug").innerHTML=XC_SUG.map(n=>'<option value="'+n+'">').join("");
+  $("xmNom").value=""; $("xmErr").textContent=""; xcModalTipo("lb");
+  $("mXc").classList.add("open"); setTimeout(()=>{ try{ $("xmNom").focus(); }catch(e){} },60);
+}
+function xcCerrar(){ $("mXc").classList.remove("open"); }
+function xcModalTipo(t){
+  xmTipo=t; const u=t==="und", i=$("xmVal");
+  $("xmTL").classList.toggle("act",!u); $("xmTU").classList.toggle("act",u);
+  i.step=u?"1":"0.01"; i.min=u?"1":"0"; i.setAttribute("inputmode",u?"numeric":"decimal");
+  i.placeholder=u?"Cantidad (unid)":"Peso (lb)"; i.setAttribute("aria-label",u?"Cantidad de unidades":"Peso en libras");
+  i.value=u?"1":"";          /* unidad: arranca en 1 */
+}
+function xcModalGuardar(){
+  const n=$("xmNom").value.trim().replace(/\s+/g," "), u=xmTipo==="und", raw=parseFloat($("xmVal").value)||0,
+        v=u?Math.round(raw):Math.round(raw*100)/100, er=m=>{ $("xmErr").textContent=m; };
+  if(!n) return er("Escribe el nombre del corte");
+  if(XC_BASE.includes(xcNorm(n))) return er("«"+n+"» ya tiene su propio campo arriba");
+  const k=xcClave(n); if(k==="x_") return er("Nombre de corte no válido");
+  if(v<=0) return er(u?"La cantidad debe ser al menos 1":"Ingresa el peso en libras");
+  const ya=xcFilas(xmPref).find(r=>r.k===k);
+  if(ya&&!!ya.u!==u) return er("«"+ya.n+"» ya está en "+(ya.u?"unidades":"libras")+": usa la misma medida o quítalo");
+  xcAgregar(xmPref,n,v,null,u); xcCerrar();            /* suma al desglose «Otros cortes»; al guardar el cerdo entra al catálogo de Preventas y Ventas */
+  toast("Corte agregado: "+n+" · "+peso(v)+(u?" und":" lb"));
+}
+function xcLimpiar(pref){ const b=$(pref+"XcList"); if(b) b.innerHTML=""; xcOcultos.clear(); if(pref==="c") xcCerdoAct=""; }
 /* Filas con nombre y peso > 0, agrupadas por clave (dos filas con el mismo nombre se suman) */
 function xcFilas(pref){
   const b=$(pref+"XcList"), m=new Map(); if(!b) return [];
   b.querySelectorAll(".xc-row").forEach(r=>{
-    const n=r.querySelector(".xc-n").value.trim().replace(/\s+/g," "), lb=parseFloat(r.querySelector(".xc-w").value)||0;
-    if(lb<=0||!n) return;
+    const n=r.querySelector(".xc-n").value.trim().replace(/\s+/g," "), u=!!r.dataset.u, raw=parseFloat(r.querySelector(".xc-w").value)||0, v=u?Math.round(raw):raw;
+    if(v<=0||!n) return;
     const k=r.dataset.k||xcClave(n), o=m.get(k);
-    if(o) o.lb+=lb; else m.set(k,{k,n,lb});
+    if(o) o.lb+=v; else m.set(k,{k,n,lb:v,u});          /* lb guarda libras o, si u=true, unidades */
   });
   return [...m.values()].map(o=>({...o,lb:Math.round(o.lb*100)/100}));
 }
 const xcSumaKey = (pref,k) => xcFilas(pref).filter(r=>r.k===k).reduce((a,r)=>a+r.lb,0);
-const xcTotal = (pref,soloExtras) => xcFilas(pref).filter(r=>!soloExtras||esExtra(r.k)).reduce((a,r)=>a+r.lb,0);
+const xcTotal = (pref,soloExtras) => xcFilas(pref).filter(r=>!r.u&&(!soloExtras||esExtra(r.k))).reduce((a,r)=>a+r.lb,0);   /* solo libras: las unidades no entran a la merma */
 function xcValida(pref){
   const b=$(pref+"XcList"); if(!b) return "";
+  const vistos={};
   for(const r of b.querySelectorAll(".xc-row")){
-    const n=r.querySelector(".xc-n").value.trim(), lb=parseFloat(r.querySelector(".xc-w").value)||0;
-    if(lb>0&&!n) return "Escribe el nombre del corte que pesaste";
+    const n=r.querySelector(".xc-n").value.trim(), u=!!r.dataset.u, v=parseFloat(r.querySelector(".xc-w").value)||0;
+    if(v>0&&!n) return "Escribe el nombre del corte que pesaste";
     if(!r.dataset.k&&n&&XC_BASE.includes(xcNorm(n))) return "«"+n+"» ya tiene su propio campo arriba";
     if(!r.dataset.k&&n&&xcClave(n)==="x_") return "Nombre de corte no válido";
+    if(n&&v>0){ const k=r.dataset.k||xcClave(n); if(k in vistos&&vistos[k]!==u) return "«"+n+"» está repetido con otra medida (lb y unidad)"; vistos[k]=u; }
   }
   return "";
 }
@@ -2300,14 +2547,14 @@ const pvAbiertas = () => D.preventas.filter(p=>p.estado!=="Despachado");
    de esa pieza en la canal (Despiece / Sacrificio). Si el usuario escribe libras, ese valor manual manda. */
 const esPresa = i => !!i && i.unidad==="presa";
 /* Presas físicas del cerdo: [clave, etiqueta, corte (bucket de inventario)] */
-const PRESAS=[["pierna1","Pierna 1","carne"],["pierna2","Pierna 2","carne"],["brazo1","Brazo 1","carne"],["brazo2","Brazo 2","carne"],["lomo","Lomo","lomo"],["costilla1","Costilla 1","costilla"],["costilla2","Costilla 2","costilla"],["pesuna","Pesuñas","pesuna"],["cabeza","Cabeza","otros"],["orejas","Orejas","orejas"],["visceras","Vísceras (Asadura / Hígado, bofe, corazón)","otros"],["chunchullo","Chunchullo","otros"],["otro","Otro (especificar nombre)","otros"]];
+const PRESAS=[["pierna1","Pierna 1","carne"],["pierna2","Pierna 2","carne"],["brazo1","Brazo 1","carne"],["brazo2","Brazo 2","carne"],["lomo","Lomo","lomo"],["costilla1","Costilla 1","costilla"],["costilla2","Costilla 2","costilla"],["pesuna","Pesuñas","pesuna"],["cabeza","Cabeza","otros"],["orejas","Orejas","orejas"],["visceras","Asadura","otros"],["chunchullo","Chunchullo","otros"],["otro","Otro (especificar nombre)","otros"]];
 /* Piezas únicas que se cuentan por unidad (no por libras): etiqueta «Cantidad» y valor 1 automático */
 const PRESA_UNID=new Set(["visceras","chunchullo"]);
-const esUnid = i => !!i && esPresa(i) && PRESA_UNID.has(i.presa);
+const esUnid = i => !!i && ((esPresa(i)&&(PRESA_UNID.has(i.presa)||!!i.und||+i.unidades>0)) || (i.unidad!=="presa"&&(i.unidad==="und"||UND_KEYS.has(i.corte)||!!i.und)));
 const PRESA_OTRO="otro";                                   /* presa libre: el usuario escribe el nombre (Tocino, Espinazo, Asadura…) · se puede repetir, nunca se marca «Ya apartado» */
 const PRESA_IND=/^(pierna|brazo|costilla)[12]$/;           /* presas con peso individual en el despiece */
 const PRESAS_LEGADO={costilla:["costilla1","costilla2"],otros:["pesuna","cabeza","orejas"]};   /* registros antiguos: «Costilla» entera y «Pesuñas / Cabeza / Orejas / Otros» ocupan sus piezas nuevas */
-const presaNom = k => k==="visceras"?"Vísceras":(PRESAS.find(x=>x[0]===k)||[])[1]||(k==="otros"?"Pesuñas / Cabeza / Orejas / Otros":"")||"";
+const presaNom = k => k==="visceras"?"Asadura":(PRESAS.find(x=>x[0]===k)||[])[1]||(k==="otros"?"Pesuñas / Cabeza / Orejas / Otros":"")||"";
 const presaCorte = k => (PRESAS.find(x=>x[0]===k)||[])[2]||(PRESAS_LEGADO[k]?k:"carne");
 /* Presas ya apartadas para el cerdo elegido (en cualquier encargo guardado de ese cerdo) + las ya elegidas en otras filas de este formulario.
    idx = fila que se está dibujando (se excluye a sí misma) · soloPrevias = al normalizar solo cuentan las filas anteriores */
@@ -2325,6 +2572,7 @@ function presasTomadas(valorCerdo,idx,soloPrevias){
 function pvPesoReal(p,i){
   if(!p||!norm(p.cerdo)) return null;
   const c=D.cerdos.find(x=>esCerdo(x,p.cerdo)); if(!c||(c.sinPesaje&&!(c.canalKg>0))) return null;
+  if(c.cortesUnd&&c.cortesUnd[i.corte]&&!(i.presa&&PRESA_IND.test(i.presa))) return 0;   /* corte registrado por unidad: no hay libras que vincular */
   if(i.presa&&PRESA_IND.test(i.presa)) return (c.piezas&&+c.piezas[i.presa])||0;   /* Pierna 1/2, Brazo 1/2 y Costilla 1/2: peso individual pesado */
   return initCorte(c,i.corte);                                                                    /* Lomo, Otros y registros antiguos de «Costilla» entera (suma de las dos) */
 }
@@ -2351,7 +2599,7 @@ let pvEdit=null;   /* id del encargo que se está editando (null = encargo nuevo
 let pcarrito=[{corte:"carne",desc:"",cant:0,unidad:"lb"}], pfiltro="apartado", ventaDesde=null;
 function agregarPItem(){pcarrito.push({corte:PV_PROD[pcarrito.length%PV_PROD.length][0],desc:"",cant:0,unidad:"lb"});renderPItems();}
 function quitarPItem(i){pcarrito.splice(i,1);renderPItems();}
-function setPItem(i,k,v){pcarrito[i][k]=v;renderPItems();}
+function setPItem(i,k,v){ const antes=esUnid(pcarrito[i]); pcarrito[i][k]=v; if(k==="corte"){ if(esUnid(pcarrito[i])) pcarrito[i].cant=1; else if(antes) pcarrito[i].cant=0; } renderPItems(); }
 function setPUnidad(i,u){
   const it=pcarrito[i], antesUnid=esUnid(it); it.unidad=u; it.desc="";
   if(antesUnid&&u==="lb") it.cant=0;                              /* el 1 automático no pasa a libras */
@@ -2386,6 +2634,9 @@ function pvOpcionesProducto(it,t,pr){
 /* Dibuja los productos del encargo. En «Presa» el menú lista las presas físicas del cerdo y deshabilita las ya apartadas */
 function renderPItems(){
   const cerdo=$("pCerdo")?$("pCerdo").value:"";
+  /* Pesuña / Orejas: si el cerdo ya se despiezó por unidad, el producto se aparta por Cantidad */
+  { const cz=cerdo?D.cerdos.find(x=>esCerdo(x,cerdo)):null;
+    if(cz) pcarrito.forEach(it=>{ if(PRESA_UNID.has(it.presa)) return; const k=it.corte, u=(k==="pesuna"||k==="orejas")&&!!(cz.cortesUnd&&cz.cortesUnd[k]); if(u!==!!it.und&&(u||it.und)){ it.und=u; it.cant=u?1:0; } }); }
   /* 1) normaliza: toda fila en «Presa» queda con una presa libre (si la elegida ya la tiene otro encargo, pasa a la primera libre) */
   let ajustada=false;
   pcarrito.forEach((it,n)=>{
@@ -2442,8 +2693,8 @@ function editarEncargo(id){
   const p=D.preventas.find(x=>x.id===id); if(!p) return toast("No se encontró el encargo");
   pvEdit=id;
   pcarrito=(p.items||[]).map(i=>esPresa(i)
-    ?{corte:i.corte||presaCorte(i.presa),desc:i.presa===PRESA_OTRO?(i.desc||""):"",cant:PRESA_UNID.has(i.presa)?(+i.unidades>0?+i.unidades:1):(+i.cantidad>0?+i.cantidad:0),unidad:"presa",presa:i.presa||""}
-    :{corte:i.corte||"carne",desc:i.desc||"",cant:+i.cantidad||0,unidad:"lb"});
+    ?{corte:i.corte||presaCorte(i.presa),desc:i.presa===PRESA_OTRO?(i.desc||""):"",cant:esUnid(i)?(+i.unidades>0?+i.unidades:1):(+i.cantidad>0?+i.cantidad:0),unidad:"presa",presa:i.presa||"",und:!PRESA_UNID.has(i.presa)&&esUnid(i)}
+    :{corte:i.corte||"carne",desc:i.desc||"",cant:i.unidad==="und"?(+i.unidades>0?+i.unidades:1):(+i.cantidad||0),unidad:"lb",und:i.unidad==="und"});
   if(!pcarrito.length) pcarrito=[{corte:"carne",desc:"",cant:0,unidad:"lb"}];
   try{ llenarPCerdo(); }catch(e){}                              /* opciones al día (el cerdo del encargo no se bloquea) */
   $("pCliente").value=p.cliente||""; $("pTel").value=p.telefono||"";
@@ -2462,7 +2713,7 @@ function guardarPreventa(){
   const items=[];
   for(let n=0;n<pcarrito.length;n++){
     const it=pcarrito[n], presa=esPresa(it), unid=esUnid(it), lb=(!unid&&it.cant>0)?it.cant:0;
-    if(!presa&&!(lb>0)) continue;                         /* por libras: la cantidad sigue siendo obligatoria */
+    if(!presa&&!unid&&!(lb>0)) continue;                         /* por libras: la cantidad sigue siendo obligatoria */
     if(presa){
       if(!it.presa) return toast("Elige la presa del producto "+(n+1)+" (ya no quedan presas libres)");
       /* anti-duplicado: la presa no puede estar apartada en otro encargo del mismo cerdo ni repetida en este formulario */
@@ -2471,7 +2722,7 @@ function guardarPreventa(){
     } else if(it.corte==="otros"&&!(it.desc||"").trim()) return toast("Escribe la descripción del producto");
     const o={corte:presa?presaCorte(it.presa):it.corte,desc:presa?(it.presa===PRESA_OTRO?it.desc.trim():""):(it.corte==="otros"?it.desc.trim():""),cantidad:lb};
     if(presa){ o.unidad="presa"; o.presa=it.presa; o.pesoPendiente=!(lb>0); }
-    if(unid){ o.unidades=Math.max(1,Math.round(it.cant)||1); o.pesoPendiente=false; }   /* se cuenta por unidad, sin libras */   /* por presa: se guarda aunque las libras estén vacías o en 0 */
+    if(unid){ o.unidades=Math.max(1,Math.round(it.cant)||1); o.pesoPendiente=false; if(!presa) o.unidad="und"; }   /* se cuenta por unidad, sin libras */   /* por presa: se guarda aunque las libras estén vacías o en 0 */
     items.push(o);
   }
   if(!items.length) return toast("Agrega al menos un producto (libras o presa)");
@@ -2502,7 +2753,7 @@ let cv=null;
 function confirmarVentaPV(id){
   const p=D.preventas.find(x=>x.id===id); if(!p) return;
   const cs=[...D.cerdos].sort((x,y)=>(x.creado||0)-(y.creado||0)),c0=cs.find(x=>esCerdo(x,p.cerdo))||(norm(p.cerdo)?null:cs[0]);   /* si el encargo es de un cerdo concreto que aún no se sacrifica, NO se asigna a otro cerdo */
-  cv={id,cliente:p.cliente,tel:p.telefono||"",cerdoId:c0?c0.id:"",items:(p.items||[]).map(i=>({corte:CORTE_DE[i.corte]||(CORTES.some(x=>x[0]===i.corte)?i.corte:"otros"),nombre:pvNombre(i),otros:i.corte==="otros",
+  cv={id,cliente:p.cliente,tel:p.telefono||"",cerdoId:c0?c0.id:"",items:(p.items||[]).map(i=>({corte:pvCorteInv(i,c0),nombre:pvNombre(i),otros:i.corte==="otros",
     u:esUnid(i)?"und":"lb",                                   /* Vísceras / Chunchullo arrancan en Cantidad */
     cant:esUnid(i)?(+i.unidades>0?+i.unidades:1):Math.round(pvCant(p,i)*100)/100,
     cantLb:esUnid(i)?0:Math.round(pvCant(p,i)*100)/100,       /* libras de referencia para volver al modo lb */
@@ -2847,7 +3098,7 @@ function cerdoDespieceCambio(){
   const f=fechaProgramada(sel);
   if(f){ $("cFecha").value=f; fechaSacAuto=true; }
   else if(fechaSacAuto){ $("cFecha").value=hoy(); fechaSacAuto=false; }
-  autoSacGasto(sel); infoFechaSac(); panelPVSac();
+  autoSacGasto(sel); infoFechaSac(); panelPVSac(); xcSyncPreventa();
 }
 /* Qué preventas y ventas deben adoptar la fecha de sacrificio de este cerdo */
 function planFechaSac(nombre,arete,cid,f){
@@ -2892,13 +3143,16 @@ function panelPVSac(){
   const nombre=sel.nombre;
   const mine=pvDe(nombre,sel.arete||""),live0=liveDespiece();
   const tot=pvLb(mine,null,live0),sin=pvLb(pvSin());
-  if(!tot&&!sin){$("pvSac").innerHTML="";return;}
+  const as=asApartada(mine);
+  if(!tot&&!sin&&!as.und&&!as.lb){$("pvSac").innerHTML="";return;}
   const live=liveDespiece();
   const filas=BUCKETS.map(b=>({n:b.n,ap:pvLb(mine,b.k,live),ob:formVal(b.k)})).filter(x=>x.ap>0);
-  const falta=filas.some(x=>x.ap>x.ob+1e-9);
+  const av=asValor("c"), au=asEsUnd("c"), asFalta=(as.und>0&&!(au&&av>=as.und))||(as.lb>0&&!(!au&&av>=as.lb-1e-9));
+  const asLinea=(as.und||as.lb)?"<br>Asadura: apartada "+[as.und?as.und+" und":"",as.lb?peso(as.lb)+" lb":""].filter(Boolean).join(" + ")+" / registrada "+peso(av)+(au?" und":" lb")+(asFalta?" ⚠️ falta registrarla":" ✓"):"";
+  const falta=asFalta||filas.some(x=>x.ap>x.ob+1e-9);
   $("pvSac").innerHTML=`<div class="${falta?"alerta":"okbox"}"><b>Preventa de ${esc(nombre)}: ${peso(tot)} lb apartadas</b>`+
     (filas.length?"<br>"+filas.map(x=>`${x.n}: apartado ${peso(x.ap)} / pesado ${peso(x.ob)} lb`+(x.ap>x.ob+1e-9?` ⚠️ faltan ${peso(x.ap-x.ob)}`:" ✓")).join("<br>"):"")+
-    (sin?`<br><small>Además hay ${peso(sin)} lb de encargos sin cerdo asignado.</small>`:"")+`</div>`;
+    asLinea+(sin?`<br><small>Además hay ${peso(sin)} lb de encargos sin cerdo asignado.</small>`:"")+`</div>`;
 }
 
 /* ===== Resumen ===== */
@@ -3034,11 +3288,11 @@ function renderResumen(){
   } else { bx.innerHTML=""; bx.style.display="none"; }
   const cs=ez?(cz?[cz]:[]):csAll;
   $("rendimiento").innerHTML=cs.length?cs.map(c=>{
-    const vend=CORTES.reduce((a,[k])=>a+vendidoCorte(c.id,k),0),disp=CORTES.reduce((a,[k])=>a+dispCorte(c,k),0),pct=c.canal?Math.min(100,vend/c.canal*100):0;
+    const vend=CORTES.reduce((a,[k])=>a+(undCorte(c,k)?0:vendidoCorte(c.id,k)),0),disp=CORTES.reduce((a,[k])=>a+(undCorte(c,k)?0:dispCorte(c,k)),0),pct=c.canal?Math.min(100,vend/c.canal*100):0;
     const monto=D.ventas.reduce((a,v)=>a+itemsDe(v).filter(i=>i.cerdoId===c.id).reduce((b,i)=>b+(i.cantidad||0)*(i.precio||0),0),0);
     return `<div class="card"><b>${esc(c.nombre)}</b>${c.arete?` <span class="tag ar">Arete ${esc(c.arete)}</span>`:""}<div class="sub" style="margin:2px 0 0">Canal: ${peso(kgDe(c))} kg (${peso(c.canal)} lb) · Vendido: ${peso(vend)} · En congelador: ${peso(disp)} · Ventas: ${money(monto)}</div>
     <div class="bar"><i style="width:${pct}%"></i></div>
-    <div class="stock"><span class="h">Corte</span><span class="h n">Inicial</span><span class="h n">Vendido</span><span class="h n">Disp.</span>${CORTES.filter(([k])=>!esExtra(k)||initCorte(c,k)>0||vendidoCorte(c.id,k)>0).map(([k,n])=>`<span>${nomFila(c,k,n)}</span><span class="n">${peso(initCorte(c,k))}</span><span class="n">${peso(vendidoCorte(c.id,k))}</span><span class="n">${peso(dispCorte(c,k))}</span>`).join("")}</div></div>`;
+    ${stockTablaHTML(c,false,"Inicial")}</div>`;
   }).join(""):(ez?'<div class="card empty">Este cerdo aún está en ceba: todavía no tiene despiece registrado.</div>':'<div class="card empty">Registra un sacrificio para ver el rendimiento.</div>');
 }
 
@@ -4380,7 +4634,7 @@ function irRendimiento(){
   irA("resumen");
   setTimeout(()=>{ const e=$("rendimiento"); if(e) window.scrollTo({top:Math.max(0,e.getBoundingClientRect().top+window.scrollY-140),behavior:"smooth"}); },80);
 }
-function renderAll(){filtrarProyecto();registrarCortesExtra();renderInversion();renderInventario();refrescarItems();renderVentas();renderDeudores();renderResumen();renderPreventas();llenarCNombre();infoFechaSac();panelPVSac();estadoBtnSacrificio();renderHistorico();renderPanel();renderCeba();renderInicio();asegurarInicial();sanearDespiece();try{ccSync();}catch(e){}}
+function renderAll(){filtrarProyecto();registrarCortesExtra();renderInversion();renderInventario();refrescarItems();renderVentas();renderDeudores();renderResumen();renderPreventas();llenarCNombre();infoFechaSac();panelPVSac();try{xcSyncPreventa();}catch(e){}estadoBtnSacrificio();renderHistorico();renderPanel();renderCeba();renderInicio();asegurarInicial();sanearDespiece();try{ccSync();}catch(e){}}
 
 /* ===== Arranque ===== */
 function net(){const on=navigator.onLine,l=$("ledNet");l.className="led "+(on?"on":"");l.querySelector("span").textContent=on?"En línea":"Sin red";}
