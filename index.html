@@ -4657,7 +4657,7 @@ seguro(function(){ irA(location.hash.slice(1)||"panel"); },"navegación");
 seguro(renderAll,"render");
 seguro(function(){ cargarFirebase().then(initFB,initFB); },"firebase");
 /* Service Worker: la versión (SW_VERSION) fuerza al navegador a bajar el sw.js nuevo, que descarta la caché vieja (cerdos-v2) */
-const SW_VERSION="2";
+const SW_VERSION="3";
 /* Registro del Service Worker en su propio try/catch: si Safari lo bloquea (modo restringido / privado) la app sigue normal */
 try{
   if("serviceWorker" in navigator && location.protocol.indexOf("http")===0) {
