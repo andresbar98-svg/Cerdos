@@ -2458,6 +2458,8 @@ function pvCortesEspeciales(nombre,arete){
   }));
   return [...m.values()];
 }
+/* Alias pedido: inicializa/crea en el formulario de despiece las casillas de los cortes «Otro» apartados en Preventa (nombre, lb/und heredado, peso por digitar) */
+const obtenerOCrearCamposDespiece = (pref,cerdo) => xcSyncPreventa(pref,cerdo);
 const xcAlias = k => k==="x_visceras" ? "x_asadura" : k;   /* «Vísceras» pasó a llamarse «Asadura»: misma casilla */
 /* pref «c» = formulario Registrar sacrificio (cerdo elegido en el selector) · pref «ec» = editor de despiece de un cerdo ya sacrificado (cerdo = su registro) */
 function xcSyncPreventa(pref,cerdo){
@@ -2589,7 +2591,15 @@ function pvCant(p,i,live){
   pvAbiertas().forEach(q=>{ if(norm(q.cerdo)===norm(p.cerdo)) (q.items||[]).forEach(j=>{ if(esPresa(j)&&j.corte===i.corte&&!(+j.cantidad>0)&&!PRESA_UNID.has(j.presa)) n++; }); });
   return real/Math.max(n,1);
 }
-const pvLb = (arr,b,live) => arr.reduce((a,p)=>a+(p.items||[]).filter(i=>!b||(BK[i.corte]||"otros")===b).reduce((s,i)=>s+pvCant(p,i,live),0),0);
+/* Casilla de inventario a la que pertenece un ítem de preventa. Un «Otro» con nombre (Cuero, Tocino, Papada, Asadura…) cuenta en SU casilla
+   cuando ese corte ya existe en el despiece; solo si no existe cae en el cajón genérico «otros». */
+const bucketItem = i => {
+  const b=BK[i.corte]||"otros"; if(b!=="otros") return b;
+  const n=i.presa==="visceras"?AS_NOM:(i.presa&&i.presa!==PRESA_OTRO&&i.presa!=="otros")?presaNom(i.presa).replace(/\s*\(.*\)\s*$/,""):(i.desc||"").trim();
+  const k=n?xcClave(n):"";
+  return (k&&k!=="x_"&&BUCKETS.some(x=>x.k===k))?k:"otros";
+};
+const pvLb = (arr,b,live) => arr.reduce((a,p)=>a+(p.items||[]).filter(i=>!b||bucketItem(i)===b).reduce((s,i)=>s+pvCant(p,i,live),0),0);
 const pvDe = (nombre,arete) => pvAbiertas().filter(p=>{const t=norm(p.cerdo);return !!t&&(t===norm(nombre)||(!!norm(arete)&&t===norm(arete)));});
 const pvTodasDe = (nombre,arete) => D.preventas.filter(p=>{const t=norm(p.cerdo);return !!t&&(t===norm(nombre)||(!!norm(arete)&&t===norm(arete)));});
 const pvSin = () => pvAbiertas().filter(p=>!norm(p.cerdo));
