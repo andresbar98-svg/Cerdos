@@ -442,6 +442,27 @@ nav button,.navback,#btnProy,header button{position:relative;z-index:1000;pointe
 .dmini b{display:block;margin-top:2px;font-size:clamp(12px,3.6vw,14px);font-weight:800;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .dchips{display:flex;flex-wrap:wrap;gap:6px;padding:0 10px 10px}.dchips button{background:var(--s2);border:1px solid var(--line);color:var(--tx);border-radius:20px;padding:7px 11px;font-size:12.5px;font-weight:600}
 .d-bal{border-top:5px solid #7fd1a0}.d-inv{border-top:5px solid #e8a07a}.d-ven{border-top:5px solid #f0c36a}.d-ceb{border-top:5px solid #8fb7ff}
+/* ===== Historial de gastos (👁️) ===== */
+.d-inv{position:relative}.d-inv .dtop{padding-right:46px}
+.deye{position:absolute;top:10px;right:38px;width:42px;height:42px;display:flex;align-items:center;justify-content:center;font-size:20px;line-height:1;background:rgba(255,255,255,.08);border:1px solid var(--line);border-radius:12px;color:var(--tx);cursor:pointer;z-index:2;padding:0}.deye:active{background:rgba(255,255,255,.16)}
+.hg-sum{display:grid;grid-template-columns:1fr 1.4fr;gap:8px;margin:8px 0}
+.hg-sum div{background:var(--s1);border:1px solid var(--line);border-radius:12px;padding:8px;text-align:center;min-width:0}
+.hg-sum span{display:block;color:var(--mu);font-size:11px}
+.hg-sum b{display:block;font-size:17px;margin-top:2px;overflow-wrap:anywhere}
+.hg-chips{display:flex;gap:6px;overflow-x:auto;padding:2px 0 8px;scrollbar-width:none}.hg-chips::-webkit-scrollbar{display:none}
+.hg-chips button{flex:none;background:var(--s1);border:1px solid var(--line);color:var(--mu);border-radius:999px;padding:6px 11px;font-size:12px;white-space:nowrap}
+.hg-chips button.on{background:var(--ac);border-color:var(--ac);color:#1b1613;font-weight:700}
+.hg-chips button.ord{margin-left:auto;color:var(--tx)}
+.hg-it{background:var(--s1);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:8px}
+.hg-top{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:11.5px;color:var(--mu)}
+.hg-cat{background:rgba(255,255,255,.07);border-radius:999px;padding:2px 8px;color:var(--tx);white-space:nowrap}
+.hg-mid{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-top:6px}
+.hg-n{font-size:13.5px;line-height:1.3;min-width:0;overflow-wrap:anywhere}.hg-v{font-size:16px;font-weight:800;color:var(--ac);white-space:nowrap}
+.hg-fl{display:block;color:var(--mu);font-size:11px;text-align:right;margin-top:2px}
+/* Íconos de imagen por categoría (bulto de concentrado): tamaño del texto y alineados con la línea base */
+.ico-cat{width:20px;height:20px;object-fit:contain;display:inline-block;vertical-align:-5px;flex:none}
+.hg-chips .ico-cat{width:18px;height:18px;vertical-align:-4px}
+.hg-cat .ico-cat{width:16px;height:16px;vertical-align:-3px}
 .tag.enceba{color:var(--ok);border-color:var(--ok)}.tag.fin{color:var(--mu);border-color:var(--line)}
 .sheet{overscroll-behavior:contain}
 /* Tarjeta de gasto (insumos): izquierda flexible (producto + cantidad + proveedor + fecha) y derecha compacta (total + desglose en 2 lineas) */
@@ -461,7 +482,7 @@ nav button,.navback,#btnProy,header button{position:relative;z-index:1000;pointe
 #cRowSac>div{min-width:0}#cRowSac label{margin:0 0 4px}
 #cRowSac select{font-size:13px;padding:11px 2px 11px 8px;text-overflow:ellipsis}
 #cRowSac input[type=date]{font-size:14px;padding:11px 6px}
-#cRowSac #cBoxMatOtro{grid-column:1/-1}
+#cRowSac #cBoxMatOtro,#cRowSac #cBoxAyuOtro{grid-column:1/-1}
 #iBoxCerdosSel .sub{margin:4px 0 0}
 /* Registrar sacrificio: cabecera = título | toggle Despiece/En Canal | Cerrar, en una sola fila */
 #mSacrificio .sac-head{gap:6px;margin-bottom:6px}
@@ -632,6 +653,7 @@ nav button,.navback,#btnProy,header button{position:relative;z-index:1000;pointe
   <div class="inv2">
     <div class="kpi"><span>Costo de lechones</span><b id="rLech">$0</b><span id="rLechN"></span></div>
     <div class="kpi"><span>Alimento e insumos</span><b id="rAli">$0</b><span id="rAliKg"></span></div>
+    <div class="kpi" id="rSacK" style="display:none;grid-column:1/-1"><span>Sacrificio (gasto directo del cerdo)</span><b id="rSac">$0</b><span id="rSacN"></span></div>
   </div>
   <div id="rCerdo" style="display:none"></div>
   <div id="rLote">
@@ -725,9 +747,12 @@ nav button,.navback,#btnProy,header button{position:relative;z-index:1000;pointe
     <div id="cRowSac">
       <div><label>Fecha</label><input type="date" id="cFecha" oninput="fechaSacManual()"></div>
       <div><label>Cerdo a sacrificar</label><select id="cNombre" onchange="cerdoDespieceCambio()"><option value="">-- Selecciona un cerdo --</option></select></div>
-      <div><label>Costo de sacrificio ($)</label><input class="money" inputmode="numeric" id="cSacCosto" placeholder="Ej: 20.000" oninput="sacManual()"></div>
+      <div><label>Costo del matador ($)</label><input class="money" inputmode="numeric" id="cSacCosto" placeholder="Ej: 20.000" oninput="sacManual()"></div>
       <div><label>Encargado sacrificio</label><select id="cMatSel" onchange="otroCampo('cMatSel','cMatOtro',true,true);sacManual()"><option value="">Seleccionar encargado…</option><option>Pedro Niño</option><option>Edwuar Ávila</option><option>Félix Barrantes</option><option value="__otro">Otro</option></select></div>
       <div id="cBoxMatOtro" style="display:none"><label>Nombre del matarife</label><input type="text" id="cMatOtro" placeholder="Ej: Don Luis" autocomplete="off"></div>
+      <div id="cBoxAyuCosto"><label>Valor del ayudante ($)</label><input class="money" inputmode="numeric" id="cAyuCosto" placeholder="Ej: 20.000" oninput="sacManual()"></div>
+      <div id="cBoxAyu"><label>Ayudante (opcional)</label><select id="cAyuSel" onchange="otroCampo('cAyuSel','cAyuOtro',true,true);sacManual()"><option value="">Ninguno</option><option>Andrés Barrantes</option><option>Rosita Fandiño</option><option value="__otro">Otro...</option></select></div>
+      <div id="cBoxAyuOtro" style="display:none"><label>Nombre del ayudante</label><input type="text" id="cAyuOtro" placeholder="Ej: Doña Marta" autocomplete="off"></div>
     </div>
     <div class="sub" id="cFechaInfo" style="margin:6px 0 0"></div>
     <div class="sub" id="cSacInfo" style="margin:6px 0 0"></div>
@@ -781,6 +806,13 @@ nav button,.navback,#btnProy,header button{position:relative;z-index:1000;pointe
   <!-- Anular sacrificio: solo si el cerdo NO tiene un gasto de Sacrificio / Matarife en Inversión y gastos -->
   <button class="btn" id="ecAnular" onclick="anularSacrificio()" style="background:#3a1a1a;color:#ff8a80;border:1px solid #6b2a2a;margin-top:10px">↩️ Anular / Deshacer sacrificio</button>
   <div class="sub" id="ecAnularInfo" style="margin:6px 0 0"></div>
+</div></div>
+
+<div class="modal" id="mHist" onclick="if(event.target===this)cerrarForm('mHist')"><div class="sheet">
+  <div class="mh"><h2>👁️ Historial de gastos</h2><button class="sm" onclick="cerrarForm('mHist')">Cerrar</button></div>
+  <div class="hg-sum" id="hgSum"></div>
+  <div class="hg-chips" id="hgChips"></div>
+  <div id="hgLista"></div>
 </div></div>
 
 <div class="modal" id="mLote"><div class="sheet">
@@ -1055,7 +1087,7 @@ function abrirNuevo(id){
     if(!$("pFechaSac").value){ $("pFechaSac").value=hoy(); try{fechaManual();}catch(e){} }
     renderPItems();
   }
-  else if(id==="mSacrificio"){ if(!$("cFecha").value) $("cFecha").value=hoy(); try{matOpcionesC();llenarCNombre();infoFechaSac();}catch(e){}
+  else if(id==="mSacrificio"){ if(!$("cFecha").value) $("cFecha").value=hoy(); try{matOpcionesC();ayuOpcionesC();llenarCNombre();infoFechaSac();}catch(e){}
     try{ if(!$("cNombre").value){ const c=[...cerdosVivos().filter(v=>{const f=sacProgDe(v.nombre);return f&&f<=hoy();}).map(v=>v.valor),...cerdosPend().map(x=>"pend:"+x.id)]; if(c.length===1){ $("cNombre").value=c[0]; cerdoDespieceCambio(); } } }catch(e){}
     setTipoSalida("despiece"); sumarCortes(); }
   else { if(id==="mVenta"&&vFiltroCerdo&&!vCerdoSel) vCerdoSel=vFiltroCerdo; renderItems(); }
@@ -1201,6 +1233,39 @@ function matListaHtml(){
 }
 /* Mismo desplegable en «Registrar sacrificio» (conserva lo elegido) */
 function matOpcionesC(){ const s=$("cMatSel"),cur=s.value; s.innerHTML=matListaHtml(); s.value=cur; if(s.value!==cur) s.selectedIndex=0; }
+/* ===== Ayudante del sacrificio (opcional) =====
+   Lista = predeterminados + nombres ya usados en gastos de sacrificio (nube) + nombres nuevos recordados en este equipo (localStorage),
+   así un ayudante digitado con «Otro...» queda en la lista para los próximos registros aunque se borre el gasto donde se usó. */
+const AYU_DEF=["Andrés Barrantes","Rosita Fandiño"], K_AYU="cc_ayudantes";
+const respAyu = x => nombreOk(x&&x.ayudante);
+function ayuGuardados(){ try{ const a=JSON.parse(localStorage.getItem(K_AYU)||"[]"); return Array.isArray(a)?a.map(nombreOk).filter(Boolean):[]; }catch(e){ return []; } }
+function ayuRecordar(n){
+  n=nombreOk(n); if(!n) return;
+  const ya=[...AYU_DEF,...ayuGuardados()].some(x=>norm(x)===norm(n)); if(ya) return;
+  try{ localStorage.setItem(K_AYU,JSON.stringify([...ayuGuardados(),n])); }catch(e){}
+}
+function ayuListaHtml(){
+  const usados=D.insumos.filter(x=>conceptoIns(x)===C_SAC).map(respAyu).filter(Boolean);
+  const nombres=[], vistos=new Set();
+  [...AYU_DEF,...ayuGuardados(),...usados].forEach(n=>{ const k=norm(n); if(!vistos.has(k)){ vistos.add(k); nombres.push(n); } });
+  return '<option value="">Ninguno</option>'+nombres.map(n=>`<option>${esc(n)}</option>`).join("")+'<option value="__otro">Otro...</option>';
+}
+function ayuOpcionesC(){ const s=$("cAyuSel"),cur=s.value; s.innerHTML=ayuListaHtml(); s.value=cur; if(s.value!==cur) s.selectedIndex=0; }
+/* Detalle del gasto de matanza: «Matanza: Pedro Niño · Ayudante: Rosita Fandiño» */
+/* Cerdos a los que se carga un gasto de sacrificio: por id (nombre actual) o, si no, los nombres guardados */
+function cerdosDeGasto(x){
+  const ids=Array.isArray(x&&x.cerdosIds)?x.cerdosIds:[], nms=Array.isArray(x&&x.cerdosNombres)?x.cerdosNombres:[];
+  const porId=ids.map(i=>{ const c=D.cerdos.find(q=>q.id===i); return c?c.nombre:""; }).filter(Boolean);
+  return (porId.length?porId:nms).map(nombreOk).filter(Boolean);
+}
+const rotCerdo = n => /^cerdo\b/i.test(n)?n:"Cerdo "+n;
+/* «Sacrificio Cerdo #1 · Matador: Pedro Niño · Ayudante: Rosita Fandiño» ("" si no hay ningún dato) */
+function detSac(mat,ayu,cerdos){
+  const p=[], cs=(cerdos||[]).map(nombreOk).filter(Boolean); mat=nombreOk(mat); ayu=nombreOk(ayu);
+  if(cs.length) p.push("Sacrificio "+cs.map(rotCerdo).join(", ")); else if(mat||ayu) p.push("Sacrificio");
+  if(mat) p.push("Matador: "+mat); if(ayu) p.push("Ayudante: "+ayu);
+  return p.join(" · ");
+}
 function matOpciones(sel){
   $("iMatSel").innerHTML=matListaHtml();
   if(sel) $("iMatSel").value=sel;
@@ -1303,6 +1368,7 @@ function guardarInsumo(){
   let prov=$("iProvSel").value; if(prov==="__otro"||conc==="Bore") prov=$("iProv").value.trim();
   if(esFl||esSac) prov="";   /* sin proveedor en Fletes ni Sacrificio */
   const o={tipo:"insumo",fecha:$("iFecha").value,concepto:conc,claseConc:esConc?$("iClase").value:"",detalle:esMed?$("iMed").value.trim():"",unidad:esMed?$("iUnidad").value.trim():"",bultos:conc==="Bore"?0:val("iBultos"),kilos:conc==="Bore"?val("iBultos"):0,valorArroba:conc==="Bore"&&val("iBultos")>0?Math.round(mval("iCosto")/(val("iBultos")/ARROBA_KG)):0,costo:mval("iCosto"),flete:(esFl||esSac)?0:mval("iFlete"),proveedor:prov,fleteResp:esSac?"":encargadoForm("iFleteSel","iFleteOtro"),matarife:esSac?encargadoForm("iMatSel","iMatOtro"):""};
+  if(esSac){ const ex=insEdit?D.insumos.find(x=>x.id===insEdit):null; o.ayudante=respAyu(ex||{}); o.costoAyudante=Math.min((ex&&ex.costoAyudante)||0,o.costo||0); o.detalle=detSac(o.matarife,o.ayudante,ex?cerdosDeGasto(ex):[]); }   /* no pisar el ayudante guardado desde «Registrar sacrificio» */
   if(!o.fecha||o.costo<=0) return toast("Completa fecha y valor pagado");
   if(!esSac&&$("iFleteSel").value==="__otro"&&!o.fleteResp) return toast("Escribe el nombre de quien hizo el flete");
   if(!esSac&&$("iFleteSel").value==="__otro"&&/^otro$/i.test($("iFleteOtro").value.trim())) return toast("Escribe el nombre real del transportador, no la palabra Otro");
@@ -1346,7 +1412,7 @@ function sacrificarCerdos(o,sels,id){
     pl.vs.forEach(v=>bt.set(db.collection("ventas_cerdos").doc(v.id),{fechaSacrificio:o.fecha},{merge:true}));
     np+=pl.pvs.length; nv+=pl.vs.length;
   });
-  bt.set(gref,{...o,cerdosIds:ids,cerdosNombres:el.map(c=>c.nombre),proyectoId:proyActivo},{merge:true});
+  bt.set(gref,{...o,detalle:detSac(o.matarife,o.ayudante,el.map(c=>c.nombre)),cerdosIds:ids,cerdosNombres:el.map(c=>c.nombre),proyectoId:proyActivo},{merge:true});
   bt.commit().catch(e=>toast("Error nube: "+e.code));
   limpiarInsumo(); cerrarForm("mInsumo");
   toast(el.length+" cerdo"+(el.length===1?"":"s")+" sacrificado"+(el.length===1?"":"s")+" · "+fechaTxt(o.fecha)+((np||nv)?" · fecha actualizada en "+np+" preventa(s) y "+nv+" venta(s)":""));
@@ -1379,6 +1445,7 @@ function borrarGastoIns(id){
 /* Título del gasto en el historial: tipo + detalle • cantidad • proveedor */
 function insumoTitulo(l){
   const c=conceptoIns(l), n=l.bultos||0, med=c===C_MED, p=[];
+  if(c===C_SAC){ const d=detSac(respMat(l),respAyu(l),cerdosDeGasto(l)); if(d) return esc(d); }   /* Sacrificio Cerdo #1 · Matador: … · Ayudante: … */
   p.push(esc(c==="Concentrado"&&l.claseConc?"Concentrado "+l.claseConc:med&&l.detalle?"Medicamento: "+l.detalle:c));
   if(c==="Bore"&&l.kilos>0) p.push(esc(boreTxt(l.kilos,l.costo||0,l.valorArroba||0)));
   else if(n>0) p.push(peso(n)+" "+esc(c==="Fletes"?(n===1?"viaje":"viajes"):c===C_SAC?(n===1?"cerdo sacrificado":"cerdos sacrificados"):med?(l.unidad||(n===1?"unidad":"unidades")):(n===1?"bulto":"bultos")));
@@ -1411,6 +1478,56 @@ function renderInversion(){
     return `<div class="row" style="display:block"><div class="gi-top"><div class="gi-l">${insumoTitulo(l)}<small>${fechaTxt(l.fecha)}</small></div><div class="gi-r"><b>${money((l.costo||0)+fl)}</b>${fl?`<small class="gi-f"><span>compra ${money(l.costo)}</span> + <span>flete ${money(fl)}</span></small>`:""}${conceptoIns(l)===C_SAC?(respMat(l)?`<small class="gi-t">Matarife: ${esc(respMat(l))}</small>`:""):(respFlete(l)?`<small class="gi-t">Transp: ${esc(respFlete(l))}</small>`:"")}</div></div>
     <div class="acts2" style="margin-top:8px"><button class="sm" onclick="editarInsumo('${l.id}')">✏️ Editar</button><button class="sm del" onclick="borrarGastoIns('${l.id}')">Eliminar</button></div></div>`;
   }).join(""):'<div class="empty">Aún no hay gastos de alimento o insumos.</div>';
+}
+
+/* ===== Historial de gastos e inversión (👁️): lechones + concentrado, medicinas, bore, fletes… en una sola lista ===== */
+let hgFiltro="", hgDesc=true;
+const HG_ICO={"Lechones":"🐖","Concentrado":"🌾","Medicamento / Insumos":"💊","Bore":"🌱","Fletes":"🚚","Sacrificio / Matarife":"🔪","Otro":"📦"};
+/* Bulto de fique amarrado (SVG propio, sin archivos externos: funciona offline). Para usar tu PNG, cambia el valor de HG_IMG.Concentrado
+   por "img/bulto-concentrado.png" (y agrégalo a la lista de caché de sw.js) */
+const HG_SVG_BULTO='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><path d="M20 22C14 32 8 44 10 54c1 5 8 6 22 6s21-1 22-6c2-10-4-22-10-32z" fill="#c98a3f" stroke="#6b4220" stroke-width="2" stroke-linejoin="round"/><path d="M22 22C18 16 14 10 13 5c6 2 12 5 16 11l3-2 3 2c4-7 10-10 16-12-1 6-5 13-9 18z" fill="#b9772f" stroke="#6b4220" stroke-width="2" stroke-linejoin="round"/><path d="M20 22q12 6 24 0" fill="none" stroke="#6b4220" stroke-width="5" stroke-linecap="round"/><path d="M20 22q12 6 24 0" fill="none" stroke="#f0d9a0" stroke-width="2.6" stroke-linecap="round"/><circle cx="32" cy="43" r="9.5" fill="#f6dcb4" stroke="#6b4220" stroke-width="1.8"/><path d="M32 50V36M32 39l-4-3M32 39l4-3M32 43l-4-3M32 43l4-3M32 47l-4-3M32 47l4-3" fill="none" stroke="#6b4220" stroke-width="1.6" stroke-linecap="round"/><path d="M16 40q-2 6-1 12" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".55"/></svg>';
+const HG_IMG={"Concentrado":"data:image/svg+xml,"+encodeURIComponent(HG_SVG_BULTO)};   /* categoría → imagen; las demás siguen con emoji */
+const hgIco = c => HG_IMG[c] ? `<img class="ico-cat" src="${HG_IMG[c]}" alt="" aria-hidden="true">` : (HG_ICO[c]||"📦");
+function hgMovimientos(){
+  const m=[];
+  D.lotes.forEach(l=>{
+    const prom=l.pesoPromKg!=null?l.pesoPromKg:(l.pesoProm||0)/2, fl=l.flete||0, n=l.cantidad||0;
+    m.push({tipo:"lote",id:l.id,cat:"Lechones",fecha:l.fecha||"",creado:l.creado||0,
+      nota:n+(n===1?" lechón":" lechones")+" • "+peso(prom)+" kg c/u"+(l.proveedor?" • "+esc(l.proveedor):""),
+      compra:l.valor||0,flete:fl,valor:(l.valor||0)+fl});
+  });
+  D.insumos.forEach(x=>{
+    const fl=x.flete||0;
+    m.push({tipo:"ins",id:x.id,cat:conceptoIns(x)||"Otro",fecha:x.fecha||"",creado:x.creado||0,
+      nota:insumoTitulo(x),compra:x.costo||0,flete:fl,valor:(x.costo||0)+fl});
+  });
+  return m;
+}
+function setHgFiltro(k){ hgFiltro=k||""; renderHistorialGastos(); }
+function setHgOrden(){ hgDesc=!hgDesc; renderHistorialGastos(); }
+function abrirHistorialGastos(){
+  $("mHist").classList.add("open"); renderHistorialGastos();
+  const s=$("mHist").querySelector(".sheet"); if(s) s.scrollTop=0;
+}
+/* Historial de solo lectura (consulta/auditoría): editar y eliminar se hacen en la pestaña Inversión */
+function renderHistorialGastos(){
+  try{
+    const md=$("mHist"); if(!md||!md.classList.contains("open")) return;   /* solo se pinta con el modal abierto */
+    const todos=hgMovimientos(), cats=[...new Set(todos.map(x=>x.cat))];
+    if(hgFiltro&&!cats.includes(hgFiltro)) hgFiltro="";
+    const lst=todos.filter(x=>!hgFiltro||x.cat===hgFiltro).sort((a,b)=>{
+      const r=(a.fecha||"").localeCompare(b.fecha||"")||(a.creado-b.creado); return hgDesc?-r:r; });
+    const tot=lst.reduce((a,x)=>a+x.valor,0);
+    $("hgSum").innerHTML=`<div><span>Movimientos</span><b>${lst.length}</b></div><div><span>${hgFiltro?esc(hgFiltro):"Total invertido"}</span><b>${money(tot)}</b></div>`;
+    $("hgChips").innerHTML=[""].concat(cats).map(c=>`<button class="${c===hgFiltro?"on":""}" data-k="${esc(c)}" onclick="setHgFiltro(this.dataset.k)">${c?hgIco(c)+" "+esc(c):"Todos"}</button>`).join("")
+      +`<button class="ord" onclick="setHgOrden()">${hgDesc?"↓ Recientes":"↑ Antiguos"}</button>`;
+    $("hgLista").innerHTML=lst.length?lst.map(x=>`<div class="hg-it">
+  <div class="hg-top"><span>📅 ${fechaTxt(x.fecha)}</span><span class="hg-cat">${hgIco(x.cat)} ${esc(x.cat)}</span></div>
+  <div class="hg-mid"><div class="hg-n">${x.nota}</div><b class="hg-v">${money(x.valor)}</b></div>
+  ${x.flete?`<small class="hg-fl">compra ${money(x.compra)} + flete ${money(x.flete)}</small>`:""}
+</div>`).join("")
+      :'<div class="empty">Aún no hay movimientos registrados.</div>';
+  }catch(e){}
 }
 
 /* ===== Sacrificio ===== */
@@ -1446,19 +1563,20 @@ $("cBoreRest").addEventListener("input",()=>{ $("boreArr").textContent=peso(val(
    - Cerdo con gasto ya ligado: se actualiza ese gasto (si cubre varios cerdos, solo cambia la parte de este cerdo en el total).
    - Sin gasto ligado y con costo > 0: se crea un gasto nuevo ligado al cerdo.
    Devuelve los campos que se guardan en el registro del cerdo. */
-function sincGastoSac(bt,{cid,nombre,fecha,costo,mat,pend,gProg}){
-  const g=gastoDeCerdo(pend)||gProg||null, out={fechaBeneficio:fecha,matarife:mat||""};
+function sincGastoSac(bt,{cid,nombre,fecha,costo,ayuCosto,mat,ayu,pend,gProg}){
+  const mC=Math.max(costo||0,0), aC=Math.max(ayuCosto||0,0); costo=mC+aC;   /* total del servicio = matador + ayudante (un solo gasto, directo al cerdo) */
+  const g=gastoDeCerdo(pend)||gProg||null, out={fechaBeneficio:fecha,matarife:mat||"",ayudante:ayu||"",costoAyudante:aC};
   if(costo>0) out.costoBeneficio=costo;
   if(g){
     const ids=g.cerdosIds&&g.cerdosIds.length?g.cerdosIds:[cid], solo=ids.length===1, upd={};
-    if(costo>0) upd.costo=solo?costo:ids.filter(i=>i!==cid).reduce((a,i)=>a+((D.cerdos.find(c=>c.id===i)||{}).costoBeneficio||0),0)+costo;
-    if(solo){ upd.fecha=fecha; if(mat) upd.matarife=mat; }
+    if(costo>0){ const ot=ids.filter(i=>i!==cid).map(i=>D.cerdos.find(c=>c.id===i)||{}); upd.costo=solo?costo:ot.reduce((a,c)=>a+(c.costoBeneficio||0),0)+costo; upd.costoAyudante=solo?aC:ot.reduce((a,c)=>a+(c.costoAyudante||0),0)+aC; }
+    if(solo){ upd.fecha=fecha; if(mat) upd.matarife=mat; upd.ayudante=ayu||""; upd.detalle=detSac(mat||respMat(g),ayu,[nombre]); }
     if(!(g.cerdosIds&&g.cerdosIds.length)){ upd.cerdosIds=[cid]; upd.cerdosNombres=[nombre]; upd.programado=false; }   /* gasto programado: ahora queda ligado al cerdo sacrificado */
     if(Object.keys(upd).length) bt.set(db.collection("gastos_cerdos").doc(g.id),upd,{merge:true});
     out.gastoId=g.id;
   } else if(costo>0){
     const gr=db.collection("gastos_cerdos").doc();
-    bt.set(gr,{tipo:"insumo",fecha,concepto:C_SAC,claseConc:"",detalle:"",unidad:"",bultos:1,kilos:0,valorArroba:0,costo,flete:0,proveedor:"",fleteResp:"",matarife:mat||"",cerdosIds:[cid],cerdosNombres:[nombre],proyectoId:proyActivo,creado:Date.now()});
+    bt.set(gr,{tipo:"insumo",fecha,concepto:C_SAC,claseConc:"",detalle:detSac(mat,ayu,[nombre]),unidad:"",bultos:1,kilos:0,valorArroba:0,costo,costoAyudante:aC,flete:0,proveedor:"",fleteResp:"",matarife:mat||"",ayudante:ayu||"",cerdosIds:[cid],cerdosNombres:[nombre],proyectoId:proyActivo,creado:Date.now()});
     out.gastoId=gr.id;
   }
   return out;
@@ -1489,9 +1607,13 @@ function guardarCerdo(){
   if(!enCanal&&!Object.values(cortes).some(v=>v>0)) return toast("Ingresa al menos un corte");
   if(arete&&D.cerdos.some(c=>(!pend||c.id!==pend.id)&&norm(c.arete)===norm(arete))) return toast("Ese arete ya fue registrado en otro cerdo");
   const sobConcKg=Math.max(val("cSobrante"),0), sobBoreKg=Math.max(val("cBoreRest"),0);   /* alimento sobrante: se resta de este cerdo y pasa a los que siguen en ceba (ver ajusteSobrante) */
-  const costoS=mval("cSacCosto"), matS=encargadoForm("cMatSel","cMatOtro");
+  const costoS=mval("cSacCosto"), ayuCostoS=mval("cAyuCosto"), matS=encargadoForm("cMatSel","cMatOtro");
   if($("cMatSel").value==="__otro"&&!matS) return toast("Escribe el nombre del matarife");
   if($("cMatSel").value==="__otro"&&/^otro$/i.test($("cMatOtro").value.trim())) return toast("Escribe el nombre real del matarife, no la palabra Otro");
+  const ayuS=encargadoForm("cAyuSel","cAyuOtro");   /* ayudante: "Ninguno" → vacío; con «Otro...» solo el nombre digitado */
+  if(ayuCostoS>0&&!$("cAyuSel").value) return toast("Selecciona el ayudante al que corresponde el valor");
+  if($("cAyuSel").value==="__otro"&&!ayuS) return toast("Escribe el nombre del ayudante");
+  if($("cAyuSel").value==="__otro"&&/^otro$/i.test($("cAyuOtro").value.trim())) return toast("Escribe el nombre real del ayudante, no la palabra Otro");
   if(!db) return toast("Configura Firebase primero");
   if(!proyActivo) return toast("Primero crea o selecciona un proyecto");
   const ing=arete?infoArete(arete):null, fecha=$("cFecha").value;
@@ -1499,7 +1621,7 @@ function guardarCerdo(){
   /* Un solo lote atómico: el cerdo + la fecha en cascada (preventas, ventas y comprobantes) */
   const ref=pend?db.collection("cerdos").doc(pend.id):db.collection("cerdos").doc(), bt=db.batch();
   /* Costo y encargado del sacrificio -> gasto «Sacrificio / Matarife» (se crea, o se actualiza el que ya estaba ligado al cerdo) */
-  const sg=sincGastoSac(bt,{cid:ref.id,nombre,fecha,costo:costoS,mat:matS,pend,gProg:pend?null:gastoProgDe(nombre)});
+  const sg=sincGastoSac(bt,{cid:ref.id,nombre,fecha,costo:costoS,ayuCosto:ayuCostoS,mat:matS,ayu:ayuS,pend,gProg:pend?null:gastoProgDe(nombre)});
   bt.set(ref,{nombre,arete,pesoIngresoKg:ing?ing.kg:(pend?(pend.pesoIngresoKg==null?null:pend.pesoIngresoKg):null),fecha,canal,canalKg,sobranteKg:Math.max(val("cSobrante"),0),boreRestanteKg:Math.max(val("cBoreRest"),0),cortes,cortesNom,cortesUnd,piezas,otrosDesc,tipoSalida:enCanal?"canal":"despiece",sinPesaje:false,...sg,proyectoId:proyActivo,...(pend?{}:{creado:Date.now()})},{merge:true});
   let np=0,nv=0;
   if(fecha){
@@ -1510,7 +1632,8 @@ function guardarCerdo(){
   }
   const sobra=BUCKETS.some(b=>pvLb(pvDe(nombre,arete),b.k,{...cortes,...piezas})>(cortes[b.k]||0)+1e-9);   /* BUCKETS ya incluye los personalizados registrados */
   bt.commit().catch(e=>toast("Error nube: "+e.code)); /* no bloquea si estás sin red */
-  $("cNombre").value="";$("cCanal").value="";$("cSobrante").value="";$("cBoreRest").value="";$("boreArr").textContent="0";$("cSacCosto").value="";$("cMatSel").selectedIndex=0;$("cMatOtro").value="";otroCampo("cMatSel","cMatOtro",true);$("cSacInfo").textContent="";sacAuto=false;fechaSacAuto=false;$("cFecha").value=hoy();
+  ayuRecordar(ayuS);   /* el nombre nuevo queda en la lista de ayudantes para los próximos registros */
+  $("cNombre").value="";$("cCanal").value="";$("cSobrante").value="";$("cBoreRest").value="";$("boreArr").textContent="0";$("cSacCosto").value="";$("cAyuCosto").value="";$("cMatSel").selectedIndex=0;$("cMatOtro").value="";otroCampo("cMatSel","cMatOtro",true);$("cAyuSel").selectedIndex=0;$("cAyuOtro").value="";otroCampo("cAyuSel","cAyuOtro",true);ayuOpcionesC();$("cSacInfo").textContent="";sacAuto=false;fechaSacAuto=false;$("cFecha").value=hoy();
   limpiarCortes();$("cIntDesc").value="";$("cIntLb").value="";setTipoSalida("despiece");llenarCNombre();infoFechaSac();panelPVSac();cerrarForm("mSacrificio");
   toast(nombre+" guardado"+((np||nv)?" · fecha actualizada en "+np+" preventa"+(np===1?"":"s")+" y "+nv+" venta"+(nv===1?"":"s"):"")+(sobra?" ⚠️ Las preventas superan los cortes":"")+(((sobConcKg>0||sobBoreKg>0)&&vivosAntes<=1)?" · ℹ️ El sobrante no se traslada: no quedan cerdos en ceba":""));
   /* Último cerdo del lote: ofrecer el cierre del proyecto */
@@ -3111,14 +3234,16 @@ function autoSacGasto(sel){
       $("cSacCosto").value=d.costo>0?miles(d.costo):""; ponerMat("cMatSel","cMatOtro",d.matarife||""); sacAuto=true;
       info.textContent="Costo y encargado tomados de la programación del sacrificio. Al guardar se actualiza ese mismo gasto (sin duplicarlo)."; return;
     }
-    if(sacAuto){ $("cSacCosto").value=""; $("cMatSel").selectedIndex=0; otroCampo("cMatSel","cMatOtro",true); sacAuto=false; } return;
+    if(sacAuto){ $("cSacCosto").value=""; $("cAyuCosto").value=""; $("cMatSel").selectedIndex=0; otroCampo("cMatSel","cMatOtro",true); $("cAyuSel").selectedIndex=0; otroCampo("cAyuSel","cAyuOtro",true); sacAuto=false; } return;
   }
   const n=g&&(g.cerdosIds||[]).length||1, costo=c.costoBeneficio>0?c.costoBeneficio:(g?Math.round((g.costo||0)/n):0);
   const mat=nombreOk(c.matarife)||(g?respMat(g):"");
-  $("cSacCosto").value=costo>0?miles(costo):"";
+  const aCosto=Math.min(c.costoAyudante>0?c.costoAyudante:(g?Math.round((g.costoAyudante||0)/n):0),costo);   /* parte del total que es del ayudante */
+  $("cSacCosto").value=costo-aCosto>0?miles(costo-aCosto):""; $("cAyuCosto").value=aCosto>0?miles(aCosto):"";
   const s=$("cMatSel");
   if(!mat) s.selectedIndex=0; else if([...s.options].some(o=>o.value===mat)) s.value=mat; else { s.value="__otro"; $("cMatOtro").value=mat; }
   otroCampo("cMatSel","cMatOtro",true); if(s.value==="__otro") $("cMatOtro").value=mat;
+  ayuOpcionesC(); ponerMat("cAyuSel","cAyuOtro",nombreOk(c.ayudante)||(g?respAyu(g):""));   /* ayudante ya registrado */
   sacAuto=true;
   if(c.fecha) $("cFecha").value=c.fecha;
   info.textContent=g?"Costo y encargado tomados del gasto de sacrificio del "+fechaTxt(g.fecha)+". Al guardar se actualiza ese mismo gasto (sin duplicarlo).":"Este cerdo ya fue marcado como sacrificado; completa el pesaje.";
@@ -3201,6 +3326,23 @@ function plantelCerdos(){
 }
 /* Un cerdo está activo en una fecha si aún no había sido sacrificado (el día del sacrificio todavía cuenta) */
 const activoEn = (e,f) => !(e.c&&e.c.fecha&&f) || f<=e.c.fecha;
+/* Gasto «Sacrificio / Matarife» ligado a cerdos concretos → {mio,n}: se carga DIRECTO al cerdo sacrificado (o en partes iguales entre los
+   que cubre ese mismo gasto), NUNCA se prorratea como el alimento. null = no es sacrificio o es un registro antiguo sin cerdo ligado. */
+function sacLigado(x,e){
+  if(conceptoIns(x)!==C_SAC) return null;
+  const ids=Array.isArray(x.cerdosIds)?x.cerdosIds:[], nms=Array.isArray(x.cerdosNombres)?x.cerdosNombres:[];
+  const porGasto=!!(e.c&&e.c.gastoId&&e.c.gastoId===x.id);
+  if(!ids.length&&!nms.length&&!porGasto) return null;
+  const mio=porGasto||(ids.length?!!(e.c&&ids.includes(e.c.id)):nms.some(n=>norm(n)===norm(e.nombre)));   /* programado: aún sin registro del cerdo → por nombre */
+  return {mio,n:Math.max(ids.length||nms.length,1)};
+}
+/* Cuota de un gasto para el cerdo e: {f,n} (f = fracción que le toca) o null si no le corresponde.
+   Sacrificio ligado → directo; alimento e insumos → partes iguales entre los cerdos activos ese día. */
+function cuotaIns(x,e,pl){
+  const l=sacLigado(x,e); if(l) return l.mio?{f:1/l.n,n:l.n}:null;
+  if(!activoEn(e,x.fecha)) return null;
+  const n=pl.filter(q=>activoEn(q,x.fecha)).length||1; return {f:1/n,n};
+}
 /* Inversión asignada: costo de su lechón + su cuota de cada compra de alimento (en partes iguales entre los cerdos activos ese día,
    sin sumar las compras posteriores a su sacrificio) */
 function inversionCerdo(e,pl){
@@ -3208,22 +3350,19 @@ function inversionCerdo(e,pl){
   const costos=[]; [...D.lotes].sort((a,b)=>(a.fecha||"").localeCompare(b.fecha||"")||(a.creado||0)-(b.creado||0))
     .forEach(l=>{const n=l.cantidad||0; for(let i=0;i<n;i++) costos.push(((l.valor||0)+(l.flete||0))/n);});
   const lechon=(e.idx>=0&&e.idx<costos.length)?costos[e.idx]:totLech()/Math.max(pl.length,1);
-  let alim=0,suma=0,excl=0;
+  let alim=0,suma=0,excl=0,sacr=0;
   D.insumos.forEach(x=>{
     const m=(x.costo||0)+(x.flete||0);
-    /* Sacrificio / Matarife ligado a cerdos concretos: se carga solo a ellos (en partes iguales si cubre varios), no se reparte entre los demás */
-    { const ids=Array.isArray(x.cerdosIds)?x.cerdosIds:[], nms=Array.isArray(x.cerdosNombres)?x.cerdosNombres:[];
-      if(conceptoIns(x)===C_SAC&&(ids.length||nms.length)){
-        const mio=ids.length?!!(e.c&&ids.includes(e.c.id)):nms.some(n=>norm(n)===norm(e.nombre));   /* programado: aún no hay registro del cerdo, se liga por nombre */
-        if(mio){ alim+=m/(ids.length||nms.length); suma++; } else excl++;
-        return;
-      } }
+    /* Sacrificio (matador + ayudante) ligado a cerdos concretos: gasto DIRECTO del cerdo sacrificado; el de otro cerdo no le toca ni cuenta como «excluida» */
+    { const l=sacLigado(x,e);
+      if(l){ if(l.mio){ const d=m/l.n; alim+=d; sacr+=d; suma++; } return; } }
     if(!activoEn(e,x.fecha)){ excl++; return; }
     const n=pl.filter(q=>activoEn(q,x.fecha)).length||1;
     alim+=m/n; suma++;
   });
   alim+=ajusteSobrante(e,pl).total;
-  return {lechon:Math.round(lechon),alimento:Math.round(alim),total:Math.round(lechon)+Math.round(alim),compras:suma,excluidas:excl};
+  /* alimento = alimento + sacrificio (como antes, el total no cambia); sacrificio y alimentoPuro son el desglose para mostrar */
+  return {lechon:Math.round(lechon),alimento:Math.round(alim),sacrificio:Math.round(sacr),alimentoPuro:Math.round(alim)-Math.round(sacr),total:Math.round(lechon)+Math.round(alim),compras:suma,excluidas:excl};
 }
 const KG_BULTO_CONC = 40; /* peso de un bulto de concentrado (kg) */
 /* Corte de inventario por sacrificio: el concentrado sobrante (kg) anotado al sacrificar se resta del consumo del cerdo sacrificado
@@ -3295,7 +3434,7 @@ function renderResumen(){
   const ez=bFiltroCerdo?pl.find(e=>e.key===bFiltroCerdo):null, cz=ez?ez.c:null;
   { const p=proyActual(); $("rProy").textContent=(p?"Balance · "+nomProy(p):"Balance")+(ez?" · "+ez.nombre:""); }
   const inv=totLech()+totIns(),ven=D.ventas.reduce((a,v)=>a+(v.total||0),0),rec=D.ventas.reduce((a,v)=>a+abonado(v),0),cob=D.ventas.reduce((a,v)=>a+saldo(v),0);
-  if(!ez){ $("rInvLbl").textContent="Total invertido"; $("rInv").textContent=money(inv); $("rLech").textContent=money(totLech()); $("rLechN").innerHTML=htmlLechones(cerdosBase().length); $("rAli").textContent=money(totIns()); $("rAliKg").innerHTML=htmlConsumoFilas(consumoAlimento(null)); }
+  if(!ez){ $("rInvLbl").textContent="Total invertido"; $("rInv").textContent=money(inv); $("rLech").textContent=money(totLech()); $("rLechN").innerHTML=htmlLechones(cerdosBase().length); $("rAli").textContent=money(totIns()); $("rAliKg").innerHTML=htmlConsumoFilas(consumoAlimento(null)); $("rSacK").style.display="none"; }
   $("rRec").textContent=money(rec);$("rCob").textContent=money(cob);$("rVen").textContent=money(ven);
   const u=ven-inv,c=rec-inv;
   $("rUtil").textContent=money(u);$("rUtil").className=u>=0?"pos":"neg";
@@ -3310,16 +3449,19 @@ function renderResumen(){
     const sacF=cz&&cz.fecha;
     const leyenda=cz
       ? (sacF?`<b>Alimento e insumos congelados a la fecha de sacrificio (${fechaLargaCO(sacF)})</b>`:`<b>Alimento e insumos repartidos entre los cerdos vivos de cada compra</b>`)
-        +`<br><small>Cada compra se divide en partes iguales entre los cerdos activos ese día.${iv.excluidas?` ${iv.excluidas===1?"1 compra posterior al sacrificio no se suma":iv.excluidas+" compras posteriores al sacrificio no se suman"}.`:""}</small>`
+        +`<br><small>Cada compra de alimento se divide en partes iguales entre los cerdos activos ese día; el sacrificio (matador + ayudante) se carga completo a este cerdo.${iv.excluidas?` ${iv.excluidas===1?"1 compra posterior al sacrificio no se suma":iv.excluidas+" compras posteriores al sacrificio no se suman"}.`:""}</small>`
       : `<b>Aún en ceba: el alimento se sigue sumando proporcionalmente hasta su día de sacrificio</b><br><small>Cada compra se divide en partes iguales entre los cerdos vivos ese día. Llevas ${iv.compras} ${iv.compras===1?"compra":"compras"} de alimento asignadas.</small>`;
     $("rInvLbl").textContent="Inversión asignada a "+ez.nombre; $("rInv").textContent=money(iv.total);
     $("rLech").textContent=money(iv.lechon); $("rLechN").innerHTML='<small class="kcons">🐖 Cerdo individual</small>';
-    $("rAli").textContent=money(iv.alimento); $("rAliKg").innerHTML=htmlConsumoFilas(consumoAlimento(ez,pl));
+    $("rAli").textContent=money(iv.alimentoPuro); $("rAliKg").innerHTML=htmlConsumoFilas(consumoAlimento(ez,pl));
+    { const gs=D.insumos.filter(x=>{ const l=sacLigado(x,ez); return l&&l.mio; });   /* sacrificio: se resta completo a ESTE cerdo, sin prorratear */
+      $("rSacK").style.display=iv.sacrificio>0?"":"none"; $("rSac").textContent=money(iv.sacrificio);
+      $("rSacN").innerHTML=gs.length?'<small class="kcons">🔪 '+esc(gs.map(x=>detSac(respMat(x),respAyu(x),[])).filter(Boolean).join(" | ").replace(/^Sacrificio · /,"")||"Matador y ayudante")+'</small>':""; }
     bx.innerHTML=`<div class="kpis">
       <div class="kpi big"><span>Total ventas del cerdo (cobrado + pendiente)</span><b>${money(vt)}</b></div>
       <div class="kpi"><span>Cobrado</span><b class="pos">${money(cb)}</b></div>
       <div class="kpi"><span>Por cobrar</span><b class="wa-c">${money(pd)}</b></div>
-      <div class="kpi big"><span>Ganancia neta del cerdo (ventas − inversión)</span><b class="${gan>=0?"pos":"neg"}">${money(gan)}</b></div>
+      <div class="kpi big"><span>Ganancia neta del cerdo (ventas − lechón − alimento − sacrificio)</span><b class="${gan>=0?"pos":"neg"}">${money(gan)}</b></div>
       <div class="kpi"><span>Rentabilidad individual</span><b class="${gan>=0?"pos":"neg"}">${rent==null?"—":pct1(rent)}</b></div>
       <div class="kpi"><span>Ganancia en caja hoy</span><b class="${caja>=0?"pos":"neg"}">${money(caja)}</b></div>
     </div>
@@ -3594,7 +3736,7 @@ function datosInversion(){
     let g=(ez.idx>=0&&ez.idx<pigs.length)?pigs[ez.idx]:null;
     if(!g){ const N=Math.max(pl.length,1); g={valor:pigs.reduce((a,x)=>a+x.valor,0)/N,flete:pigs.reduce((a,x)=>a+x.flete,0)/N,kg:pigs.reduce((a,x)=>a+x.kg,0)/Math.max(pigs.length,1)}; }
     lech={n:1,kg:g.kg,valor:g.valor,flete:g.flete};
-    D.insumos.forEach(x=>{ if(!activoEn(ez,x.fecha)) return; const n=pl.filter(q=>activoEn(q,x.fecha)).length||1; fr.push({x,f:1/n}); });
+    D.insumos.forEach(x=>{ const q=cuotaIns(x,ez,pl); if(q) fr.push({x,f:q.f}); });
   }
   if(!ez){ /* Lote completo: detalle de cada compra con su fecha (flete incluido en cada renglón) */
     const B=[]; let total=0, R2=Math.round;
@@ -3676,7 +3818,7 @@ function entradasInversion(){
     if(!g){ const N=Math.max(pl.length,1); g={valor:pigs.reduce((a,x)=>a+x.valor,0)/N,flete:pigs.reduce((a,x)=>a+x.flete,0)/N,kg:pigs.reduce((a,x)=>a+x.kg,0)/Math.max(pigs.length,1)}; }
     let ini=null,k=0; for(const l of lotes){ const n=l.cantidad||0; if(ez.idx>=k&&ez.idx<k+n){ ini=l; break; } k+=n; }
     E.push({fecha:ini?ini.fecha:"",cat:"Lechones",n:1,kg:g.kg,tit:"1 lechón • "+peso(g.kg)+" kg",prov:ini?provCorto(ini.proveedor):"",unit:g.flete>0?desgFlete("Lechón",g.valor,g.flete):money(R(g.valor))+"/lechón",unitEx:money(R(g.valor))+"/lechón",costo:g.valor,flete:g.flete,creado:ini?ini.creado||0:0,fleteTit:"Flete lechón"});
-    D.insumos.forEach(x=>{ if(!activoEn(ez,x.fecha)) return; const n=pl.filter(q=>activoEn(q,x.fecha)).length||1; addIns(x,1/n,n); });
+    D.insumos.forEach(x=>{ const q=cuotaIns(x,ez,pl); if(q) addIns(x,q.f,q.n); });
     ajusteSobrante(ez,pl).items.forEach(it=>E.push({fecha:it.fecha,cat:it.cat,bul:0,kgB:it.cat==="Bore"?it.kgNeto:0,tit:(it.monto<0?"Sobrante de ":"Sobrante de ")+(it.cat==="Bore"?"bore":"concentrado")+(it.monto<0?" trasladado":" recibido"),prov:"",unit:peso(it.kg)+" kg sobrantes",unitEx:peso(it.kg)+" kg sobrantes",costo:it.monto,flete:0,creado:0,fleteTit:""}));
   }
   return {ez,E,vacio:!D.lotes.length&&!D.insumos.length};
@@ -4084,7 +4226,7 @@ function detInsumo(x,f,n){
   const c=conceptoIns(x), med=c===C_MED, b=x.bultos||0, esF=c==="Fletes", esS=c===C_SAC;
   const un=esF?"viaje":esS?"cerdo":med?((x.unidad||"").trim()||"unidad"):"bulto";
   /* quien hizo el servicio: transportador (Fletes) o matarife (Sacrificio) -> solo su nombre, nunca "Otro" */
-  const quien=esF?(respFlete(x)?"Transporta: "+respFlete(x):""):esS?(respMat(x)?"Matarife: "+respMat(x):""):"";
+  const quien=esF?(respFlete(x)?"Transporta: "+respFlete(x):""):esS?[respMat(x)?"Matador: "+respMat(x):"",respAyu(x)?"Ayudante: "+respAyu(x):""].filter(Boolean).join(" · "):"";
   const sh=b*f, cant=b>0?((n>1&&Number.isInteger(b)&&b<n)?b+"/"+n+" "+un:peso(sh)+" "+pluralUn(sh,un)):"";
   const kgS=(x.kilos||0)*f, esB=c==="Bore"&&kgS>0, tag=(x.flete||0)>0?" (flete incl.)":"";
   const compra=(x.costo||0)+(x.flete||0);
@@ -4103,7 +4245,7 @@ function detInsumo(x,f,n){
     tit="Flete de transporte"+(cant?" · "+cant:"");
     if(b>0) unit=money(compra/b)+"/viaje";
   } else if(esS){
-    tit="Sacrificio / Matarife"+(cant?" · "+cant:"");
+    { const cs=cerdosDeGasto(x); tit=(cs.length?"Sacrificio "+cs.map(rotCerdo).join(", "):"Sacrificio / Matarife")+(cant?" · "+cant:""); }
     if(b>0) unit=money(compra/b)+"/cerdo";
   } else {
     tit=sinCompra(x.detalle||c||"Insumo")+(cant?" • "+cant:"");
@@ -4124,7 +4266,7 @@ function datosDetalleCerdo(orden){
   const lotes=[...D.lotes].sort((a,b)=>(a.fecha||"").localeCompare(b.fecha||"")||(a.creado||0)-(b.creado||0));
   const promDe=l=>l.pesoPromKg!=null?l.pesoPromKg:(l.pesoProm!=null?l.pesoProm/2:((l.pesoTotalKg||0)/Math.max(l.cantidad||1,1)));
   let ini=null,k=0; for(const l of lotes){ const n=l.cantidad||0; if(ez.idx>=k&&ez.idx<k+n){ ini={l,kg:(l.animales&&l.animales[ez.idx-k]&&l.animales[ez.idx-k].kg)||promDe(l)}; break; } k+=n; }
-  const ents=[...D.insumos].sort((a,b)=>(a.fecha||"").localeCompare(b.fecha||"")||(a.creado||0)-(b.creado||0)).filter(x=>activoEn(ez,x.fecha)).map(x=>{ const n=pl.filter(q=>activoEn(q,x.fecha)).length||1; return detInsumo(x,1/n,n); })
+  const ents=[...D.insumos].sort((a,b)=>(a.fecha||"").localeCompare(b.fecha||"")||(a.creado||0)-(b.creado||0)).map(x=>{ const q=cuotaIns(x,ez,pl); return q?detInsumo(x,q.f,q.n):null; }).filter(Boolean)
     .concat(ajusteSobrante(ez,pl).items.map(it=>({fecha:it.fecha,tit:"Sobrante de "+(it.cat==="Bore"?"bore":"concentrado")+(it.monto<0?" trasladado":" recibido"),prov:"",unit:peso(it.kg)+" kg sobrantes",monto:it.monto,bul:0})))
     .sort((a,b)=>(a.fecha||"").localeCompare(b.fecha||""));
   if(orden==="desc") ents.reverse(); /* más reciente primero */
@@ -4236,7 +4378,7 @@ function datosLibroContable(orden){
     const promDe=l=>l.pesoPromKg!=null?l.pesoPromKg:(l.pesoProm!=null?l.pesoProm/2:((l.pesoTotalKg||0)/Math.max(l.cantidad||1,1)));
     let ini=null,k=0; for(const l of lotes){ const n=l.cantidad||0; if(ez.idx>=k&&ez.idx<k+n){ ini={l,kg:(l.animales&&l.animales[ez.idx-k]&&l.animales[ez.idx-k].kg)||promDe(l)}; break; } k+=n; }
     E.push({f:ini?ini.l.fecha:"",cat:"Lechón",det:"1 lechón"+(ini?" • "+peso(ini.kg)+" kg ("+peso(ini.kg*2)+" lb)":""),prov:ini?provCorto(ini.l.proveedor):"",monto:iv.lechon,n:1,kg:0});
-    insOrd.filter(x=>activoEn(ez,x.fecha)).forEach(x=>{ const n=pl.filter(q=>activoEn(q,x.fecha)).length||1; E.push(entIns(detInsumo(x,1/n,n))); });
+    insOrd.forEach(x=>{ const q=cuotaIns(x,ez,pl); if(q) E.push(entIns(detInsumo(x,q.f,q.n))); });
     ajusteSobrante(ez,pl).items.forEach(it=>E.push({f:it.fecha,cat:it.cat,det:(it.monto<0?"Sobrante trasladado":"Sobrante recibido")+(it.cat==="Bore"?" de bore":"")+" • "+peso(it.kg)+" kg",prov:"",monto:it.monto,kg:it.kgNeto,n:0}));
     objIns=iv.alimento;
   } else {
@@ -4494,7 +4636,7 @@ async function eliminarAnio(a){
   }catch(e){ toast("Error al eliminar: "+(e.code||e.message)); }
 }
 function resetFormsProyecto(){
-  cerrar();cerrarForm("mLote");cerrarForm("mInsumo");cerrarForm("mEncargo");cerrarForm("mVenta");cerrarForm("mSacrificio");cerrarForm("mEditCerdo");ev=null;cv=null;ventaDesde=null;
+  cerrar();cerrarForm("mLote");cerrarForm("mInsumo");cerrarForm("mEncargo");cerrarForm("mVenta");cerrarForm("mSacrificio");cerrarForm("mEditCerdo");cerrarForm("mHist");ev=null;cv=null;ventaDesde=null;
   $("pCerdo").value="";$("cNombre").value="";
   fechaAuto=false;fechaSacAuto=false;$("pFechaSac").value=hoy();$("cFecha").value=hoy();
   vCerdoSel="";vFiltroCerdo="";cFiltroCerdo="";vModo="despiece";vTodas=false;bFiltroCerdo="";invFiltroCerdo="";carrito=[{cerdoId:"",corte:"carne",cant:0,precio:0}];pcarrito=[{corte:"carne",desc:"",cant:0}];renderPItems();
@@ -4637,7 +4779,8 @@ function renderPanel(){
   <div class="dtop"><span class="dico">🛒</span><span class="dtit">INVERSIÓN Y GASTOS</span><span class="dgo">›</span></div>
   <div class="dbig">${money(inv)}</div><div class="dlbl">Lechones, concentrado, fletes y medicinas</div>
   <div class="dmini">${mini("Lechones",money(lech))}${mini("Insumos",money(ins))}${mini("Registros",D.lotes.length+D.insumos.length)}</div></button>
-  <div class="dchips"><button onclick="abrirForm('mInsumo')">＋ Concentrado / insumos</button><button onclick="abrirForm('mLote')">＋ Compra de lechones</button></div></div>
+  <button class="deye" onclick="abrirHistorialGastos()" aria-label="Ver historial de gastos" title="Ver historial de gastos">👁️</button>
+  <div class="dchips"><button onclick="abrirForm('mInsumo')">＋ Concentrado / insumos</button><button onclick="abrirForm('mLote')">＋ Compra de lechones</button><button onclick="abrirHistorialGastos()">👁️ Historial</button></div></div>
 <div class="dtile d-ven"><button class="dcard" onclick="irA('sacrificio')" aria-label="Ventas y sacrificios">
   <div class="dtop"><span class="dico">🥩</span><span class="dtit">VENTAS Y SACRIFICIOS</span><span class="dgo">›</span></div>
   <div class="dbig">${sac}${tot?" de "+tot:""}</div><div class="dlbl">cerdos sacrificados · canal y despiece</div>
@@ -4675,7 +4818,7 @@ function irRendimiento(){
   irA("resumen");
   setTimeout(()=>{ const e=$("rendimiento"); if(e) window.scrollTo({top:Math.max(0,e.getBoundingClientRect().top+window.scrollY-140),behavior:"smooth"}); },80);
 }
-function renderAll(){filtrarProyecto();registrarCortesExtra();renderInversion();renderInventario();refrescarItems();renderVentas();renderDeudores();renderResumen();renderPreventas();llenarCNombre();infoFechaSac();panelPVSac();try{xcSyncPreventa();}catch(e){}estadoBtnSacrificio();renderHistorico();renderPanel();renderCeba();renderInicio();asegurarInicial();sanearDespiece();try{ccSync();}catch(e){}}
+function renderAll(){filtrarProyecto();registrarCortesExtra();renderInversion();renderInventario();refrescarItems();renderVentas();renderDeudores();renderResumen();renderPreventas();llenarCNombre();infoFechaSac();panelPVSac();try{xcSyncPreventa();}catch(e){}estadoBtnSacrificio();renderHistorico();renderPanel();renderHistorialGastos();renderCeba();renderInicio();asegurarInicial();sanearDespiece();try{ccSync();}catch(e){}}
 
 /* ===== Arranque ===== */
 function net(){const on=navigator.onLine,l=$("ledNet");l.className="led "+(on?"on":"");l.querySelector("span").textContent=on?"En línea":"Sin red";}
@@ -4688,7 +4831,7 @@ seguro(function(){ irA(location.hash.slice(1)||"panel"); },"navegación");
 seguro(renderAll,"render");
 seguro(function(){ cargarFirebase().then(initFB,initFB); },"firebase");
 /* Service Worker: la versión (SW_VERSION) fuerza al navegador a bajar el sw.js nuevo, que descarta la caché vieja (cerdos-v2) */
-const SW_VERSION="5";
+const SW_VERSION="7";
 /* Registro del Service Worker en su propio try/catch: si Safari lo bloquea (modo restringido / privado) la app sigue normal */
 try{
   if("serviceWorker" in navigator && location.protocol.indexOf("http")===0) {
