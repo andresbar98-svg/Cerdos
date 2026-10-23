@@ -3340,8 +3340,16 @@ function plantelCerdos(){
   sac.filter(c=>!usados.has(c.id)).forEach(c=>out.push({key:c.id,nombre:c.nombre,arete:c.arete,c,idx:-1}));
   return out;
 }
-/* Un cerdo está activo en una fecha si aún no había sido sacrificado (el día del sacrificio todavía cuenta) */
-const activoEn = (e,f) => !(e.c&&e.c.fecha&&f) || f<=e.c.fecha;
+/* Un cerdo está activo en una fecha si todavía NO había sido sacrificado: Fecha_Gasto < Fecha_Sacrificio.
+   Una compra hecha el mismo día del sacrificio (o después) NO se le cobra ni se promedia a ese cerdo. */
+const activoEn = (e,f) => !(e.c&&e.c.fecha&&f) || f<e.c.fecha;
+/* Cerdos entre los que se divide una compra del día f: solo los que siguen en ceba ese día (los sacrificados antes o ese mismo día quedan en $0).
+   Si ese día no queda ningún cerdo en ceba, el gasto se carga a los sacrificados ese mismo día para no perderlo de la liquidación. */
+function activosEn(pl,f){
+  const a=pl.filter(q=>activoEn(q,f));
+  return a.length?a:pl.filter(q=>q.c&&q.c.fecha&&f&&f===q.c.fecha);
+}
+const cobraA = (e,f,pl) => activosEn(pl,f).some(q=>q.key===e.key);
 /* Gasto «Sacrificio / Matarife» ligado a cerdos concretos → {mio,n}: se carga DIRECTO al cerdo sacrificado (o en partes iguales entre los
    que cubre ese mismo gasto), NUNCA se prorratea como el alimento. null = no es sacrificio o es un registro antiguo sin cerdo ligado. */
 function sacLigado(x,e){
@@ -3356,11 +3364,11 @@ function sacLigado(x,e){
    Sacrificio ligado → directo; alimento e insumos → partes iguales entre los cerdos activos ese día. */
 function cuotaIns(x,e,pl){
   const l=sacLigado(x,e); if(l) return l.mio?{f:1/l.n,n:l.n}:null;
-  if(!activoEn(e,x.fecha)) return null;
-  const n=pl.filter(q=>activoEn(q,x.fecha)).length||1; return {f:1/n,n};
+  const A=activosEn(pl,x.fecha); if(!A.some(q=>q.key===e.key)) return null;   /* Fecha_Gasto >= sacrificio: cuota $0 */
+  const n=A.length||1; return {f:1/n,n};
 }
 /* Inversión asignada: costo de su lechón + su cuota de cada compra de alimento (en partes iguales entre los cerdos activos ese día,
-   sin sumar las compras posteriores a su sacrificio) */
+   sin sumar las compras del día de su sacrificio ni las posteriores) */
 function inversionCerdo(e,pl){
   pl=pl||plantelCerdos();
   const costos=[]; [...D.lotes].sort((a,b)=>(a.fecha||"").localeCompare(b.fecha||"")||(a.creado||0)-(b.creado||0))
@@ -3372,8 +3380,9 @@ function inversionCerdo(e,pl){
     /* Sacrificio (matador + ayudante) ligado a cerdos concretos: gasto DIRECTO del cerdo sacrificado; el de otro cerdo no le toca ni cuenta como «excluida» */
     { const l=sacLigado(x,e);
       if(l){ if(l.mio){ const d=m/l.n; alim+=d; sacr+=d; suma++; } return; } }
-    if(!activoEn(e,x.fecha)){ excl++; return; }
-    const n=pl.filter(q=>activoEn(q,x.fecha)).length||1;
+    const A=activosEn(pl,x.fecha);                                   /* cerdos en ceba el día de la compra (Fecha_Gasto < Fecha_Sacrificio) */
+    if(!A.some(q=>q.key===e.key)){ excl++; return; }                 /* igual o posterior al sacrificio de este cerdo: $0 */
+    const n=A.length||1;
     alim+=m/n; suma++;
   });
   alim+=ajusteSobrante(e,pl).total;
@@ -3400,7 +3409,7 @@ function ajusteSobrante(e,pl){
       D.insumos.forEach(x=>{ if(conceptoIns(x)===T.cat&&(x.fecha||"")<=d){
         const k=T.kgDe(x); if(!(k>0)) return;
         cost+=(x.costo||0)+(x.flete||0); kg+=k;
-        if(activoEn(q,x.fecha)) mio+=k/(pl.filter(t=>activoEn(t,x.fecha)).length||1); /* kg de esa compra que le tocan a q */
+        { const A=activosEn(pl,x.fecha); if(A.some(t=>t.key===q.key)) mio+=k/(A.length||1); } /* kg de esa compra que le tocan a q */
       } });
       if(!(kg>0)||!(mio>0)) return;
       const S=Math.min(sob,mio), V=S*(cost/kg);                                         /* tope: nunca más de lo que consumió + valor al precio promedio $/kg */
@@ -3423,7 +3432,7 @@ function consumoAlimento(e,pl){
   const kConc=x=>conceptoIns(x)==="Concentrado"?(x.bultos||0)*KG_BULTO_CONC:0, kBore=x=>conceptoIns(x)==="Bore"?(x.kilos||0):0;
   if(!e) return {conc:D.insumos.reduce((a,x)=>a+kConc(x),0),bore:D.insumos.reduce((a,x)=>a+kBore(x),0)};
   pl=pl||plantelCerdos(); let conc=0,bore=0;
-  D.insumos.forEach(x=>{ if(!activoEn(e,x.fecha)) return; const n=pl.filter(q=>activoEn(q,x.fecha)).length||1; conc+=kConc(x)/n; bore+=kBore(x)/n; });
+  D.insumos.forEach(x=>{ const A=activosEn(pl,x.fecha); if(!A.some(q=>q.key===e.key)) return; const n=A.length||1; conc+=kConc(x)/n; bore+=kBore(x)/n; });
   { const aj=ajusteSobrante(e,pl); return {conc:conc+aj.kg,bore:bore+aj.boreKg}; }
 }
 /* 🐖 1 lechón / 🐖 Cerdo individual (equilibra las líneas de consumo de Alimento e insumos) */
@@ -3465,7 +3474,7 @@ function renderResumen(){
     const sacF=cz&&cz.fecha;
     const leyenda=cz
       ? (sacF?`<b>Alimento e insumos congelados a la fecha de sacrificio (${fechaLargaCO(sacF)})</b>`:`<b>Alimento e insumos repartidos entre los cerdos vivos de cada compra</b>`)
-        +`<br><small>Cada compra de alimento se divide en partes iguales entre los cerdos activos ese día; el sacrificio (matador + ayudante) se carga completo a este cerdo.${iv.excluidas?` ${iv.excluidas===1?"1 compra posterior al sacrificio no se suma":iv.excluidas+" compras posteriores al sacrificio no se suman"}.`:""}</small>`
+        +`<br><small>Cada compra de alimento se divide en partes iguales entre los cerdos que siguen en ceba ese día (las compras del día del sacrificio o posteriores no se le cobran a este cerdo); el sacrificio (matador + ayudante) se carga completo a este cerdo.${iv.excluidas?` ${iv.excluidas===1?"1 compra del día del sacrificio o posterior no se suma":iv.excluidas+" compras del día del sacrificio o posteriores no se suman"}.`:""}</small>`
       : `<b>Aún en ceba: el alimento se sigue sumando proporcionalmente hasta su día de sacrificio</b><br><small>Cada compra se divide en partes iguales entre los cerdos vivos ese día. Llevas ${iv.compras} ${iv.compras===1?"compra":"compras"} de alimento asignadas.</small>`;
     $("rInvLbl").textContent="Inversión asignada a "+ez.nombre; $("rInv").textContent=money(iv.total);
     $("rLech").textContent=money(iv.lechon); $("rLechN").innerHTML='<small class="kcons">🐖 Cerdo individual</small>';
@@ -3529,7 +3538,7 @@ function volumenesInversion(ez,pl){
   } else {
     const iv=inversionCerdo(ez,pl), cons=consumoAlimento(ez,pl);
     nL=1; vL=iv.lechon; total=iv.total; kgC=cons.conc; kgB=cons.bore;
-    D.insumos.forEach(x=>{ if(!activoEn(ez,x.fecha)) return; const n=pl.filter(q=>activoEn(q,x.fecha)).length||1, c=conceptoIns(x), m=((x.costo||0)+(x.flete||0))/n;
+    D.insumos.forEach(x=>{ const A=activosEn(pl,x.fecha); if(!A.some(q=>q.key===ez.key)) return; const n=A.length||1, c=conceptoIns(x), m=((x.costo||0)+(x.flete||0))/n;
       if(c==="Concentrado") vC+=m; else if(c==="Bore") vB+=m; });
     { const aj=ajusteSobrante(ez,pl); vC+=aj.totalC; vB+=aj.totalB; }   /* el sobrante de bore va a Bore, no a Concentrado */
   }
