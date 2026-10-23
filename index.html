@@ -102,11 +102,13 @@ button{font-family:inherit;cursor:pointer}
 .inv2 small.kcons{display:block;margin-top:4px;font-size:11.5px;color:var(--mu);line-height:1.3}
 /* Líneas de consumo apiladas: concepto arriba, kilos y bultos/@ debajo (caben en media pantalla) */
 .cons-list{margin-top:8px;border-top:1px solid var(--line);display:flex;flex-direction:column}
-.cons-row{padding:7px 0;border-bottom:1px dashed var(--line);min-width:0}
+.cons-row{display:block;padding:7px 0;border-bottom:1px dashed var(--line);min-width:0}
 .cons-row:last-child{border-bottom:0;padding-bottom:0}
 .cons-row .cn{display:block;font-size:12.5px;color:var(--tx);line-height:1.25}
 .cons-row .cv{display:block;margin-top:2px;font-size:13.5px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.25}
-.cons-row .cv small{display:inline;margin:0;font-size:12px;font-weight:400;color:var(--mu)}
+.cons-row .cr-line{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-top:2px}
+.cons-row .cr-line .cv{margin-top:0;min-width:0}
+.cons-row .cr-r{flex:0 0 auto;margin:0;text-align:right;font-size:13.5px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.25;white-space:nowrap}
 .pos{color:var(--ok)}.neg{color:var(--er)}.wa-c{color:var(--wa)}
 .tag{display:inline-block;font-size:11px;border-radius:20px;padding:2px 9px;border:1px solid}
 .tag.Pagado{color:var(--ok);border-color:var(--ok)}.tag.Abonado{color:var(--wa);border-color:var(--wa)}.tag.Pendiente{color:var(--er);border-color:var(--er)}
@@ -525,6 +527,30 @@ nav button,.navback,#btnProy,header button{position:relative;z-index:1000;pointe
 .vmodos{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
 .vmodo{display:flex;flex-direction:column;gap:3px;text-align:left;border-radius:var(--r);padding:12px;font:inherit;color:#2a1a12;border:0;cursor:pointer}
 .vmodo b{font-size:14px}.vmodo small{font-size:11.5px;opacity:.85}.vmodo.cal{background:linear-gradient(135deg,#ff9a5a,#f0c36a)}.vmodo.des{background:linear-gradient(135deg,#8ec5ff,#a8e6cf)}
+/* ===== Editar Cerdo: Peso canal | Conc. sobrante (kg / bultos) | Bore restante (kg / @) en 3 columnas ===== */
+.ec-top3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:10px;align-items:start}
+.ec-top3>div{min-width:0}
+.ec-top3 label{display:block;margin:0 0 4px;font-size:10px;line-height:1.2;min-height:24px;overflow-wrap:anywhere}
+.ec-top3 input{width:100%;padding:11px 4px;text-align:center;margin:0 0 6px}
+.ec-top3 .ecu{font-size:11px;color:var(--mu);text-align:center}
+/* ===== Barra de compartir PNG | PDF ===== */
+.share-bar{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 0 14px}
+.share-bar .btn{margin:0;font-size:15px;padding:14px 8px}
+/* ===== Modo lectura (ojo) ===== */
+.kpi-row{display:flex;gap:10px;align-items:stretch;margin-bottom:12px}
+.kpi-row .kpi{flex:1 1 auto;min-width:0}
+.ojo-btn{flex:0 0 auto;width:52px;min-height:48px;display:flex;align-items:center;justify-content:center;padding:0;border-radius:var(--r);border:1px solid var(--line);background:var(--s1);color:var(--mu);cursor:pointer}
+.ojo-btn svg{width:24px;height:24px}
+.ojo-btn .ey-off{display:none}
+body.lectura .ojo-btn{background:var(--ac);color:#2a1a12;border-color:var(--ac)}
+body.lectura .ojo-btn .ey-on{display:none}
+body.lectura .ojo-btn .ey-off{display:block}
+body.lectura .ro-hide{display:none!important}
+.vmodo-box{flex-direction:row;align-items:stretch;padding:0;gap:0}
+.vmodo-box .vm-main{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:3px;text-align:left;background:none;border:0;font:inherit;color:inherit;padding:12px;cursor:pointer}
+.vmodo-box .ojo-btn{align-self:center;margin:0 10px 0 0;width:44px;min-height:44px;background:rgba(255,255,255,.6);border-color:rgba(42,26,18,.18);color:#2a1a12}
+body.lectura .vmodo-box .ojo-btn{background:#2a1a12;border-color:#2a1a12;color:#fff}
+
 .vp-cols{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;align-items:start}.vp-cols>.card{margin:0;padding:11px;min-width:0}
 .vstock{display:grid;grid-template-columns:1fr auto;gap:6px 8px;font-size:12.5px;align-items:baseline}.vstock b{text-align:right;font-variant-numeric:tabular-nums}.vstock em{font-style:normal;color:var(--mu);font-weight:400;font-size:11px}
 .vseg{display:flex;gap:6px;margin:0 0 10px;overflow-x:auto}.vseg button{flex:1 0 auto;background:var(--s1);border:1px solid var(--line);color:var(--mu);border-radius:20px;padding:7px 12px;font-size:12.5px;white-space:nowrap}
@@ -629,6 +655,7 @@ nav button,.navback,#btnProy,header button{position:relative;z-index:1000;pointe
 
 <!-- ============ VENTAS ============ -->
 <section id="ventas">
+  <div class="share-bar"><button class="btn wa" onclick="ventasCompartir('png')" aria-label="Compartir reporte de Ventas como imagen PNG">🖼️ PNG</button><button class="btn pdf" onclick="ventasCompartir('pdf')" aria-label="Exportar reporte de Ventas en PDF">📄 PDF</button></div>
   <button class="btn verde nuevo-btn" onclick="abrirVentaModo('')">➕ Nueva Venta</button>
   <div id="vHome">
     <h3 style="margin:16px 0 0">Ventas por cerdo sacrificado</h3>
@@ -641,10 +668,10 @@ nav button,.navback,#btnProy,header button{position:relative;z-index:1000;pointe
 <!-- ============ DEUDORES ============ -->
 <section id="deudores">
   <h2 style="margin-bottom:10px">Clientes y comprobantes</h2>
-  <button class="btn wa" onclick="compartirVentas()" style="margin:0 0 14px;font-size:16px;padding:15px">📤 Compartir Reporte de Clientes y Ventas (PNG)</button>
+  <div class="share-bar"><button class="btn wa" onclick="compartirVentas()" aria-label="Compartir reporte de Clientes y Ventas como imagen PNG">🖼️ PNG</button><button class="btn pdf" onclick="pdfVentas()" aria-label="Exportar reporte de Clientes y Ventas en PDF">📄 PDF</button></div>
   <div class="chips"><button class="chip act" data-f="todos">Todos</button><button class="chip" data-f="pagados">Pagados</button><button class="chip" data-f="deudores">Deudores</button></div>
   <div class="vfil" id="cFiltroCerdo" style="margin:0 0 12px"></div>
-  <div class="kpi" style="margin-bottom:12px"><span id="dLbl">Por cobrar</span><b id="dTot" class="wa-c">$0</b></div>
+  <div class="kpi-row"><div class="kpi"><span id="dLbl">Por cobrar</span><b id="dTot" class="wa-c">$0</b></div><button type="button" class="ojo-btn" onclick="toggleLectura()" aria-pressed="false" aria-label="Modo lectura: ocultar Editar, Eliminar y Abonar" title="Modo lectura"><svg class="ey-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg><svg class="ey-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/><path d="M3 3l18 18"/></svg></button></div>
   <div id="listaClientes"></div>
 </section>
 
@@ -806,16 +833,13 @@ nav button,.navback,#btnProy,header button{position:relative;z-index:1000;pointe
 <div class="modal" id="mEditCerdo"><div class="sheet">
   <div class="mh"><h2 id="ecTitulo">✏️ Editar despiece</h2><button class="sm" onclick="cerrarForm('mEditCerdo')">Cerrar</button></div>
   <p class="sub" id="ecInfo"></p>
-  <label>Peso total en canal (kg)</label><input type="number" inputmode="decimal" step="0.01" id="ecCanal" oninput="dbn.ecCalc()">
-  <div class="sub" style="margin:6px 0 0">Equivale a <b id="ecCanalLb">0</b> lb (1 kg = 2 lb)</div>
-  <h3 style="margin-top:16px">Alimento sobrante</h3>
-  <div class="g2">
-    <div><label for="ecSobConc">Conc. sobrante (kg)</label><input type="number" inputmode="decimal" step="0.1" min="0" id="ecSobConc" placeholder="0" oninput="ecSobSync('kg')"></div>
-    <div><label for="ecSobConcBul">Conc. sobrante (bultos)</label><input type="number" inputmode="decimal" step="0.01" min="0" id="ecSobConcBul" placeholder="0" oninput="ecSobSync('bul')"></div>
-    <div><label for="ecSobBore">Bore restante (kg)</label><input type="number" inputmode="decimal" step="0.1" min="0" id="ecSobBore" placeholder="0" oninput="ecSobSync('bore')"></div>
-    <div><label>Bore ≈ (@)</label><div class="sub" style="margin:10px 0 0"><b id="ecSobBoreArr">0</b> @</div></div>
+  <!-- Peso canal | Concentrado sobrante (kg / bultos) | Bore restante (kg / @): grid de 3 columnas -->
+  <div class="ec-top3">
+    <div><label for="ecCanal">Peso canal (kg)</label><input type="number" inputmode="decimal" step="0.01" id="ecCanal" placeholder="0" oninput="dbn.ecCalc()"><div class="ecu">= <b id="ecCanalLb">0</b> lb</div></div>
+    <div><label for="ecSobConc">Conc. sobrante (kg / bultos)</label><input type="number" inputmode="decimal" step="0.1" min="0" id="ecSobConc" placeholder="kg" aria-label="Concentrado sobrante en kilos" oninput="ecSobSync('kg')"><input type="number" inputmode="decimal" step="0.01" min="0" id="ecSobConcBul" placeholder="bultos" aria-label="Concentrado sobrante en bultos" oninput="ecSobSync('bul')"></div>
+    <div><label for="ecSobBore">Bore restante (kg / @)</label><input type="number" inputmode="decimal" step="0.1" min="0" id="ecSobBore" placeholder="kg" aria-label="Bore restante en kilos" oninput="ecSobSync('bore')"><input type="number" inputmode="decimal" step="0.01" min="0" id="ecSobBoreArr" placeholder="@" aria-label="Bore restante en arrobas" oninput="ecSobSync('arr')"></div>
   </div>
-  <div class="sub" style="margin:6px 0 0">1 bulto = 40 kg · 1 @ = 12,5 kg. El sobrante se descuenta del costo de este cerdo y pasa a los cerdos activos en ceba.</div>
+  <div class="sub" style="margin:6px 0 0">1 kg = 2 lb · 1 bulto = 40 kg · 1 @ = 12,5 kg. El sobrante se descuenta del costo de este cerdo y pasa a los cerdos activos en ceba.</div>
   <h3 style="margin-top:16px">Pesaje del despiece (en libras, lb)</h3><div id="ecCortes"></div>
   <div class="kpi" style="margin-top:14px"><span>Balance del despiece vs canal</span><div class="sub" style="margin:6px 0 0" id="ecResumen"></div></div>
   <h3 style="margin-top:16px">Stock resultante</h3>
@@ -1397,12 +1421,18 @@ function cerdosDeGasto(x){
 }
 const rotCerdo = n => /^cerdo\b/i.test(n)?n:"Cerdo "+n;
 /* «Mano de obra Sacrificio Cerdo #1 ($50.000) · Matador: Pedro Niño · Ayudante: Rosita Fandiño» ("" si no hay ningún dato) */
+/* «Matador: Pedro Niño ($50.000) • Ayudante: Rosita Fandiño ($20.000)» — sin repetir el total de la mano de obra antes del Matador */
+function quienSac(mat,ayu,valor,ayuVal,sep){
+  mat=nombreOk(mat); ayu=nombreOk(ayu); ayuVal=Math.max(+ayuVal||0,0);
+  const mVal=Math.max((+valor||0)-ayuVal,0), p=[];
+  if(mat) p.push("Matador: "+mat+(mVal>0?" ("+money(mVal)+")":""));
+  if(ayu) p.push("Ayudante: "+ayu+(ayuVal>0?" ("+money(ayuVal)+")":""));
+  return p.join(sep||" \u2022 ");
+}
 function detSac(mat,ayu,cerdos,valor,ayuVal){
-  const p=[], cs=(cerdos||[]).map(nombreOk).filter(Boolean); mat=nombreOk(mat); ayu=nombreOk(ayu);
-  const v=valor>0?" ("+money(valor)+")":"", aV=(ayu&&ayuVal>0)?" ("+money(ayuVal)+")":"", mV=(mat&&valor-(ayuVal||0)>0&&aV)?" ("+money(valor-ayuVal)+")":"";   /* el precio de cada uno se muestra cuando hay ayudante con valor */
-  if(cs.length) p.push("Mano de obra Sacrificio "+cs.map(rotCerdo).join(", ")+v); else if(mat||ayu||v) p.push("Mano de obra Sacrificio"+v);
-  if(mat) p.push("Matador: "+mat+mV); if(ayu) p.push("Ayudante: "+ayu+aV);
-  return p.join(" · ");
+  const cs=(cerdos||[]).map(nombreOk).filter(Boolean), q=quienSac(mat,ayu,valor,ayuVal);
+  const t=cs.length?"Mano de obra Sacrificio "+cs.map(rotCerdo).join(", "):((q||valor>0)?"Mano de obra Sacrificio":"");
+  return [t,q].filter(Boolean).join(" \u00B7 ");
 }
 function matOpciones(sel){
   $("iAyuSel").innerHTML=ayuListaHtml();   /* Ninguno + predeterminados + nombres ya usados/guardados + Otro... */
@@ -1586,9 +1616,9 @@ function borrarGastoIns(id){
   R.cerdos=R.cerdos.filter(c=>!ids.has(c.id)); R.insumos=R.insumos.filter(x=>x.id!==id); renderAll();   /* renderAll vuelve a filtrar D desde R */
 }
 /* Título del gasto en el historial: tipo + detalle • cantidad • proveedor */
-function insumoTitulo(l){
+function insumoTitulo(l,dos){
   const c=conceptoIns(l), n=l.bultos||0, med=c===C_MED, p=[];
-  if(c===C_SAC){ const d=detSac(respMat(l),respAyu(l),cerdosDeGasto(l),(l.costo||0),(l.costoAyudante||0)); if(d) return esc(d); }   /* Sacrificio Cerdo #1 · Matador: … · Ayudante: … */
+  if(c===C_SAC){ const cs=cerdosDeGasto(l), q=quienSac(respMat(l),respAyu(l),(l.costo||0),(l.costoAyudante||0),dos?"\n":null), t=(cs.length||q||(l.costo>0))?"Mano de obra Sacrificio"+(cs.length?" "+cs.map(rotCerdo).join(", "):""):""; if(t) return q?(dos?esc(t)+q.split("\n").map(x=>"<small>"+esc(x)+"</small>").join(""):esc(t+" \u00B7 "+q)):esc(t); }   /* Sacrificio Cerdo #1 · Matador: … · Ayudante: … */
   p.push(esc(c==="Concentrado"&&l.claseConc?"Concentrado "+l.claseConc:med&&l.detalle?"Medicamento: "+l.detalle:c));
   if(c==="Bore"&&l.kilos>0) p.push(esc(boreTxt(l.kilos,l.costo||0,l.valorArroba||0)));
   else if(n>0) p.push(peso(n)+" "+esc(c==="Fletes"?(n===1?"viaje":"viajes"):c===C_SAC?(n===1?"cerdo sacrificado":"cerdos sacrificados"):med?(l.unidad||(n===1?"unidad":"unidades")):(n===1?"bulto":"bultos")));
@@ -1618,7 +1648,7 @@ function renderInversion(){
   }).join(""):'<div class="card empty">Aún no hay compras de lechones. Toca el botón de arriba para registrar la primera.</div>';
   $("listaIns").innerHTML=D.insumos.length?ord(D.insumos).map(l=>{
     const fl=l.flete||0;
-    return `<div class="row" style="display:block"><div class="gi-top"><div class="gi-l">${insumoTitulo(l)}<small>${fechaTxt(l.fecha)}</small></div><div class="gi-r"><b>${money((l.costo||0)+fl)}</b>${fl?`<small class="gi-f"><span>compra ${money(l.costo)}</span> + <span>flete ${money(fl)}</span></small>`:""}${conceptoIns(l)===C_SAC?(respMat(l)?`<small class="gi-t">Matarife: ${esc(respMat(l))}</small>`:""):(respFlete(l)?`<small class="gi-t">Transp: ${esc(respFlete(l))}</small>`:"")}</div></div>
+    return `<div class="row" style="display:block"><div class="gi-top"><div class="gi-l">${insumoTitulo(l,true)}<small>${fechaTxt(l.fecha)}</small></div><div class="gi-r"><b>${money((l.costo||0)+fl)}</b>${fl?`<small class="gi-f"><span>compra ${money(l.costo)}</span> + <span>flete ${money(fl)}</span></small>`:""}${conceptoIns(l)===C_SAC?"":(respFlete(l)?`<small class="gi-t">Transp: ${esc(respFlete(l))}</small>`:"")}</div></div>
     <div class="acts2" style="margin-top:8px"><button class="sm" onclick="editarInsumo('${l.id}')">✏️ Editar</button><button class="sm del" onclick="borrarGastoIns('${l.id}')">Eliminar</button></div></div>`;
   }).join(""):'<div class="empty">Aún no hay gastos de alimento o insumos.</div>';
 }
@@ -1878,7 +1908,8 @@ function renderStockResultante(){
 function ecSobSync(q){
   if(q==="kg") $("ecSobConcBul").value=ecR(ecVal("ecSobConc")/KG_BULTO_CONC);
   else if(q==="bul") $("ecSobConc").value=ecR(ecVal("ecSobConcBul")*KG_BULTO_CONC);
-  $("ecSobBoreArr").textContent=peso(ecVal("ecSobBore")/ARROBA_KG);
+  else if(q==="arr") $("ecSobBore").value=ecR(ecVal("ecSobBoreArr")*ARROBA_KG);
+  if(q!=="arr") $("ecSobBoreArr").value=ecVal("ecSobBore")>0?ecR(ecVal("ecSobBore")/ARROBA_KG):"";
 }
 /* Abre y llena el modal «Editar Cerdo»: precarga pesos, cortes y el alimento sobrante guardado en el cerdo */
 function editarCerdo(id){
@@ -2145,8 +2176,9 @@ function recVenta(v,cid){
   return `<div class="vrec"><div class="vh" onclick="recibo('${v.id}')"><div><b>${esc(v.cliente)}</b>${tagModo(v,cid)}${cid?"":tagsCerdo(v)}<small>${fechaTxt(v.fecha)}${v.telefono?" · "+esc(v.telefono):""}</small></div><span class="tag ${est}">${est}</span></div>
   <div style="padding-top:4px">${its}</div>${x.mixta?'<div class="sub" style="margin:4px 0 0">La venta incluye otros cerdos; aquí solo se cuenta la parte de este.</div>':""}
   <div class="vtot"><span>Total<b>${money(x.total)}</b></span><span>Abonado<b>${money(x.abonado)}</b></span><span>Saldo<b class="${x.saldo>0?"neg":"pos"}">${x.saldo>0?money(x.saldo):"$0 ✓"}</b></span></div>
-  <div class="vacts"><button class="sm wa ico" onclick="enviarWA('${v.id}')" aria-label="Compartir recibo por WhatsApp" title="Compartir recibo por WhatsApp"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M12.04 2a9.9 9.9 0 0 0-8.5 14.9L2 22l5.25-1.38A9.9 9.9 0 1 0 12.04 2zm0 1.8a8.1 8.1 0 1 1-4.3 15l-.3-.18-3.1.82.83-3-.2-.32A8.1 8.1 0 0 1 12.04 3.8zM8.6 7.4c-.2 0-.5.07-.75.35-.25.27-.97.95-.97 2.3s1 2.7 1.13 2.88c.14.18 1.94 3.1 4.8 4.2 2.38.93 2.86.75 3.38.7.52-.04 1.67-.68 1.9-1.34.24-.66.24-1.22.17-1.34-.07-.12-.26-.2-.55-.34-.28-.15-1.67-.82-1.93-.92-.26-.1-.45-.14-.64.14-.19.28-.73.92-.9 1.1-.16.2-.33.22-.6.07-.3-.14-1.2-.44-2.28-1.4-.84-.75-1.4-1.67-1.57-1.95-.16-.29-.02-.44.12-.58.13-.13.28-.33.42-.5.14-.16.19-.28.28-.47.1-.19.05-.35-.02-.5-.07-.14-.64-1.55-.88-2.12-.23-.55-.47-.48-.64-.49z"/></svg></button><button class="sm" onclick="editarVenta('${v.id}')">✏️ Editar</button><button class="sm del" onclick="eliminarVenta('${v.id}')">🗑️ Eliminar</button></div></div>`;
+  <div class="vacts"><button class="sm wa ico" onclick="enviarWA('${v.id}')" aria-label="Compartir recibo por WhatsApp" title="Compartir recibo por WhatsApp"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M12.04 2a9.9 9.9 0 0 0-8.5 14.9L2 22l5.25-1.38A9.9 9.9 0 1 0 12.04 2zm0 1.8a8.1 8.1 0 1 1-4.3 15l-.3-.18-3.1.82.83-3-.2-.32A8.1 8.1 0 0 1 12.04 3.8zM8.6 7.4c-.2 0-.5.07-.75.35-.25.27-.97.95-.97 2.3s1 2.7 1.13 2.88c.14.18 1.94 3.1 4.8 4.2 2.38.93 2.86.75 3.38.7.52-.04 1.67-.68 1.9-1.34.24-.66.24-1.22.17-1.34-.07-.12-.26-.2-.55-.34-.28-.15-1.67-.82-1.93-.92-.26-.1-.45-.14-.64.14-.19.28-.73.92-.9 1.1-.16.2-.33.22-.6.07-.3-.14-1.2-.44-2.28-1.4-.84-.75-1.4-1.67-1.57-1.95-.16-.29-.02-.44.12-.58.13-.13.28-.33.42-.5.14-.16.19-.28.28-.47.1-.19.05-.35-.02-.5-.07-.14-.64-1.55-.88-2.12-.23-.55-.47-.48-.64-.49z"/></svg></button><button class="sm ro-hide" onclick="editarVenta('${v.id}')">✏️ Editar</button><button class="sm del ro-hide" onclick="eliminarVenta('${v.id}')">🗑️ Eliminar</button></div></div>`;
 }
+const OJO_HTML=`<button type="button" class="ojo-btn" onclick="toggleLectura()" aria-pressed="false" aria-label="Modo lectura: ocultar Editar, Eliminar y Abonar" title="Modo lectura"><svg class="ey-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg><svg class="ey-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/><path d="M3 3l18 18"/></svg></button>`;
 function panelCerdo(c){
   const r=resumenCerdo(c), kgT=kgDe(c), kgD=Math.max(0,canalDisp(c)), id=esc(c.id), esCan=tipoSacrificio(c)==="canal";
   const all=D.ventas.filter(v=>itemsDe(v).some(i=>i.cerdoId===c.id)).sort((a,b)=>(b.creado||0)-(a.creado||0));
@@ -2158,7 +2190,7 @@ function panelCerdo(c){
   const seg=segDef.map(([k,n,q])=>`<button class="${vLista===k?"act":""}" onclick="setListaVenta('${k}')">${n} (${q})</button>`).join("");
   const cortes=filasInventarioVenta(c);
   return `<div class="vp-head"><button class="sm" onclick="volverVentasCerdos()">← Cerdos</button><div class="vt"><h2>🐖 Ventas ${esc(c.nombre)}</h2><div class="sub" style="margin:2px 0 0">${c.arete?"Arete "+esc(c.arete)+" · ":""}Sacrificio ${fechaTxt(c.fecha)}</div></div></div>
-  <div class="vmodos" style="grid-template-columns:1fr">${esCan?`<button class="vmodo cal" onclick="abrirVentaModo('caliente')"><b>🔥 Venta en caliente</b><small>Canal completa · por kilos</small></button>`:`<button class="vmodo des" onclick="abrirVentaModo('despiece')"><b>🔪 Venta por despiece</b><small>Cortes · por libras</small></button>`}</div>
+  <div class="vmodos" style="grid-template-columns:1fr">${esCan?`<div class="vmodo cal vmodo-box"><button type="button" class="vm-main" onclick="abrirVentaModo('caliente')"><b>🔥 Venta en caliente</b><small>Canal completa · por kilos</small></button>${OJO_HTML}</div>`:`<div class="vmodo des vmodo-box"><button type="button" class="vm-main" onclick="abrirVentaModo('despiece')"><b>🔪 Venta por despiece</b><small>Cortes · por libras</small></button>${OJO_HTML}</div>`}</div>
   <div class="vp-cols"><div class="card"><h3>📦 Inventario disponible</h3><div class="vstock">${esCan?`<span>🔥 Canal</span><b class="${kgD<=0?"neg":"pos"}">${peso(kgD)}<em> / ${peso(kgT)} kg</em></b>`:(cortes||'<span style="grid-column:1/-1;color:var(--mu)">Sin despiece registrado</span>')}</div></div>
   <div class="card"><h3>💰 Ventas realizadas</h3><div class="vstock"><span>Ventas</span><b>${r.n}</b><span>Vendido</span><b>${money(r.tot)}</b><span>Cobrado</span><b class="pos">${money(r.cob)}</b><span>Por cobrar</span><b class="${r.pen>0?"neg":"pos"}">${money(r.pen)}</b></div></div></div>
   <div class="vseg">${seg}</div>
@@ -2182,7 +2214,7 @@ function renderVentas(){
   :'<div class="card empty" style="grid-column:1/-1">Aún no hay cerdos sacrificados. Registra un sacrificio para poder vender.</div>';
 }
 /* ===== Reporte consolidado de un cerdo (liquidación + rendimiento), imagen 9:16 para WhatsApp ===== */
-function reporteCerdo(id){
+function reporteCerdo(id,fmt){
   const c=D.cerdos.find(x=>x.id===id); if(!c) return;
   const vs=D.ventas.filter(v=>itemsDe(v).some(i=>i.cerdoId===id)); if(!vs.length) return toast("Este cerdo aún no tiene ventas");
   const nm=nombreSinNum(c.nombre), cl={}, cor={}; let kgC=0,vC=0,tot=0,cob=0,sal=0;
@@ -2199,11 +2231,12 @@ function reporteCerdo(id){
   if(kgC>0){ B.push(bSec("Ventas en caliente",vC),bFila("Canal en caliente",money(vC),peso(kgC)+" kg × "+money(vC/kgC))); }
   if(vD>0){ B.push(bSec("Ventas por despiece",vD)); Object.entries(cor).forEach(([n,z])=>B.push(bFila(n,money(z.v),peso(z.lb)+" lb × "+money(z.lb>0?z.v/z.lb:0)))); }
   B.push(bSec("Clientes",tot));
-  Object.values(cl).sort((a,b)=>a.nom.localeCompare(b.nom,"es")).forEach(o=>B.push({html:`<div class="cl"><div class="h"><span>${palabras(o.nom)}</span><span>${money(o.total)}</span></div><div class="ft2"><span>${palabras("Abonado "+money(o.abonado))}</span>${o.saldo>0?`<span class="neg">${palabras("Saldo "+money(o.saldo))}</span>`:`<span class="pos">${palabras("Pagado ✓")}</span>`}</div></div>`}));
+  Object.values(cl).sort((a,b)=>a.nom.localeCompare(b.nom,"es")).forEach(o=>B.push({d:{k:"fila",t:o.nom,a:money(o.total),sub:"Abonado "+money(o.abonado)+" \u2022 "+(o.saldo>0?"Saldo "+money(o.saldo):"Pagado")},html:`<div class="cl"><div class="h"><span>${palabras(o.nom)}</span><span>${money(o.total)}</span></div><div class="ft2"><span>${palabras("Abonado "+money(o.abonado))}</span>${o.saldo>0?`<span class="neg">${palabras("Saldo "+money(o.saldo))}</span>`:`<span class="pos">${palabras("Pagado ✓")}</span>`}</div></div>`}));
   const sinV=stockTotalCerdo(c), kgS=Math.max(0,canalDisp(c));
   const cierre=[bFila("Total vendido",money(tot),"","g"),bFila("Total cobrado",money(cob)),bFila("Por cobrar",money(sal),"",sal>0?"n":"g")];
   if(sinV>0||kgS>0) cierre.push(bFila("Sin vender",peso(sinV)+" lb · "+peso(kgS)+" kg"));
   if(iv){ const gan=tot-iv.total; cierre.push(bFila("Inversión del cerdo",money(iv.total)),bFila("Ganancia neta",money(gan),"",gan>=0?"g":"n"),bFila("Rentabilidad",iv.total>0?pct1(gan/iv.total*100):"—","",gan>=0?"g":"n")); }
+  if(fmt==="pdf") return pdfDocCarta({titulo:"Reporte total cerdo",lote:"Cerdo: "+nm,tarjetas:[{t:"Total vendido",v:money(tot)},{t:"Cobrado",v:money(cob)},{t:"Por cobrar",v:money(sal),dest:true}],bloques:B,cierre},"Reporte_Cerdo_"+limNom(nm)+"_"+hoy());
   paginarReporte({titulo:"Reporte total|cerdo",cinta:nm,cab:nm,bloques:B,cierre})
     .then(h=>entregarReporte("Reporte del cerdo","Reporte_Cerdo_"+limNom(nm)+"_"+hoy(),h))
     .catch(()=>toast("No se pudo crear el reporte"));
@@ -2357,7 +2390,7 @@ function tarjetaVenta(v){
   return `<div class="tk"><div class="tkh" onclick="recibo('${v.id}')"><div><b>${esc(v.cliente)}</b>${badgesCerdo(v,fc)}<small class="tkc">${fechasLinea(v,fc)}</small></div><span class="tag ${est}">${est}</span></div>
   ${its}${nota}
   <div class="tkt"><div><span>Total</span><b>${money(tot)}</b></div><div><span>Abonado</span><b>${money(ab)}</b></div><div><span>Saldo</span><b class="${s>0?"neg":"pos"}">${s>0?money(s):"Pagado ✓"}</b></div></div>
-  <div class="tka"><button class="wa ico" onclick="enviarWA('${v.id}')" aria-label="Compartir por WhatsApp" title="Compartir por WhatsApp"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M12.04 2a9.9 9.9 0 0 0-8.5 14.9L2 22l5.25-1.38A9.9 9.9 0 1 0 12.04 2zm0 1.8a8.1 8.1 0 1 1-4.3 15l-.3-.18-3.1.82.83-3-.2-.32A8.1 8.1 0 0 1 12.04 3.8zM8.6 7.4c-.2 0-.5.07-.75.35-.25.27-.97.95-.97 2.3s1 2.7 1.13 2.88c.14.18 1.94 3.1 4.8 4.2 2.38.93 2.86.75 3.38.7.52-.04 1.67-.68 1.9-1.34.24-.66.24-1.22.17-1.34-.07-.12-.26-.2-.55-.34-.28-.15-1.67-.82-1.93-.92-.26-.1-.45-.14-.64.14-.19.28-.73.92-.9 1.1-.16.2-.33.22-.6.07-.3-.14-1.2-.44-2.28-1.4-.84-.75-1.4-1.67-1.57-1.95-.16-.29-.02-.44.12-.58.13-.13.28-.33.42-.5.14-.16.19-.28.28-.47.1-.19.05-.35-.02-.5-.07-.14-.64-1.55-.88-2.12-.23-.55-.47-.48-.64-.49z"/></svg></button>${s>0?`<button class="abn" onclick="abrirAbono('${v.id}')">💵 Abonar</button>`:""}<button onclick="editarVenta('${v.id}')">✏️ Editar</button><button class="del" onclick="eliminarVenta('${v.id}')">🗑️ Eliminar</button></div></div>`;
+  <div class="tka"><button class="wa ico" onclick="enviarWA('${v.id}')" aria-label="Compartir por WhatsApp" title="Compartir por WhatsApp"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M12.04 2a9.9 9.9 0 0 0-8.5 14.9L2 22l5.25-1.38A9.9 9.9 0 1 0 12.04 2zm0 1.8a8.1 8.1 0 1 1-4.3 15l-.3-.18-3.1.82.83-3-.2-.32A8.1 8.1 0 0 1 12.04 3.8zM8.6 7.4c-.2 0-.5.07-.75.35-.25.27-.97.95-.97 2.3s1 2.7 1.13 2.88c.14.18 1.94 3.1 4.8 4.2 2.38.93 2.86.75 3.38.7.52-.04 1.67-.68 1.9-1.34.24-.66.24-1.22.17-1.34-.07-.12-.26-.2-.55-.34-.28-.15-1.67-.82-1.93-.92-.26-.1-.45-.14-.64.14-.19.28-.73.92-.9 1.1-.16.2-.33.22-.6.07-.3-.14-1.2-.44-2.28-1.4-.84-.75-1.4-1.67-1.57-1.95-.16-.29-.02-.44.12-.58.13-.13.28-.33.42-.5.14-.16.19-.28.28-.47.1-.19.05-.35-.02-.5-.07-.14-.64-1.55-.88-2.12-.23-.55-.47-.48-.64-.49z"/></svg></button>${s>0?`<button class="abn ro-hide" onclick="abrirAbono('${v.id}')">💵 Abonar</button>`:""}<button class="ro-hide" onclick="editarVenta('${v.id}')">✏️ Editar</button><button class="del ro-hide" onclick="eliminarVenta('${v.id}')">🗑️ Eliminar</button></div></div>`;
 }
 /* Lista de ventas según los filtros activos de Clientes (cerdo + Todos/Pagados/Deudores); m(v) = parte de la venta que cuenta */
 function ventasFiltradas(){
@@ -2492,11 +2525,11 @@ function recibo(id){
   const v=D.ventas.find(x=>x.id===id); if(!v) return;
   const s=saldo(v);
   $("sheet").innerHTML=filaFechaRecibo(v)+reciboHTML(v)+`
-  ${s>0?`<label>Registrar nuevo abono ($)</label><div style="display:flex;gap:8px"><input class="money" inputmode="numeric" id="nAbono" placeholder="${peso(s)}"><button class="sm" style="background:var(--ac);color:#2a1a12;border:0;font-weight:700;font-size:14px;padding:0 16px" onclick="abonar('${v.id}')">Abonar</button></div>`:""}
+  ${s>0?`<div class="ro-hide"><label>Registrar nuevo abono ($)</label><div style="display:flex;gap:8px"><input class="money" inputmode="numeric" id="nAbono" placeholder="${peso(s)}"><button class="sm" style="background:var(--ac);color:#2a1a12;border:0;font-weight:700;font-size:14px;padding:0 16px" onclick="abonar('${v.id}')">Abonar</button></div></div>`:""}
   <button class="btn wa" onclick="enviarWA('${v.id}')">Compartir por WhatsApp</button>
-  <button class="btn sec" onclick="editarVenta('${v.id}')">✏️ Editar venta</button>
+  <button class="btn sec ro-hide" onclick="editarVenta('${v.id}')">✏️ Editar venta</button>
   <button class="btn sec" onclick="cerrar()">Cerrar</button>
-  <button class="btn sec" style="color:var(--er)" onclick="eliminarVenta('${v.id}')">🗑️ Eliminar venta</button>`;
+  <button class="btn sec ro-hide" style="color:var(--er)" onclick="eliminarVenta('${v.id}')">🗑️ Eliminar venta</button>`;
   $("modal").classList.add("open"); ajustarRecibo();
 }
 function cerrar(){$("modal").classList.remove("open");}
@@ -3496,10 +3529,12 @@ const fISO = f => String(f||"").slice(0,10);   /* fecha ISO yyyy-mm-dd (tolera "
 const activoEn = (e,f) => !(e.c&&e.c.fecha&&f) || fISO(f)<fISO(e.c.fecha);
 /* Cerdos entre los que se divide una compra del día f: solo los que siguen en ceba ese día (los sacrificados antes o ese mismo día quedan en $0).
    Si ese día no queda ningún cerdo en ceba, el gasto se carga a los sacrificados ese mismo día para no perderlo de la liquidación. */
-function activosEn(pl,f){
-  const a=pl.filter(q=>activoEn(q,f));
+const activoEnInc = (e,f) => !(e.c&&e.c.fecha&&f) || fISO(f)<=fISO(e.c.fecha);   /* Bore: se cobra hasta el día del sacrificio inclusive */
+function activosEn(pl,f,incl){
+  const a=pl.filter(q=>incl?activoEnInc(q,f):activoEn(q,f));
   return a.length?a:pl.filter(q=>q.c&&q.c.fecha&&f&&f===q.c.fecha);
 }
+const activosIns = (pl,x) => { const c=conceptoIns(x); return ((c==="Bore"||c==="Concentrado")&&eqAlim(c))?pl:activosEn(pl,x.fecha); };   /* Bore/Conc con restante: partes iguales entre todos los cerdos */
 const cobraA = (e,f,pl) => activosEn(pl,f).some(q=>q.key===e.key);
 /* Gasto «Sacrificio / Matarife» ligado a cerdos concretos → {mio,n}: se carga DIRECTO al cerdo sacrificado (o en partes iguales entre los
    que cubre ese mismo gasto), NUNCA se prorratea como el alimento. null = no es sacrificio o es un registro antiguo sin cerdo ligado. */
@@ -3515,7 +3550,7 @@ function sacLigado(x,e){
    Sacrificio ligado → directo; alimento e insumos → partes iguales entre los cerdos activos ese día. */
 function cuotaIns(x,e,pl){
   const l=sacLigado(x,e); if(l) return l.mio?{f:1/l.n,n:l.n}:null;
-  const A=activosEn(pl,x.fecha); if(!A.some(q=>q.key===e.key)) return null;   /* Fecha_Gasto >= sacrificio: cuota $0 */
+  const A=activosIns(pl,x); if(!A.some(q=>q.key===e.key)) return null;   /* Fecha_Gasto >= sacrificio: cuota $0 */
   const n=A.length||1; return {f:1/n,n};
 }
 /* Inversión asignada: costo de su lechón + su cuota de cada compra de alimento (en partes iguales entre los cerdos activos ese día,
@@ -3531,7 +3566,7 @@ function inversionCerdo(e,pl){
     /* Sacrificio (matador + ayudante) ligado a cerdos concretos: gasto DIRECTO del cerdo sacrificado; el de otro cerdo no le toca ni cuenta como «excluida» */
     { const l=sacLigado(x,e);
       if(l){ if(l.mio){ const d=m/l.n; alim+=d; sacr+=d; suma++; } return; } }
-    const A=activosEn(pl,x.fecha);                                   /* cerdos en ceba el día de la compra (Fecha_Gasto < Fecha_Sacrificio) */
+    const A=activosIns(pl,x);                                        /* cerdos en ceba el día de la compra (Fecha_Gasto < Fecha_Sacrificio) */
     if(!A.some(q=>q.key===e.key)){ excl++; return; }                 /* igual o posterior al sacrificio de este cerdo: $0 */
     const n=A.length||1;
     alim+=m/n; suma++;
@@ -3545,33 +3580,25 @@ const KG_BULTO_CONC = 40; /* peso de un bulto de concentrado (kg) */
    (consumo neto = kg asignados − kg sobrantes) y se valora al precio promedio $/kg del concentrado comprado hasta esa fecha, así que su costo baja
    en proporción. Esos mismos kg (y su valor) pasan, en partes iguales, al inventario de los cerdos que siguen en ceba (si no queda ninguno, no se mueve).
    El sobrante nunca supera los kg de concentrado asignados a ese cerdo (el neto no baja de 0). */
+/* ===== Liquidación EQUITATIVA de Bore (y de Concentrado cuando hay sobrante registrado) =====
+   Consumido = Total comprado − Restante/Sobrante registrado en los sacrificios (kg y $ al precio promedio $/kg de lo comprado, flete incluido).
+   Cada cerdo del lote (todos, vivos o sacrificados) recibe EXACTAMENTE: Consumido total ÷ total de cerdos del lote. */
+const restoAlim = (c,cat) => cat==="Bore" ? Math.max(+c.boreRestanteKg||0,0) : (+c.sobranteKg>0?+c.sobranteKg:Math.max((+c.sobranteBultos||0)*KG_BULTO_CONC,0));
+const eqAlim = cat => cat==="Bore" || (cat==="Concentrado" && D.cerdos.some(c=>restoAlim(c,cat)>0));
+function liqLote(cat){
+  const T=CATS_ALIM.find(t=>t.cat===cat); let kg=0,costo=0,rest=0,fecha="";
+  D.insumos.forEach(x=>{ if(conceptoIns(x)===cat){ kg+=T.kgDe(x); costo+=(x.costo||0)+(x.flete||0); } });
+  D.cerdos.forEach(c=>{ const r=restoAlim(c,cat); if(r>0){ rest+=r; if((c.fecha||"")>fecha) fecha=c.fecha||""; } });
+  rest=Math.min(rest,kg);                                   /* el restante nunca supera lo comprado */
+  return {kg,costo,rest,restCosto:kg>0?rest*(costo/kg):0,fecha,consumidoKg:kg-rest,consumidoCosto:costo-(kg>0?rest*(costo/kg):0)};
+}
 function ajusteSobrante(e,pl){
-  pl=pl||plantelCerdos(); const items=[]; let total=0,totalC=0,totalB=0,kgC=0,kgB=0;
-  /* Dos alimentos con su propia unidad: Concentrado (bultos × 40 kg) y Bore (kilos comprados). Misma regla de corte para ambos. */
-  const TIPOS=[
-    {cat:"Concentrado",campo:"sobranteKg",kgDe:x=>(x.bultos||0)*KG_BULTO_CONC},
-    {cat:"Bore",campo:"boreRestanteKg",kgDe:x=>x.kilos||0}
-  ];
-  pl.forEach(q=>{
-    const c=q.c; if(!c||!c.fecha) return;
-    TIPOS.forEach(T=>{
-      const sob=c[T.campo]; if(!(sob>0)) return;
-      const d=c.fecha; let cost=0,kg=0,mio=0;
-      D.insumos.forEach(x=>{ if(conceptoIns(x)===T.cat&&(x.fecha||"")<=d){
-        const k=T.kgDe(x); if(!(k>0)) return;
-        cost+=(x.costo||0)+(x.flete||0); kg+=k;
-        { const A=activosEn(pl,x.fecha); if(A.some(t=>t.key===q.key)) mio+=k/(A.length||1); } /* kg de esa compra que le tocan a q */
-      } });
-      if(!(kg>0)||!(mio>0)) return;
-      const S=Math.min(sob,mio), V=S*(cost/kg);                                         /* tope: nunca más de lo que consumió + valor al precio promedio $/kg */
-      const Rm=pl.filter(t=>activoEn(t,d)&&!(t.c&&t.c.fecha&&t.c.fecha<=d));            /* cerdos que siguen en ceba */
-      if(!Rm.length||!(V>0)) return;
-      let m=0,km=0;
-      if(q.key===e.key){ m-=V; km-=S; }                                                 /* el sacrificado: consumo neto = asignado − sobrante */
-      else if(Rm.some(t=>t.key===e.key)){ m+=V/Rm.length; km+=S/Rm.length; }            /* los que siguen: reciben el sobrante en su inventario */
-      if(m){ items.push({fecha:d,cat:T.cat,monto:m,kg:Math.abs(km),kgNeto:km}); total+=m;
-        if(T.cat==="Bore"){ totalB+=m; kgB+=km; } else { totalC+=m; kgC+=km; } }
-    });
+  pl=pl||plantelCerdos(); const N=Math.max(pl.length,1), items=[]; let total=0,totalC=0,totalB=0,kgC=0,kgB=0;
+  ["Concentrado","Bore"].forEach(cat=>{
+    if(!eqAlim(cat)) return; const L=liqLote(cat); if(!(L.rest>0)) return;
+    const m=-L.restCosto/N, km=-L.rest/N;                   /* parte del restante que se le descuenta a cada cerdo */
+    items.push({fecha:L.fecha,cat,monto:m,kg:Math.abs(km),kgNeto:km}); total+=m;
+    if(cat==="Bore"){ totalB+=m; kgB+=km; } else { totalC+=m; kgC+=km; }
   });
   return {items,total,kg:kgC,totalC,totalB,boreKg:kgB};   /* kg = concentrado (compatibilidad) · boreKg = bore */
 }
@@ -3591,20 +3618,23 @@ function liquidarInsumosCerdo(e,pl){
   const R={Concentrado:{kg:0,costo:0,compras:0},Bore:{kg:0,costo:0,compras:0}};
   D.insumos.forEach(x=>{
     const T=CATS_ALIM.find(t=>t.cat===conceptoIns(x)); if(!T) return;
-    const A=activosEn(pl,x.fecha); if(!A.some(q=>q.key===e.key)) return;   /* compra igual o posterior al sacrificio: no se le cobra */
+    const A=activosIns(pl,x); if(!A.some(q=>q.key===e.key)) return;   /* compra igual o posterior al sacrificio: no se le cobra */
     const n=A.length||1, o=R[T.cat];
     o.kg+=T.kgDe(x)/n; o.costo+=((x.costo||0)+(x.flete||0))/n; o.compras++;
   });
   const aj=ajusteSobrante(e,pl);
+  R.Concentrado.bruto=R.Concentrado.kg; R.Bore.bruto=R.Bore.kg;                              /* lo comprado/asignado antes del corte */
+  R.Concentrado.rest=Math.max(-aj.kg,0);  R.Bore.rest=Math.max(-aj.boreKg,0);                /* sobrante / restante que se le resta */
+  R.Concentrado.rec=Math.max(aj.kg,0);    R.Bore.rec=Math.max(aj.boreKg,0);                  /* sobrante recibido de otros cerdos */
   R.Concentrado.kg+=aj.kg; R.Concentrado.costo+=aj.totalC;
   R.Bore.kg+=aj.boreKg;    R.Bore.costo+=aj.totalB;
   return R;
 }
 function consumoAlimento(e,pl){
   const kConc=x=>conceptoIns(x)==="Concentrado"?(x.bultos||0)*KG_BULTO_CONC:0, kBore=x=>conceptoIns(x)==="Bore"?(x.kilos||0):0;
-  if(!e) return {conc:D.insumos.reduce((a,x)=>a+kConc(x),0),bore:D.insumos.reduce((a,x)=>a+kBore(x),0)};
+  if(!e){ const cs=cat=>D.insumos.reduce((a,x)=>a+(conceptoIns(x)===cat?(x.costo||0)+(x.flete||0):0),0); return {conc:D.insumos.reduce((a,x)=>a+kConc(x),0),bore:D.insumos.reduce((a,x)=>a+kBore(x),0),costC:cs("Concentrado"),costB:cs("Bore")}; }
   const L=liquidarInsumosCerdo(e,pl||plantelCerdos());
-  return {conc:L.Concentrado.kg,bore:L.Bore.kg,costC:L.Concentrado.costo,costB:L.Bore.costo};
+  return {conc:L.Concentrado.kg,bore:L.Bore.kg,costC:L.Concentrado.costo,costB:L.Bore.costo,concBruto:L.Concentrado.bruto,boreBruto:L.Bore.bruto,concRest:L.Concentrado.rest,boreRest:L.Bore.rest,boreRec:L.Bore.rec};
 }
 /* 🐖 1 lechón / 🐖 Cerdo individual (equilibra las líneas de consumo de Alimento e insumos) */
 const htmlLechones = n => n>0 ? `<small class="kcons">🐖 ${n} ${n===1?"lechón":"lechones"}</small>` : "";
@@ -3617,9 +3647,11 @@ const htmlConsumo = c => {
 };
 /* Versión en filas para la tarjeta ampliada de Alimento e insumos (balance por cerdo) */
 const htmlConsumoFilas = c => {
-  const R=[], f=n=>n.toLocaleString("es-CO",{minimumFractionDigits:1,maximumFractionDigits:2});
-  if(c.conc>1e-6) R.push(`<div class="cons-row"><span class="cn">🥣 Concentrado</span><span class="cv">${peso(c.conc)} kg<small>~${f(c.conc/KG_BULTO_CONC)} bultos${c.costC!=null?" · "+money(Math.round(c.costC)):""}</small></span></div>`);
-  if(c.bore>1e-6||(c.costB||0)>0) R.push(`<div class="cons-row"><span class="cn">🌿 Bore / Suplemento</span><span class="cv">${peso(c.bore)} kg<small>${(c.bore/ARROBA_KG).toLocaleString("es-CO",{maximumFractionDigits:1})} @${c.costB!=null?" · "+money(Math.round(c.costB)):""}</small></span></div>`);
+  const R=[], f=n=>n.toLocaleString("es-CO",{minimumFractionDigits:1,maximumFractionDigits:2}), a2=n=>n.toLocaleString("es-CO",{minimumFractionDigits:2,maximumFractionDigits:2});
+  /* Título · kilos · bultos/@ (izquierda) y valor $ (derecha) */
+  const fila=(t,kg,u,v)=>`<div class="cons-row"><span class="cn">${t}</span><span class="cv">${kg}</span><div class="cr-line"><span class="cv">${u}</span>${v!=null?`<b class="cr-r">${money(Math.round(v))}</b>`:""}</div></div>`;
+  if(c.conc>1e-6) R.push(fila("🥣 Concentrado",peso(c.conc)+" kg",a2(c.conc/KG_BULTO_CONC)+" bultos",c.costC));
+  if(c.bore>1e-6||(c.costB||0)>0||c.boreBruto>1e-6) R.push(fila("🌿 Bore / Suplemento",peso(c.bore)+" kg",a2(c.bore/ARROBA_KG)+" @",c.costB));
   return R.length?`<div class="cons-list">${R.join("")}</div>`:"";
 };
 const pct1 = n => (Math.round(n*10)/10).toLocaleString("es-CO",{minimumFractionDigits:1,maximumFractionDigits:1})+"%";
@@ -3652,7 +3684,7 @@ function renderResumen(){
     $("rAli").textContent=money(iv.alimentoPuro); $("rAliKg").innerHTML=htmlConsumoFilas(consumoAlimento(ez,pl));
     { const gs=D.insumos.filter(x=>{ const l=sacLigado(x,ez); return l&&l.mio; });   /* sacrificio: se resta completo a ESTE cerdo, sin prorratear */
       $("rSacK").style.display=iv.sacrificio>0?"":"none"; $("rSac").textContent=money(iv.sacrificio);
-      $("rSacN").innerHTML=gs.length?'<small class="kcons">🔪 '+esc(gs.map(x=>detSac(respMat(x),respAyu(x),[],x.costo,x.costoAyudante||0)).filter(Boolean).join(" | ").replace(/^Mano de obra Sacrificio( \([^)]*\))? · /,"")||"Matador y ayudante")+'</small>':""; }
+      $("rSacN").innerHTML=gs.length?'<small class="kcons">🔪 '+esc(gs.map(x=>quienSac(respMat(x),respAyu(x),x.costo,x.costoAyudante||0)).filter(Boolean).join(" | ").replace(/^Mano de obra Sacrificio( \([^)]*\))? · /,"")||"Matador y ayudante")+'</small>':""; }
     bx.innerHTML=`<div class="kpis">
       <div class="kpi big"><span>Total ventas del cerdo (cobrado + pendiente)</span><b>${money(vt)}</b></div>
       <div class="kpi"><span>Cobrado</span><b class="pos">${money(cb)}</b></div>
@@ -4012,7 +4044,7 @@ function entradasInversion(){
     let ini=null,k=0; for(const l of lotes){ const n=l.cantidad||0; if(ez.idx>=k&&ez.idx<k+n){ ini=l; break; } k+=n; }
     E.push({fecha:ini?ini.fecha:"",cat:"Lechones",n:1,kg:g.kg,tit:"1 lechón • "+peso(g.kg)+" kg",prov:ini?provCorto(ini.proveedor):"",unit:g.flete>0?desgFlete("Lechón",g.valor,g.flete):money(R(g.valor))+"/lechón",unitEx:money(R(g.valor))+"/lechón",costo:g.valor,flete:g.flete,creado:ini?ini.creado||0:0,fleteTit:"Flete lechón"});
     D.insumos.forEach(x=>{ const q=cuotaIns(x,ez,pl); if(q) addIns(x,q.f,q.n); });
-    ajusteSobrante(ez,pl).items.forEach(it=>E.push({fecha:it.fecha,cat:it.cat,bul:0,kgB:it.cat==="Bore"?it.kgNeto:0,tit:(it.monto<0?"Sobrante de ":"Sobrante de ")+(it.cat==="Bore"?"bore":"concentrado")+(it.monto<0?" trasladado":" recibido"),prov:"",unit:peso(it.kg)+" kg sobrantes",unitEx:peso(it.kg)+" kg sobrantes",costo:it.monto,flete:0,creado:0,fleteTit:""}));
+    ajusteSobrante(ez,pl).items.forEach(it=>E.push({fecha:it.fecha,cat:it.cat,bul:it.cat==="Concentrado"?it.kgNeto/KG_BULTO_CONC:0,kgB:it.cat==="Bore"?it.kgNeto:0,tit:(it.cat==="Bore"?"Bore restante descontado":"Concentrado sobrante descontado"),prov:"",unit:peso(it.kg)+" kg restantes (cuota del cerdo)",unitEx:peso(it.kg)+" kg restantes (cuota del cerdo)",costo:it.monto,flete:0,creado:0,fleteTit:""}));
   }
   return {ez,E,vacio:!D.lotes.length&&!D.insumos.length};
 }
@@ -4036,7 +4068,7 @@ function datosInversionTipo(tipo,orden){
     B.push(bFilaAI("Lechones",nL>0?(nL===1?"1 lechón":nL+" lechones")+(kgL>0?" • "+peso(kgL)+" kg":""):"",vL));
     B.push(bSec("Alimento e insumos",vA2));
     if(C.length) B.push(bFilaAI("Concentrado",bul>0?peso(bul)+" "+(bul===1?"bulto":"bultos")+" ("+peso(bul*KG_BULTO_CONC)+" kg)":"",vC));
-    if(Bo.length) B.push(bFilaAI("Bore",kgB>0?peso(kgB)+" kg ("+(kgB/ARROBA_KG).toLocaleString("es-CO",{maximumFractionDigits:3})+" @)":"",vB));
+    if(Bo.length){ const rB=-sumE(Bo.filter(e=>e.kgB<0),e=>e.kgB); B.push(bFilaAI("Bore",(kgB>0?peso(kgB)+" kg ("+(kgB/ARROBA_KG).toLocaleString("es-CO",{maximumFractionDigits:3})+" @)":"")+(rB>1e-6?" \u2022 restante descontado "+peso(rB)+" kg":""),vB)); }
     if(vM>0) B.push(bFilaAI("Medicamentos e insumos","",vM));
     if(Sa.length) B.push(bFilaAI("Sacrificio / Matarife",nS>0?peso(nS)+" "+pluralUn(nS,"cerdo"):"",vS));
     B.push(bFilaAI("Fletes","Fletes e insumos",vFl));
@@ -4053,7 +4085,7 @@ function datosInversionTipo(tipo,orden){
     bloque("Lechones",E.filter(e=>e.cat==="Lechones"),costo,tt,sb);
     bloque("Concentrados",E.filter(e=>e.cat==="Concentrado"),costo,tt,sb);
     bloque("Bore e insumos de finca",E.filter(e=>e.cat==="Bore"||e.cat==="Med"),costo,tt,sb);
-    bloque("Sacrificio / Matarife",E.filter(e=>e.cat==="Sac"),costo,tt,e=>subE(e,[e.unitEx,e.quien].filter(Boolean).join(" | ")));
+    bloque("Sacrificio / Matarife",E.filter(e=>e.cat==="Sac"),costo,tt,e=>subE(e,[e.unitEx,e.quien].filter(Boolean).join(" \u2022 ")));
     bloque("Fletes",E.filter(e=>e.flete>0),e=>e.flete,e=>e.fleteTit,e=>subE(e,e.fleteResp?"Transporta: "+e.fleteResp:""));
     cierre=[bFila("Total invertido",money(tot),"","g")];
   }
@@ -4387,7 +4419,7 @@ function datosVentas(){
   const B=[]; if(filtro!=="todos") B.push({html:`<div class="nt">${palabras(filtro==="pagados"?"Mostrando: clientes pagados":"Mostrando: clientes deudores")}</div>`});
   cls.forEach(o=>{
     const lns=["Canal","Carne","Costilla","Subproductos"].filter(c=>o.cat[c]&&o.cat[c].lb>0).map(c=>{ const z=o.cat[c]; return `<div class="ln"><span>${palabras(c==="Canal"?"Canal completa "+peso(z.lb)+" kg × "+money(z.v/z.lb):c+" "+peso(z.lb)+" lb ("+peso(z.lb/2)+" kg) × "+money(z.v/z.lb))}</span><span>${money(z.v)}</span></div>`; }).join("");
-    B.push({html:`<div class="cl"><div class="h"><span>${palabras(o.nom)}</span><span>${money(o.total)}</span></div>${lns}<div class="ft2"><span>${palabras("Abonado "+money(o.abonado))}</span>${o.saldo>0?`<span class="neg">${palabras("Saldo "+money(o.saldo))}</span>`:`<span class="pos">${palabras("Pagado ✓")}</span>`}</div></div>`});
+    B.push({d:pdfClienteD(o),html:`<div class="cl"><div class="h"><span>${palabras(o.nom)}</span><span>${money(o.total)}</span></div>${lns}<div class="ft2"><span>${palabras("Abonado "+money(o.abonado))}</span>${o.saldo>0?`<span class="neg">${palabras("Saldo "+money(o.saldo))}</span>`:`<span class="pos">${palabras("Pagado ✓")}</span>`}</div></div>`});
   });
   const tT=cls.reduce((a,o)=>a+o.total,0), tA=cls.reduce((a,o)=>a+o.abonado,0), tS=cls.reduce((a,o)=>a+o.saldo,0);
   return {cz,bloques:B,n:cls.length,cierre:[bFila("Total vendido",money(tT),"","g"),bFila("Total cobrado",money(tA)),bFila("Total por cobrar",money(tS),"",tS>0?"n":"g")]};
@@ -4399,6 +4431,52 @@ function compartirVentas(){
     .then(h=>entregarReporte("Reporte de ventas","Reporte_Ventas_"+(d.cz?limNom(nm):"Lote_"+limNom(py?py.nombre:"completo"))+"_"+hoy(),h))
     .catch(()=>toast("No se pudo crear el reporte"));
 }
+/* PDF Carta de Clientes y Ventas (respeta los filtros de Clientes); si el navegador lo permite se comparte, si no se descarga */
+function pdfClienteD(o){
+  const det=["Canal","Carne","Costilla","Subproductos"].filter(c=>o.cat[c]&&o.cat[c].lb>0).map(c=>{ const z=o.cat[c], pr=money(z.v/z.lb);
+    return c==="Canal"?"Canal completa "+peso(z.lb)+" kg × "+pr+" = "+money(z.v):c+" "+peso(z.lb)+" lb ("+peso(z.lb/2)+" kg) × "+pr+" = "+money(z.v); });
+  det.push("Abonado "+money(o.abonado)); det.push(o.saldo>0?"Saldo "+money(o.saldo):"Pagado");
+  return {k:"fila",t:o.nom,a:money(o.total),sub:det.join(" \u2022 "),c:o.saldo>0?"n":undefined};
+}
+async function pdfDocCarta(doc,base){
+  if(repBusy) return;
+  if(!(await ensureJsPDF())) return toast("Sin librería de PDF (¿sin conexión?)");
+  repBusy=true; toast("Generando PDF…");
+  try{
+    const blob=crearPDFCarta(doc).output("blob"), name=base+".pdf"; let f=null;
+    try{ f=new File([blob],name,{type:"application/pdf"}); }catch(_){ f=null; }
+    if(f&&navigator.share&&navigator.canShare&&navigator.canShare({files:[f]})){
+      try{ await navigator.share({files:[f]}); toast("PDF listo"); repBusy=false; return; }
+      catch(e){ if(e&&e.name==="AbortError"){ repBusy=false; return; } }   /* sin permiso para compartir: se descarga */
+    }
+    descargarPNG(blob,name); toast("PDF descargado");
+  }catch(e){ console.error(e); toast("No se pudo crear el PDF"); }
+  repBusy=false;
+}
+function pdfVentas(){
+  const d=datosVentas(); if(!d.n) return toast("No hay ventas en esta lista");
+  const py=proyActual(), nm=d.cz?nombreSinNum(d.cz.nombre):"", pn=py?nomProy(py):"Lote completo";
+  return pdfDocCarta({titulo:"Reporte de ventas",lote:"Lote: "+pn+"  \u00B7  "+(d.cz?"Cerdo: "+nm:"Todos los cerdos"),
+    tarjetas:[{t:"Total vendido",v:d.cierre[0].d.a},{t:"Cobrado",v:d.cierre[1].d.a},{t:"Por cobrar",v:d.cierre[2].d.a,dest:true}],
+    bloques:d.bloques,cierre:d.cierre},"Reporte_Ventas_"+(d.cz?limNom(nm):"Lote_"+limNom(py?py.nombre:"completo"))+"_"+hoy());
+}
+/* Barra de la pantalla Ventas: con un cerdo abierto exporta su reporte; si no, el de Clientes y Ventas */
+function ventasCompartir(fmt){
+  if(vFiltroCerdo) return reporteCerdo(vFiltroCerdo,fmt);
+  return fmt==="pdf"?pdfVentas():compartirVentas();
+}
+/* ---- Modo lectura (ojo 👁️): oculta Editar, Eliminar y Abonar en Clientes y Ventas ---- */
+let modoLectura=false; try{ modoLectura=localStorage.getItem("cc_lectura")==="1"; }catch(e){}
+function aplicarLectura(){
+  if(!document.body) return;
+  document.body.classList.toggle("lectura",modoLectura);
+  document.querySelectorAll(".ojo-btn").forEach(b=>{ b.setAttribute("aria-pressed",modoLectura?"true":"false"); b.title=modoLectura?"Modo lectura activado (toca para volver a editar)":"Modo lectura"; });
+}
+function toggleLectura(){
+  modoLectura=!modoLectura; try{ localStorage.setItem("cc_lectura",modoLectura?"1":"0"); }catch(e){}
+  aplicarLectura(); toast(modoLectura?"👁️ Modo lectura: edición oculta":"Modo edición activado");
+}
+document.addEventListener("DOMContentLoaded",aplicarLectura); aplicarLectura();
 
 /* ---- Detalle de inversión de UN cerdo: lechón base + cada compra de alimento/insumo cargada a él, por fecha ---- */
 const fechaCorta = f => f?String(f).split("-").reverse().join("/"):"";
@@ -4419,7 +4497,7 @@ function detInsumo(x,f,n){
   const c=conceptoIns(x), med=c===C_MED, b=x.bultos||0, esF=c==="Fletes", esS=c===C_SAC, cAy=Math.min(x.costoAyudante||0,x.costo||0);
   const un=esF?"viaje":esS?"cerdo":med?((x.unidad||"").trim()||"unidad"):"bulto";
   /* quien hizo el servicio: transportador (Fletes) o matarife (Sacrificio) -> solo su nombre, nunca "Otro" */
-  const quien=esF?(respFlete(x)?"Transporta: "+respFlete(x):""):esS?[respMat(x)?"Matador: "+respMat(x)+(cAy>0?" ("+money(((x.costo||0)-cAy)*f)+")":""):"",respAyu(x)?"Ayudante: "+respAyu(x)+(cAy>0?" ("+money(cAy*f)+")":""):""].filter(Boolean).join(" · "):"";
+  const quien=esF?(respFlete(x)?"Transporta: "+respFlete(x):""):esS?quienSac(respMat(x),respAyu(x),(x.costo||0)*f,cAy*f):"";
   const sh=b*f, cant=b>0?((n>1&&Number.isInteger(b)&&b<n)?b+"/"+n+" "+un:peso(sh)+" "+pluralUn(sh,un)):"";
   const kgS=(x.kilos||0)*f, esB=c==="Bore"&&kgS>0, tag=(x.flete||0)>0?" (flete incl.)":"";
   const compra=(x.costo||0)+(x.flete||0);
@@ -4439,7 +4517,7 @@ function detInsumo(x,f,n){
     if(b>0) unit=money(compra/b)+"/viaje";
   } else if(esS){
     { const cs=cerdosDeGasto(x); tit=(cs.length?"Mano de obra Sacrificio "+cs.map(rotCerdo).join(", "):"Sacrificio / Matarife")+(cant?" · "+cant:""); }
-    if(b>0) unit=money(compra/b)+"/cerdo";
+    if(b>0&&!quien) unit=money(compra/b)+"/cerdo";   /* con Matador/Ayudante el valor ya va en cada nombre: no se repite el total antes de «Matador» */
   } else {
     tit=sinCompra(x.detalle||c||"Insumo")+(cant?" • "+cant:"");
     if(b>0) unit=money(compra/b)+"/"+un+tag;
@@ -4449,7 +4527,7 @@ function detInsumo(x,f,n){
     const lbl=c==="Concentrado"?(b>0?pluralUn(sh,"bulto").replace(/^b/,"B"):"Concentrado"):esB?"Bore":"Insumo";
     unitD=desgFlete(lbl,(x.costo||0)*f,(x.flete||0)*f,respFlete(x));
   }
-  if(quien) unitD=[unitD,quien].filter(Boolean).join(" | ");
+  if(quien) unitD=[unitD,quien].filter(Boolean).join(esS?" \u2022 ":" | ");
   return {fecha:x.fecha,tit,prov:provCorto(x.proveedor),unit,unitD,quien,monto:compra*f,bul:c==="Concentrado"?b*f:0,
     clase:x.claseConc||"",cat:c==="Concentrado"?"Concentrado":(c==="Bore"?"Bore":(esF?"Flete":"Insumos / Medicina")),kg:c==="Concentrado"?sh*KG_BULTO_CONC:(esB?kgS:0)};
 }
@@ -4460,7 +4538,7 @@ function datosDetalleCerdo(orden){
   const promDe=l=>l.pesoPromKg!=null?l.pesoPromKg:(l.pesoProm!=null?l.pesoProm/2:((l.pesoTotalKg||0)/Math.max(l.cantidad||1,1)));
   let ini=null,k=0; for(const l of lotes){ const n=l.cantidad||0; if(ez.idx>=k&&ez.idx<k+n){ ini={l,kg:(l.animales&&l.animales[ez.idx-k]&&l.animales[ez.idx-k].kg)||promDe(l)}; break; } k+=n; }
   const ents=[...D.insumos].sort((a,b)=>(a.fecha||"").localeCompare(b.fecha||"")||(a.creado||0)-(b.creado||0)).map(x=>{ const q=cuotaIns(x,ez,pl); return q?detInsumo(x,q.f,q.n):null; }).filter(Boolean)
-    .concat(ajusteSobrante(ez,pl).items.map(it=>({fecha:it.fecha,tit:"Sobrante de "+(it.cat==="Bore"?"bore":"concentrado")+(it.monto<0?" trasladado":" recibido"),prov:"",unit:peso(it.kg)+" kg sobrantes",monto:it.monto,bul:0})))
+    .concat(ajusteSobrante(ez,pl).items.map(it=>({fecha:it.fecha,tit:(it.cat==="Bore"?"Bore restante descontado":"Concentrado sobrante descontado"),prov:"",unit:peso(it.kg)+" kg restantes (cuota del cerdo)",monto:it.monto,bul:0})))
     .sort((a,b)=>(a.fecha||"").localeCompare(b.fecha||""));
   if(orden==="desc") ents.reverse(); /* más reciente primero */
   const mr=ents.map(e=>Math.round(e.monto)), dif=iv.alimento-mr.reduce((a,x)=>a+x,0);
@@ -4572,7 +4650,7 @@ function datosLibroContable(orden){
     let ini=null,k=0; for(const l of lotes){ const n=l.cantidad||0; if(ez.idx>=k&&ez.idx<k+n){ ini={l,kg:(l.animales&&l.animales[ez.idx-k]&&l.animales[ez.idx-k].kg)||promDe(l)}; break; } k+=n; }
     E.push({f:ini?ini.l.fecha:"",cat:"Lechón",det:"1 lechón"+(ini?" • "+peso(ini.kg)+" kg ("+peso(ini.kg*2)+" lb)":""),prov:ini?provCorto(ini.l.proveedor):"",monto:iv.lechon,n:1,kg:0});
     insOrd.forEach(x=>{ const q=cuotaIns(x,ez,pl); if(q) E.push(entIns(detInsumo(x,q.f,q.n))); });
-    ajusteSobrante(ez,pl).items.forEach(it=>E.push({f:it.fecha,cat:it.cat,det:(it.monto<0?"Sobrante trasladado":"Sobrante recibido")+(it.cat==="Bore"?" de bore":"")+" • "+peso(it.kg)+" kg",prov:"",monto:it.monto,kg:it.kgNeto,n:0}));
+    ajusteSobrante(ez,pl).items.forEach(it=>E.push({f:it.fecha,cat:it.cat,det:(it.cat==="Bore"?"Bore restante descontado":"Concentrado sobrante descontado")+" • "+peso(it.kg)+" kg",prov:"",monto:it.monto,kg:it.kgNeto,n:0}));
     objIns=iv.alimento;
   } else {
     [...D.lotes].sort(ord).forEach(l=>{
