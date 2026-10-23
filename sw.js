@@ -1,90 +1,71 @@
 /* Service Worker · Control Ceba Cerdos
-   Súbelo a GitHub en la MISMA carpeta que index.html (con el nombre exacto: sw.js).
-   - Guarda la app y sus librerías para abrir y trabajar SIN señal.
-   - Los datos (Firebase) se guardan en el teléfono y se sincronizan solos al volver la señal.
-   - index.html registra este archivo como "sw.js?v=N": para forzar actualización en todos los teléfonos,
-     sube el número SW_VERSION en index.html (o cambia VERSION aquí). */
+   - CACHE: súbele el número en cada despliegue (v8 → v9 …); al activarse borra TODAS las cachés anteriores.
+   - Archivos propios (index.html, imágenes…): NETWORK FIRST → siempre intenta bajar la última versión del servidor;
+     la caché solo se usa si no hay red (o si la red tarda más de 6 s).
+   - Librerías externas (Firebase SDK, fuentes, cdnjs): se sirven de caché y se refrescan en segundo plano.
+   - Firestore, WhatsApp y cualquier otra petición no se tocan. */
+const CACHE = "ceba-cerdos-v8";
+const PRECACHE = ["./", "./index.html"];                 /* mínimo para abrir sin conexión (se cachea tolerando fallos) */
+const HOSTS_EXTERNOS = ["www.gstatic.com", "fonts.googleapis.com", "fonts.gstatic.com", "cdnjs.cloudflare.com"];
+const ESPERA_RED_MS = 6000;
+const INDEX_URL = new URL("./index.html", self.registration.scope).href;
 
-const VERSION = new URL(self.location.href).searchParams.get("v") || "2";
-const CACHE = "cerdos-v" + VERSION;
-
-/* Archivos propios (obligatorios) */
-const APP = ["./", "./index.html"];
-
-/* Librerías externas que usa la app (se guardan si hay señal; si alguna falla no se bloquea la instalación) */
-const EXTRAS = [
-  "https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js",
-  "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js",
-  "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js",
-  "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js",
-  "https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap"
-];
-
+/* INSTALL: skipWaiting → la versión nueva no espera a que cierren la app (clave en iPadOS) */
 self.addEventListener("install", e => {
-  e.waitUntil((async () => {
-    const c = await caches.open(CACHE);
-    await c.addAll(APP.map(u => new Request(u, { cache: "reload" })));
-    await Promise.all(EXTRAS.map(u =>
-      fetch(new Request(u, { mode: "no-cors" })).then(r => c.put(u, r)).catch(() => {})
-    ));
-    await self.skipWaiting();
-  })());
+  self.skipWaiting();
+  e.waitUntil(caches.open(CACHE).then(c => Promise.all(PRECACHE.map(u =>
+    fetch(new Request(u, { cache: "reload" })).then(r => { if (r && r.ok) return c.put(u === "./" ? INDEX_URL : new URL(u, self.registration.scope).href, r); }).catch(() => {})
+  ))));
 });
 
+/* ACTIVATE: borra todas las cachés viejas (caches.delete), toma el control y recarga las pestañas abiertas con la versión anterior */
 self.addEventListener("activate", e => {
   e.waitUntil((async () => {
     const claves = await caches.keys();
-    await Promise.all(claves.filter(k => k.startsWith("cerdos-") && k !== CACHE).map(k => caches.delete(k)));
+    const viejas = claves.filter(k => k !== CACHE);
+    await Promise.all(viejas.map(k => caches.delete(k)));
     await self.clients.claim();
+    if (viejas.length) {                                 /* había una versión anterior: refresca lo que el usuario tenga abierto */
+      const ventanas = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+      ventanas.forEach(v => { try { v.navigate(v.url); } catch (_) {} });
+    }
   })());
 });
 
-/* Con señal: baja la versión nueva. Sin señal (o muy lenta): usa la guardada. */
-async function redPrimero(req, esperaMs) {
-  const c = await caches.open(CACHE);
+self.addEventListener("message", e => { if (e.data === "SKIP_WAITING") self.skipWaiting(); });
+
+/* clave de caché: toda navegación (/, /index.html?x, #hash) usa el mismo index.html */
+const clave = req => req.mode === "navigate" ? INDEX_URL : req.url;
+
+async function redPrimero(req) {
+  const k = clave(req), cache = await caches.open(CACHE);
+  const red = fetch(req.url, { cache: "no-store", credentials: "same-origin" }).then(res => {
+    if (res && res.status === 200) cache.put(k, res.clone());          /* guarda la última versión para el modo sin conexión */
+    return res;
+  });
   try {
-    const r = await Promise.race([
-      fetch(req),
-      new Promise((_, no) => setTimeout(() => no(new Error("lento")), esperaMs))
-    ]);
-    if (r && r.ok) c.put(req, r.clone());
-    return r;
-  } catch (err) {
-    const g = await c.match(req, { ignoreSearch: true });
-    if (g) return g;
-    if (req.mode === "navigate") {
-      const idx = await c.match("./index.html") || await c.match("./");
-      if (idx) return idx;
-    }
-    return Response.error();
+    const guardada = await cache.match(k);
+    if (!guardada) return await red;                                   /* sin copia: espera a la red */
+    return await Promise.race([red, new Promise((_, no) => setTimeout(no, ESPERA_RED_MS))]);   /* red lenta: usa la copia */
+  } catch (_) {
+    return (await cache.match(k)) || (req.mode === "navigate" ? await cache.match(INDEX_URL) : null) || Response.error();
   }
 }
 
-/* Librerías y fuentes: usa lo guardado al instante y lo actualiza por detrás */
-async function guardadoPrimero(req) {
-  const c = await caches.open(CACHE);
-  const g = await c.match(req);
-  const red = fetch(req).then(r => { if (r && (r.ok || r.type === "opaque")) c.put(req, r.clone()); return r; }).catch(() => null);
-  return g || (await red) || Response.error();
+async function cacheYRefrescar(req) {
+  const cache = await caches.open(CACHE), hit = await cache.match(req);
+  const red = fetch(req).then(res => { if (res && (res.ok || res.type === "opaque")) cache.put(req, res.clone()); return res; }).catch(() => null);
+  return hit || (await red) || Response.error();
 }
 
 self.addEventListener("fetch", e => {
   const req = e.request;
   if (req.method !== "GET") return;
   const url = new URL(req.url);
-
-  /* Firestore y autenticación: los maneja el SDK de Firebase (persistencia local); no se interceptan */
-  if (/(^|\.)googleapis\.com$/.test(url.hostname) && !/^fonts\./.test(url.hostname)) return;
-  if (url.hostname.endsWith("firebaseio.com") || url.hostname.endsWith("firebaseapp.com")) return;
-
-  /* Páginas y archivos de la propia app */
   if (url.origin === self.location.origin) {
-    e.respondWith(redPrimero(req, 4000));
-    return;
-  }
-
-  /* Librerías y fuentes externas */
-  if (/gstatic\.com|cdnjs\.cloudflare\.com|fonts\.googleapis\.com/.test(url.hostname)) {
-    e.respondWith(guardadoPrimero(req));
+    if (url.pathname.endsWith("/sw.js")) return;                       /* el propio sw.js siempre va directo a la red */
+    e.respondWith(redPrimero(req));
+  } else if (HOSTS_EXTERNOS.includes(url.hostname)) {
+    e.respondWith(cacheYRefrescar(req));
   }
 });
