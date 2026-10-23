@@ -474,7 +474,7 @@ nav button,.navback,#btnProy,header button{position:relative;z-index:1000;pointe
 #mInsumo .g2>div{min-width:0}
 #mInsumo .g2.solo>div{grid-column:1/-1}
 /* Concentrado con flete: costo | encargado en una fila y, si eligen "Otro", el nombre ocupa la fila de abajo */
-#iBoxFlete:not([style*="none"])~#iBoxFleteOtro,#iRowTot #iBoxFleteOtro,#iBoxMatOtro{grid-column:1/-1}
+#iBoxFlete:not([style*="none"])~#iBoxFleteOtro,#iRowTot #iBoxFleteOtro,#iBoxMatOtro,#iBoxAyuOtro{grid-column:1/-1}
 /* Sacrificio: un desplegable por cerdo, de a 2 por fila (con 1 solo cerdo ocupa todo el ancho) */
 #iRowCerdos:empty{display:none}
 /* Registrar sacrificio: Costo de sacrificio | Encargado sacrificio (2 columnas compactas; "Otro" baja a todo el ancho) */
@@ -866,7 +866,10 @@ nav button,.navback,#btnProy,header button{position:relative;z-index:1000;pointe
     <div id="iBoxProv"><label>Proveedor / almacén</label><select id="iProvSel" onchange="insumoCampos()"><option value="">Seleccionar…</option><option>Jaime Mogollón (Solla)</option><option>Johan Pardo (Finca)</option><option>Manuel Ovalle (Italcol)</option><option value="__otro">Otro</option></select>
     <input id="iProv" style="display:none;margin-top:8px" placeholder="Nombre del proveedor o almacén (ej: Agropecuaria Suaita)" autocomplete="off"></div>
     <div id="iBoxMatSel" style="display:none"><label>Encargado sacrificio</label><select id="iMatSel" onchange="matCampos(true)"><option value="">Seleccionar encargado…</option><option>Pedro Niño</option><option>Edwuar Ávila</option><option>Félix Barrantes</option><option value="__otro">Otro</option></select></div>
+    <div id="iBoxAyuSel" style="display:none"><label>Ayudante (opcional)</label><select id="iAyuSel" onchange="ayuCampos(true)"><option value="">Ninguno</option><option>Andrés Barrantes</option><option>Rosita Fandiño</option><option value="__otro">Otro...</option></select></div>
+    <div id="iBoxAyuPago" style="display:none"><label>Pago / Valor Ayudante ($)</label><input class="money" inputmode="numeric" id="iAyuPago" placeholder="0" oninput="dbn.calcInsumo('ayu')"></div>
     <div id="iBoxMatOtro" style="display:none"><label>Nombre del matarife</label><input type="text" id="iMatOtro" placeholder="Ej: Don Luis" autocomplete="off"></div>
+    <div id="iBoxAyuOtro" style="display:none"><label>Nombre del ayudante</label><input type="text" id="iAyuOtro" placeholder="Ej: Doña Marta" autocomplete="off"></div>
   </div>
   <!-- Fila 4: Costo flete | Encargado flete (con Fletes solo el encargado; con "Otro" el nombre queda a su lado o debajo) -->
   <div class="g2" id="iRowFlete">
@@ -1200,8 +1203,9 @@ function calcInsumo(from){
     setTimeout(totalInsumo,0); return;
   }
   const n=val("iBultos"),u=mval("iUnit"),t=mval("iCosto"),fmt=v=>v>0?miles(v):"";
-  if(lastEdI==="unit") $("iCosto").value=n>0&&u>0?fmt(n*u):"";
-  else if(lastEdI==="total") $("iUnit").value=n>0&&t>0?fmt(t/n):"";
+  const a=($("iConcepto").value===C_SAC&&$("iAyuSel").value)?mval("iAyuPago"):0;   /* Sacrificio: pago del ayudante por cerdo */
+  if(lastEdI==="unit"||lastEdI==="ayu") $("iCosto").value=n>0&&(u+a)>0?fmt(n*(u+a)):"";   /* total = (valor por sacrificio + pago ayudante) × cerdos */
+  else if(lastEdI==="total") $("iUnit").value=n>0&&t>0?fmt(Math.max(t/n-a,0)):"";          /* si escriben el total, se ajusta el valor por sacrificio */
   setTimeout(totalInsumo,0);
 }
 function totalInsumo(){ $("iTotalF").textContent=money(mval("iCosto")+mval("iFlete")); }
@@ -1223,7 +1227,13 @@ function otroCampo(selId,otroId,visible,foco){
   if($(selId).value!=="__otro") $(otroId).value="";
 }
 function fleteCampos(foco){ otroCampo("iFleteSel","iFleteOtro",$("iConcepto").value!==C_SAC,foco); soloFila("iRowTot"); soloFila("iRowFlete"); }
-function matCampos(foco){ otroCampo("iMatSel","iMatOtro",$("iConcepto").value===C_SAC,foco); soloFila("iRowTot"); soloFila("iRowFlete"); }
+function ayuCampos(foco){
+  const esS=$("iConcepto").value===C_SAC, hay=esS&&!!$("iAyuSel").value;
+  otroCampo("iAyuSel","iAyuOtro",esS,foco);
+  $("iBoxAyuPago").style.display=hay?"":"none";                       /* solo con un ayudante distinto de «Ninguno» */
+  if(!hay&&$("iAyuPago").value){ $("iAyuPago").value=""; lastEdI="unit"; calcInsumo(); }
+}
+function matCampos(foco){ otroCampo("iMatSel","iMatOtro",$("iConcepto").value===C_SAC,foco); ayuCampos(); soloFila("iRowTot"); soloFila("iRowFlete"); }
 /* Encargados de sacrificio: los predeterminados + los ya usados, entre "Seleccionar encargado…" y "Otro" */
 const MAT_DEF=["Pedro Niño","Edwuar Ávila","Félix Barrantes"];   /* matarifes predeterminados */
 function matListaHtml(){
@@ -1268,6 +1278,7 @@ function detSac(mat,ayu,cerdos,valor,ayuVal){
   return p.join(" · ");
 }
 function matOpciones(sel){
+  $("iAyuSel").innerHTML=ayuListaHtml();   /* Ninguno + predeterminados + nombres ya usados/guardados + Otro... */
   $("iMatSel").innerHTML=matListaHtml();
   if(sel) $("iMatSel").value=sel;
 }
@@ -1309,7 +1320,7 @@ function insumoCampos(){
   /* al pasar de/hacia Bore se limpian cantidad, precios y proveedor para no mezclar kilos con bultos */
   const esF=c==="Fletes", esS=c===C_SAC;
   /* al cambiar de familia (Bore / Fletes / Sacrificio / resto) se limpian cantidad y precios para no mezclar kilos, viajes, cerdos y bultos */
-  if(famIns(ultConc)!==famIns(c)){ ["iBultos","iUnit","iCosto","iArrobas","iCostoB","iProv"].forEach(i=>$(i).value=""); $("iProvSel").selectedIndex=0; lastEdI=null; totalInsumo(); }
+  if(famIns(ultConc)!==famIns(c)){ ["iBultos","iUnit","iCosto","iArrobas","iCostoB","iProv","iAyuPago"].forEach(i=>$(i).value=""); $("iProvSel").selectedIndex=0; lastEdI=null; totalInsumo(); }
   ultConc=c;
   $("iBoxConc").style.display=c==="Concentrado"?"":"none";
   $("iBoxMedN").style.display=c===C_MED?"":"none"; $("iBoxMedU").style.display=c===C_MED?"":"none";
@@ -1321,7 +1332,7 @@ function insumoCampos(){
   $("iBoxProv").style.display=(esF||esS)?"none":"";
   $("iBoxFlete").style.display=(esF||esS)?"none":"";
   $("iBoxFleteSel").style.display=esS?"none":"";
-  $("iBoxMatSel").style.display=esS?"":"none";
+  $("iBoxMatSel").style.display=esS?"":"none"; $("iBoxAyuSel").style.display=esS?"":"none";
   /* Fletes: Fila 3 = Valor total | Encargado flete. Con los demás conceptos el encargado vuelve junto al "Costo flete" */
   if(esF) $("iRowTot").append($("iBoxFleteSel"),$("iBoxFleteOtro")); else $("iRowFlete").append($("iBoxFleteSel"),$("iBoxFleteOtro"));
   fleteCampos(); matCampos();
@@ -1332,13 +1343,13 @@ function insumoCampos(){
   $("iProv").style.display=esB||$("iProvSel").value==="__otro"?"":"none";
   $("iProv").placeholder=esB?"Escribe el nombre del proveedor o finca":"Nombre del proveedor o almacén (ej: Agropecuaria Suaita)";
   selCerdos();
-  $("iHint").style.display=esB?"none":""; soloFila("iRowConc"); soloFila("iRowTot"); soloFila("iRowFlete");
+  $("iHint").textContent=esS?"Costo total = (valor por sacrificio + pago ayudante) × número de cerdos. También puedes escribir el total y se ajusta el valor por sacrificio.":"Escribe el valor por unidad o el total y el otro se calcula solo."; $("iHint").style.display=esB?"none":""; soloFila("iRowConc"); soloFila("iRowTot"); soloFila("iRowFlete");
   if(lastEdI) calcInsumo();
 }
 function limpiarInsumo(){
   insEdit=null; insLigados=[]; $("iTitulo").textContent="Concentrado / Insumos"; $("iGuardar").textContent="Guardar gasto";
-  ["iBultos","iUnit","iCosto","iFlete","iProv","iMed","iUnidad","iArrobas","iCostoB"].forEach(i=>$(i).value=""); lastEdI=null;
-  $("iConcepto").selectedIndex=0; $("iClase").selectedIndex=0; $("iProvSel").selectedIndex=0; $("iFleteSel").selectedIndex=0; $("iFleteOtro").value=""; matOpciones(); $("iMatSel").selectedIndex=0; $("iMatOtro").value=""; ultConc="Concentrado"; insumoCampos(); totalInsumo();
+  ["iBultos","iUnit","iCosto","iFlete","iProv","iMed","iUnidad","iArrobas","iCostoB","iAyuPago"].forEach(i=>$(i).value=""); lastEdI=null;
+  $("iConcepto").selectedIndex=0; $("iClase").selectedIndex=0; $("iProvSel").selectedIndex=0; $("iFleteSel").selectedIndex=0; $("iFleteOtro").value=""; matOpciones(); $("iMatSel").selectedIndex=0; $("iMatOtro").value=""; $("iAyuSel").selectedIndex=0; $("iAyuOtro").value=""; ultConc="Concentrado"; insumoCampos(); totalInsumo();
 }
 function editarInsumo(id){
   const l=D.insumos.find(x=>x.id===id); if(!l) return;
@@ -1351,17 +1362,18 @@ function editarInsumo(id){
   if(l.claseConc) $("iClase").value=l.claseConc; $("iMed").value=l.detalle||""; $("iUnidad").value=l.unidad||"";
   const pr=(l.proveedor||"").trim();
   if(PROV_INS.includes(pr)) $("iProvSel").value=pr; else if(pr){ $("iProvSel").value="__otro"; $("iProv").value=pr; }
-  $("iCosto").value=f(l.costo); $("iUnit").value=l.bultos>0?f(l.costo/l.bultos):""; lastEdI="total"; $("iFlete").value=f(l.flete);
+  $("iCosto").value=f(l.costo); { const cA=conc===C_SAC?Math.min(l.costoAyudante||0,l.costo||0):0; $("iUnit").value=l.bultos>0?f((l.costo-cA)/l.bultos):""; $("iAyuPago").value=l.bultos>0&&cA>0?f(cA/l.bultos):""; } lastEdI="total"; $("iFlete").value=f(l.flete);
   ultConc=conc;
   { const fr=respFlete(l); if(FLETE_RESP.includes(fr)) $("iFleteSel").value=fr; else if(fr){ $("iFleteSel").value="__otro"; $("iFleteOtro").value=fr; } }
   { const mt=respMat(l); if(mt){ if([...$("iMatSel").options].some(o=>o.value===mt)) $("iMatSel").value=mt; else { $("iMatSel").value="__otro"; $("iMatOtro").value=mt; } } }
+  if(conc===C_SAC){ $("iAyuSel").innerHTML=ayuListaHtml(); ponerMat("iAyuSel","iAyuOtro",respAyu(l)); }   /* ayudante guardado en el gasto */
   if(conc==="Bore"){
     $("iBultos").value=l.kilos>0?l.kilos:""; $("iUnit").value=l.kilos>0?f(l.valorArroba>0?l.valorArroba:Math.round((l.costo||0)/(l.kilos/ARROBA_KG))):"";
     $("iArrobas").value=l.kilos>0?(l.kilos/ARROBA_KG).toLocaleString("es-CO",{maximumFractionDigits:3})+" @":""; $("iCostoB").value=l.kilos>0&&l.costo>0?"$"+miles(l.costo):"";
     $("iProvSel").selectedIndex=0; $("iProv").value=pr; lastEdI=null;
   }
   insumoCampos(); totalInsumo(); $("mInsumo").classList.add("open");
-  { const fr=respFlete(l), mt=respMat(l); if($("iFleteSel").value==="__otro") $("iFleteOtro").value=fr; if($("iMatSel").value==="__otro") $("iMatOtro").value=mt; fleteCampos(); matCampos(); }
+  { const fr=respFlete(l), mt=respMat(l); if($("iFleteSel").value==="__otro") $("iFleteOtro").value=fr; if($("iMatSel").value==="__otro") $("iMatOtro").value=mt; if($("iAyuSel").value==="__otro") $("iAyuOtro").value=respAyu(l); fleteCampos(); matCampos(); }
 }
 function guardarInsumo(){
   const conc=$("iConcepto").value, esMed=conc===C_MED, esConc=conc==="Concentrado";
@@ -1369,17 +1381,20 @@ function guardarInsumo(){
   let prov=$("iProvSel").value; if(prov==="__otro"||conc==="Bore") prov=$("iProv").value.trim();
   if(esFl||esSac) prov="";   /* sin proveedor en Fletes ni Sacrificio */
   const o={tipo:"insumo",fecha:$("iFecha").value,concepto:conc,claseConc:esConc?$("iClase").value:"",detalle:esMed?$("iMed").value.trim():"",unidad:esMed?$("iUnidad").value.trim():"",bultos:conc==="Bore"?0:val("iBultos"),kilos:conc==="Bore"?val("iBultos"):0,valorArroba:conc==="Bore"&&val("iBultos")>0?Math.round(mval("iCosto")/(val("iBultos")/ARROBA_KG)):0,costo:mval("iCosto"),flete:(esFl||esSac)?0:mval("iFlete"),proveedor:prov,fleteResp:esSac?"":encargadoForm("iFleteSel","iFleteOtro"),matarife:esSac?encargadoForm("iMatSel","iMatOtro"):""};
-  if(esSac){ const ex=insEdit?D.insumos.find(x=>x.id===insEdit):null; o.ayudante=respAyu(ex||{}); o.costoAyudante=Math.min((ex&&ex.costoAyudante)||0,o.costo||0); o.detalle=detSac(o.matarife,o.ayudante,ex?cerdosDeGasto(ex):[],o.costo,o.costoAyudante); }   /* no pisar el ayudante guardado desde «Registrar sacrificio» */
+  if(esSac){ const ex=insEdit?D.insumos.find(x=>x.id===insEdit):null; o.ayudante=encargadoForm("iAyuSel","iAyuOtro"); o.costoAyudante=o.ayudante?Math.min(Math.round(mval("iAyuPago")*Math.max(o.bultos||0,1)),o.costo||0):0;   /* desglose: matador = costo − costoAyudante */ o.detalle=detSac(o.matarife,o.ayudante,ex?cerdosDeGasto(ex):[],o.costo,o.costoAyudante); }   /* el ayudante y su pago se guardan en el gasto: Pago matarife = costo − costoAyudante */
   if(!o.fecha||o.costo<=0) return toast("Completa fecha y valor pagado");
   if(!esSac&&$("iFleteSel").value==="__otro"&&!o.fleteResp) return toast("Escribe el nombre de quien hizo el flete");
   if(!esSac&&$("iFleteSel").value==="__otro"&&/^otro$/i.test($("iFleteOtro").value.trim())) return toast("Escribe el nombre real del transportador, no la palabra Otro");
   if(esSac&&$("iMatSel").value==="__otro"&&!o.matarife) return toast("Escribe el nombre del encargado del sacrificio");
   if(esSac&&$("iMatSel").value==="__otro"&&/^otro$/i.test($("iMatOtro").value.trim())) return toast("Escribe el nombre real del matarife, no la palabra Otro");
+  if(esSac&&$("iAyuSel").value==="__otro"&&!o.ayudante) return toast("Escribe el nombre del ayudante");
+  if(esSac&&$("iAyuSel").value==="__otro"&&/^otro$/i.test($("iAyuOtro").value.trim())) return toast("Escribe el nombre real del ayudante, no la palabra Otro");
   if(esMed&&!o.detalle) return toast("Escribe el nombre del medicamento o insumo");
   if(conc==="Bore"&&!(o.kilos>0)) return toast("Escribe los kilos de bore");
   if(conc==="Bore"&&!(mval("iUnit")>0)) return toast("Escribe el valor por arroba");
   if(conc!=="Bore"&&!esFl&&!esSac&&$("iProvSel").value==="__otro"&&!o.proveedor) return toast("Escribe el nombre del proveedor");
   const id=insEdit; if(!id) o.creado=Date.now();
+  if(esSac) ayuRecordar(o.ayudante);   /* un nombre nuevo queda en la lista para próximos registros */
   /* Sacrificio: los cerdos elegidos pasan a Sacrificado con la fecha del gasto */
   if(esSac&&!insLigados.length){
     const sels=[...document.querySelectorAll("#iRowCerdos select")].map(x=>x.value);
@@ -1390,7 +1405,7 @@ function guardarInsumo(){
   guardarDoc("gastos_cerdos",o,id||undefined).then(ok=>{if(ok){
     /* gasto ya ligado a cerdos: si cambió la fecha, el valor o el encargado, se actualizan también en esos cerdos */
     const vivosLig=lig.filter(cid=>D.cerdos.some(c=>c.id===cid));
-    if(vivosLig.length&&db){ const bt=db.batch(); vivosLig.forEach(cid=>bt.set(db.collection("cerdos").doc(cid),{fecha:o.fecha,fechaBeneficio:o.fecha,costoBeneficio:Math.round(o.costo/lig.length),matarife:o.matarife},{merge:true})); bt.commit().catch(e=>toast("Error nube: "+e.code)); }
+    if(vivosLig.length&&db){ const bt=db.batch(); vivosLig.forEach(cid=>bt.set(db.collection("cerdos").doc(cid),{fecha:o.fecha,fechaBeneficio:o.fecha,costoBeneficio:Math.round(o.costo/lig.length),matarife:o.matarife,ayudante:o.ayudante||"",costoAyudante:Math.round((o.costoAyudante||0)/lig.length)},{merge:true})); bt.commit().catch(e=>toast("Error nube: "+e.code)); }
     limpiarInsumo();cerrarForm("mInsumo");toast(id?"Gasto actualizado":"Gasto guardado");}});
 }
 /* Un solo lote atómico: el gasto + un registro "Sacrificado" por cada cerdo (fecha del gasto = fecha de sacrificio/beneficio)
@@ -1407,7 +1422,7 @@ function sacrificarCerdos(o,sels,id){
   el.forEach((c,i)=>{
     const r=db.collection("cerdos").doc(); ids.push(r.id);
     const ing=c.arete?infoArete(c.arete):null;
-    bt.set(r,{nombre:c.nombre,arete:c.arete||"",pesoIngresoKg:ing?ing.kg:null,fecha:o.fecha,fechaBeneficio:o.fecha,canal:0,canalKg:0,sobranteKg:0,cortes:{...ceros},piezas:{},otrosDesc:"",sinPesaje:true,costoBeneficio:unit,matarife:o.matarife||"",gastoId:gref.id,proyectoId:proyActivo,creado:Date.now()+i},{merge:true});
+    bt.set(r,{nombre:c.nombre,arete:c.arete||"",pesoIngresoKg:ing?ing.kg:null,fecha:o.fecha,fechaBeneficio:o.fecha,canal:0,canalKg:0,sobranteKg:0,cortes:{...ceros},piezas:{},otrosDesc:"",sinPesaje:true,costoBeneficio:unit,matarife:o.matarife||"",ayudante:o.ayudante||"",costoAyudante:Math.round((o.costoAyudante||0)/el.length),gastoId:gref.id,proyectoId:proyActivo,creado:Date.now()+i},{merge:true});
     const pl=planFechaSac(c.nombre,c.arete,r.id,o.fecha);
     pl.pvs.forEach(p=>bt.set(db.collection("preventas_cerdos").doc(p.id),{fechaSacrificio:o.fecha},{merge:true}));
     pl.vs.forEach(v=>bt.set(db.collection("ventas_cerdos").doc(v.id),{fechaSacrificio:o.fecha},{merge:true}));
@@ -4224,10 +4239,10 @@ function desgFlete(lbl,costo,flete,resp){
   return lbl+": "+money(c)+" | Flete: "+money(fl)+(resp?" ("+resp+")":"");
 }
 function detInsumo(x,f,n){
-  const c=conceptoIns(x), med=c===C_MED, b=x.bultos||0, esF=c==="Fletes", esS=c===C_SAC;
+  const c=conceptoIns(x), med=c===C_MED, b=x.bultos||0, esF=c==="Fletes", esS=c===C_SAC, cAy=Math.min(x.costoAyudante||0,x.costo||0);
   const un=esF?"viaje":esS?"cerdo":med?((x.unidad||"").trim()||"unidad"):"bulto";
   /* quien hizo el servicio: transportador (Fletes) o matarife (Sacrificio) -> solo su nombre, nunca "Otro" */
-  const quien=esF?(respFlete(x)?"Transporta: "+respFlete(x):""):esS?[respMat(x)?"Matador: "+respMat(x):"",respAyu(x)?"Ayudante: "+respAyu(x):""].filter(Boolean).join(" · "):"";
+  const quien=esF?(respFlete(x)?"Transporta: "+respFlete(x):""):esS?[respMat(x)?"Matador: "+respMat(x)+(cAy>0?" ("+money(((x.costo||0)-cAy)*f)+")":""):"",respAyu(x)?"Ayudante: "+respAyu(x)+(cAy>0?" ("+money(cAy*f)+")":""):""].filter(Boolean).join(" · "):"";
   const sh=b*f, cant=b>0?((n>1&&Number.isInteger(b)&&b<n)?b+"/"+n+" "+un:peso(sh)+" "+pluralUn(sh,un)):"";
   const kgS=(x.kilos||0)*f, esB=c==="Bore"&&kgS>0, tag=(x.flete||0)>0?" (flete incl.)":"";
   const compra=(x.costo||0)+(x.flete||0);
@@ -4831,15 +4846,21 @@ seguro(renderPItems,"items");
 seguro(function(){ irA(location.hash.slice(1)||"panel"); },"navegación");
 seguro(renderAll,"render");
 seguro(function(){ cargarFirebase().then(initFB,initFB); },"firebase");
-/* Service Worker: la versión (SW_VERSION) fuerza al navegador a bajar el sw.js nuevo, que descarta la caché vieja (cerdos-v2) */
-const SW_VERSION="7";
+/* Service Worker: la versión (SW_VERSION) fuerza al navegador a bajar el sw.js nuevo, que descarta las cachés viejas (hoy: ceba-cerdos-v8). Súbela junto con CACHE en sw.js */
+const SW_VERSION="8";
 /* Registro del Service Worker en su propio try/catch: si Safari lo bloquea (modo restringido / privado) la app sigue normal */
 try{
   if("serviceWorker" in navigator && location.protocol.indexOf("http")===0) {
     /* si un Service Worker nuevo toma el control, se recarga una sola vez para usar de inmediato el index.html nuevo */
     const tenia=!!navigator.serviceWorker.controller; let recargado=false;
     navigator.serviceWorker.addEventListener("controllerchange",()=>{ if(!tenia||recargado) return; recargado=true; location.reload(); });
-    var rp=navigator.serviceWorker.register("sw.js?v="+SW_VERSION);
+    /* updateViaCache:"none" → Safari/iPadOS no reutiliza un sw.js viejo de su caché HTTP; además busca actualización al volver a la app */
+    var rp=navigator.serviceWorker.register("sw.js?v="+SW_VERSION,{updateViaCache:"none"});
+    if(rp&&rp.then) rp=rp.then(function(reg){
+      var ult=0, buscar=function(){ if(Date.now()-ult<60000) return; ult=Date.now(); try{ reg.update(); }catch(e){} };
+      document.addEventListener("visibilitychange",function(){ if(!document.hidden) buscar(); });
+      window.addEventListener("online",buscar); setInterval(buscar,30*60*1000);
+    });
     if(rp&&rp.catch) rp.catch(function(e){ console.warn("Service Worker no registrado:",e); });
   }
 }catch(e){ console.warn("Service Worker no disponible:",e); }
