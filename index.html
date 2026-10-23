@@ -61,6 +61,16 @@ label{display:block;font-size:12px;color:var(--mu);margin:10px 0 4px}
 input,select{width:100%;background:var(--s2);color:var(--tx);border:1px solid var(--line);border-radius:10px;padding:11px;font-size:16px;font-family:inherit}
 input:focus,select:focus,button:focus-visible{outline:2px solid var(--ac);outline-offset:1px}
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.g2>div{min-width:0}
+/* Interruptor «Hueso: Sí / No» (Pierna 1/2, Brazo 1/2) */
+.hsw{display:flex;align-items:center;gap:8px;margin:7px 0 0;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent}
+.hsw input{position:absolute;opacity:0;width:1px;height:1px;padding:0;border:0;pointer-events:none}
+.hsw .hk{position:relative;flex:none;width:38px;height:22px;border-radius:22px;background:var(--s2);border:1px solid var(--line);transition:background .18s,border-color .18s}
+.hsw .hk::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:var(--mu);transition:transform .18s,background .18s}
+.hsw input:checked+.hk{background:rgba(232,160,122,.22);border-color:var(--ac)}
+.hsw input:checked+.hk::after{transform:translateX(16px);background:var(--ac)}
+.hsw input:focus-visible+.hk{outline:2px solid var(--ac);outline-offset:2px}
+.hsw b{font-size:12px;font-weight:600;color:var(--mu)}
+.hsw input:checked~b{color:var(--tx)}
 button{font-family:inherit;cursor:pointer}
 .btn{width:100%;margin-top:14px;background:var(--ac);color:#2a1a12;border:0;border-radius:10px;padding:13px;font-size:15px;font-weight:700}
 .btn.sec{background:var(--s2);color:var(--tx);border:1px solid var(--line)}
@@ -798,6 +808,14 @@ nav button,.navback,#btnProy,header button{position:relative;z-index:1000;pointe
   <p class="sub" id="ecInfo"></p>
   <label>Peso total en canal (kg)</label><input type="number" inputmode="decimal" step="0.01" id="ecCanal" oninput="dbn.ecCalc()">
   <div class="sub" style="margin:6px 0 0">Equivale a <b id="ecCanalLb">0</b> lb (1 kg = 2 lb)</div>
+  <h3 style="margin-top:16px">Alimento sobrante</h3>
+  <div class="g2">
+    <div><label for="ecSobConc">Conc. sobrante (kg)</label><input type="number" inputmode="decimal" step="0.1" min="0" id="ecSobConc" placeholder="0" oninput="ecSobSync('kg')"></div>
+    <div><label for="ecSobConcBul">Conc. sobrante (bultos)</label><input type="number" inputmode="decimal" step="0.01" min="0" id="ecSobConcBul" placeholder="0" oninput="ecSobSync('bul')"></div>
+    <div><label for="ecSobBore">Bore restante (kg)</label><input type="number" inputmode="decimal" step="0.1" min="0" id="ecSobBore" placeholder="0" oninput="ecSobSync('bore')"></div>
+    <div><label>Bore ≈ (@)</label><div class="sub" style="margin:10px 0 0"><b id="ecSobBoreArr">0</b> @</div></div>
+  </div>
+  <div class="sub" style="margin:6px 0 0">1 bulto = 40 kg · 1 @ = 12,5 kg. El sobrante se descuenta del costo de este cerdo y pasa a los cerdos activos en ceba.</div>
   <h3 style="margin-top:16px">Pesaje del despiece (en libras, lb)</h3><div id="ecCortes"></div>
   <div class="kpi" style="margin-top:14px"><span>Balance del despiece vs canal</span><div class="sub" style="margin:6px 0 0" id="ecResumen"></div></div>
   <h3 style="margin-top:16px">Stock resultante</h3>
@@ -940,7 +958,7 @@ const undId = (cid,k) => undCorte(D.cerdos.find(x=>x.id===cid),k);
 const nomCorte = k => (CORTES.find(c=>c[0]===k)||[,LEG[k]||(esExtra(k)?String(k).slice(2).replace(/_/g," "):k)])[1];
 const initCorte = (c,k) => keysOf(k).reduce((a,x)=>a+((c.cortes&&c.cortes[x])||0),0);
 const nomFila = (c,k,n) => (k==="otros"&&c.otrosDesc) ? esc(c.otrosDesc) : undCorte(c,k) ? n+" (und)" : n;
-const piezasTxt = c => { const p=c.piezas||{},l=[["pierna1","Pierna 1"],["pierna2","Pierna 2"],["brazo1","Brazo 1"],["brazo2","Brazo 2"],["costilla1","Costilla 1"],["costilla2","Costilla 2"]].filter(([k])=>p[k]>0); return l.length?`<div class="sub" style="margin:8px 0 0">Piezas: ${l.map(([k,n])=>n+" "+peso(p[k])).join(" · ")} lb</div>`:""; };
+const piezasTxt = c => { const p=c.piezas||{},l=[["pierna1","Pierna 1"],["pierna2","Pierna 2"],["brazo1","Brazo 1"],["brazo2","Brazo 2"],["costilla1","Costilla 1"],["costilla2","Costilla 2"]].filter(([k])=>p[k]>0).map(([k,n])=>[k,/^(pierna|brazo)/.test(k)?nomSubcarne(k,c):n]); return l.length?`<div class="sub" style="margin:8px 0 0">Piezas: ${l.map(([k,n])=>n+" "+peso(p[k])).join(" · ")} lb</div>`:""; };
 const esc = s => String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const hoy = () => { const d=new Date(); d.setMinutes(d.getMinutes()-d.getTimezoneOffset()); return d.toISOString().slice(0,10); };
 const miles = n => String(Math.round(n||0)).replace(/\B(?=(\d{3})+(?!\d))/g,".");
@@ -1035,6 +1053,115 @@ const itemsDe = v => v.items || [{cerdoId:v.cerdoId,cerdoNombre:v.cerdoNombre,co
 const vendidoCorte = (cid,k) => D.ventas.reduce((a,v)=>a+itemsDe(v).filter(i=>i.cerdoId===cid&&(undId(cid,k)?i.unidad==="und":i.unidad!=="und")&&keysOf(k).includes(i.corte)).reduce((b,i)=>b+(i.cantidad||0),0),0);
 const kgDe = c => c.canalKg!=null ? c.canalKg : (c.canal||0)/2;
 const dispCorte = (c,k) => initCorte(c,k) - vendidoCorte(c.id,k);
+/* ===== Subcortes de Carne (Pierna 1/2, Brazo 1/2): inventario independiente por pieza =====
+   Modelo: la venta sigue guardando corte:"carne" (los totales, reportes y el control por corte no cambian)
+   y además presa:"pierna1"|"pierna2"|"brazo1"|"brazo2". El peso de cada pieza sale de cerdo.piezas (despiece). */
+const SUBCARNE = [["pierna1","Pierna 1"],["pierna2","Pierna 2"],["brazo1","Brazo 1"],["brazo2","Brazo 2"]];
+const esSubcarne = p => SUBCARNE.some(x=>x[0]===p);
+/* Hueso (Sí/No) por pieza: se guarda en cerdo.hueso = {pierna1:true|false, …} junto a cerdo.piezas (pesos).
+   Sin dato (registros anteriores) conserva el nombre de siempre: «Pierna 1». Con dato → «Pierna con hueso» / «Pierna sin hueso».
+   Si las dos piernas (o los dos brazos) comparten estado se agrega el número («Pierna con hueso 1») para distinguirlas en selectores y tickets. */
+const huesoDe = (c,p) => { const h=c&&c.hueso; return h&&typeof h[p]==="boolean" ? h[p] : null; };
+const nomSubcarne = (p,c) => {
+  const nm=(SUBCARNE.find(x=>x[0]===p)||[,""])[1], h=huesoDe(c,p);
+  if(h===null||!nm) return nm;
+  const base=(p.indexOf("pierna")===0?"Pierna":"Brazo")+(h?" con hueso":" sin hueso");
+  const sib=p.slice(0,-1)+(p.slice(-1)==="1"?"2":"1");
+  return (initPresa(c,sib)>0&&huesoDe(c,sib)===h) ? base+" "+p.slice(-1) : base;
+};
+const initPresa = (c,p) => (c&&c.piezas&&+c.piezas[p])||0;
+const itemCarneLb = i => i.unidad!=="und" && keysOf("carne").includes(i.corte);
+const vendidoPresa = (cid,p) => D.ventas.reduce((a,v)=>a+itemsDe(v).filter(i=>i.cerdoId===cid&&i.presa===p&&itemCarneLb(i)).reduce((b,i)=>b+(i.cantidad||0),0),0);
+const vendidoSinPresa = cid => D.ventas.reduce((a,v)=>a+itemsDe(v).filter(i=>i.cerdoId===cid&&!i.presa&&itemCarneLb(i)).reduce((b,i)=>b+(i.cantidad||0),0),0);
+/* Carne registrada directa (sin pieza) = carne total − suma de piezas */
+const initSinPresa = c => Math.max(0, initCorte(c,"carne") - SUBCARNE.reduce((a,[p])=>a+initPresa(c,p),0));
+/* orig = ítems de la venta que se está editando (se devuelven al stock para no contarse dos veces) */
+const dispCorteX = (c,k,orig) => dispCorte(c,k)+(orig||[]).filter(i=>i.cerdoId===c.id&&(undCorte(c,k)?i.unidad==="und":i.unidad!=="und")&&keysOf(k).includes(i.corte)).reduce((a,i)=>a+(i.cantidad||0),0);
+/* Disponible de UNA pieza (Pierna 1…): su peso pesado − lo vendido de esa pieza (tope: lo que queda del corte Carne) */
+/* Lo que queda de una pieza tras SUS ventas específicas (sin contar aún la «Carne» general) */
+const restoPieza = (c,p,orig) => Math.max(0, initPresa(c,p)-vendidoPresa(c.id,p)+(orig||[]).filter(i=>i.cerdoId===c.id&&i.presa===p&&itemCarneLb(i)).reduce((a,i)=>a+(i.cantidad||0),0));
+/* Ventas de «Carne» general (sin pieza): primero gastan la carne sin subcorte (si hay); lo que excede se descuenta de las piezas
+   en orden Pierna 1 → Pierna 2 → Brazo 1 → Brazo 2, sobre lo que a cada una le queda. Devuelve {pierna1:lb, …} */
+function consumoGeneral(c,orig){
+  let G=Math.max(0,-dispSinPresa(c,orig)); const m={};
+  SUBCARNE.forEach(([p])=>{ const t=Math.min(restoPieza(c,p,orig),G); m[p]=t; G-=t; });
+  return m;
+}
+/* Disponible de cada pieza = lo que le queda − lo que le tocó de las ventas de «Carne» general */
+const dispPresa = (c,p,orig) => Math.min(restoPieza(c,p,orig)-(consumoGeneral(c,orig)[p]||0), dispCorteX(c,"carne",orig));
+/* Disponible de «Carne» general = Pierna 1 + Pierna 2 + Brazo 1 + Brazo 2 (+ carne sin subcorte si existe) */
+const dispCarneGeneral = (c,orig) => Math.min(SUBCARNE.reduce((a,[p])=>a+dispPresa(c,p,orig),0)+Math.max(0,dispSinPresa(c,orig)), dispCorteX(c,"carne",orig));
+const dispSinPresa = (c,orig) => initSinPresa(c)-vendidoSinPresa(c.id)+(orig||[]).filter(i=>i.cerdoId===c.id&&!i.presa&&itemCarneLb(i)).reduce((a,i)=>a+(i.cantidad||0),0);
+
+/* «Carne» sin pieza es la opción general (se reparte sobre las piezas al descontar). Aquí solo se limpia una pieza que el cerdo elegido no tiene. */
+function normCorteItem(it,c,orig){
+  if(!c||esCaliente(it)||it.unidad==="und"||it.corte!=="carne") return;
+  if(it.presa&&!(initPresa(c,it.presa)>0)&&!(orig||[]).some(i=>i.cerdoId===c.id&&i.presa===it.presa)) delete it.presa;
+}
+
+/* Opciones del selector «Corte». Devuelve [{v, k, presa, label, disp, sel}] · v = «carne:pierna1» para subcortes, «lomo» para el resto */
+function opcionesCorte(c,it,orig){
+  orig=orig||[]; if(c) normCorteItem(it,c,orig);
+  const out=[], esSel=(k,p)=>k===it.corte&&(p||"")===(it.presa||"");
+  const add=(k,p,nombre,disp,u)=>out.push({v:p?k+":"+p:k,k,presa:p||"",disp,sel:esSel(k,p),label:nombre+(disp==null?"":" ("+peso(disp)+" "+(u||"lb")+" disp.)")});
+  CORTES.forEach(([k,n])=>{
+    if(esExtra(k)&&c&&k!==it.corte&&initCorte(c,k)<=0) return;
+    if(k==="carne"){
+      if(!c){ add("carne","","Carne",null); SUBCARNE.forEach(([p,nm])=>add("carne",p,nm,null)); return; }
+      const subs=SUBCARNE.filter(([p])=>initPresa(c,p)>0||vendidoPresa(c.id,p)>0||it.presa===p);
+      if(subs.length){
+        add("carne","","Carne",dispCarneGeneral(c,orig));   /* general: suma de las 4 piezas */
+        subs.forEach(([p])=>add("carne",p,nomSubcarne(p,c),dispPresa(c,p,orig)));
+        return;
+      }
+    }
+    add(k,"",c?nomFila(c,k,n):n,c?dispCorteX(c,k,orig):null,c&&undCorte(c,k)?"und":"lb");
+  });
+  if(!out.some(o=>o.sel)){   /* registros antiguos (pierna, brazo…) o corte que ya no existe */
+    const p=it.presa&&esSubcarne(it.presa)?it.presa:"";
+    add(it.corte,p,p?nomSubcarne(p,c):nomCorte(it.corte),c&&!p?dispCorteX(c,it.corte,orig):null);
+    out[out.length-1].sel=true;
+  }
+  return out;
+}
+const opcionesCorteHTML = (c,it,orig) => opcionesCorte(c,it,orig).map(o=>`<option value="${esc(o.v)}"${o.sel?" selected":""}>${esc(o.label)}</option>`).join("");
+function setCorteSel(i,v){ const [k,p]=String(v).split(":"); carrito[i].corte=k; if(p) carrito[i].presa=p; else delete carrito[i].presa; renderItems(); }
+function evCorteSel(i,v){ const [k,p]=String(v).split(":"); ev.items[i].corte=k; if(p) ev.items[i].presa=p; else delete ev.items[i].presa; renderEV(); }
+
+/* Validación por pieza. items: ítems de carrito / ev / cv (cant o cantidad). Devuelve los que superan el stock de su pieza */
+function excesoPresaLista(items,orig){
+  const m={};
+  items.forEach(it=>{ if(!it.presa||!it.cerdoId||it.corte!=="carne"||esCaliente(it)||it.unidad==="und"||it.u==="und") return;
+    const k=it.cerdoId+"|"+it.presa; m[k]=(m[k]||0)+(+(it.cant!=null?it.cant:it.cantidad)||0); });
+  return Object.entries(m).map(([k,cant])=>{ const [cid,p]=k.split("|"),c=D.cerdos.find(x=>x.id===cid); return c?{c,p,cant,disp:Math.max(0,dispPresa(c,p,orig))}:null; }).filter(x=>x&&x.cant>x.disp+1e-9);
+}
+function excesoPresa(items,orig){ const e=excesoPresaLista(items,orig); if(!e.length) return ""; const x=e[0];
+  return "Stock insuficiente de "+nomSubcarne(x.p,x.c)+" en "+x.c.nombre+": pides "+peso(x.cant)+" lb y solo hay "+peso(x.disp)+" lb"+(e.length>1?" (y "+(e.length-1)+" pieza(s) más)":""); }
+function avisoPresa(items,orig){ const e=excesoPresaLista(items,orig);
+  return e.length?" · ⚠️ Sin stock suficiente de "+[...new Set(e.map(x=>nomSubcarne(x.p,x.c)+" de "+x.c.nombre))].join(", ")+": ajústalo en Despiece ✏️ Editar":""; }
+
+/* Inventario disponible del cerdo en Ventas: Pierna 1/2 y Brazo 1/2 por separado (en vez de «Carne» agrupada) */
+function filasInventarioVenta(c){
+  const fila=(n,d,t,u)=>`<span>${n}</span><b class="${d<=0?"neg":"pos"}">${peso(d)}<em> / ${peso(t)} ${u}</em></b>`;
+  return CORTES.filter(([k])=>initCorte(c,k)>0||vendidoCorte(c.id,k)>0).map(([k,n])=>{
+    if(k==="carne"){
+      const subs=SUBCARNE.filter(([p])=>initPresa(c,p)>0||vendidoPresa(c.id,p)>0);
+      if(subs.length){
+        const tot=SUBCARNE.reduce((a,[p])=>a+initPresa(c,p),0)+initSinPresa(c);
+        return fila("Carne (total)",dispCarneGeneral(c),tot,"lb")+subs.map(([p])=>fila(nomSubcarne(p,c),dispPresa(c,p),initPresa(c,p),"lb")).join("");
+      }
+    }
+    return fila(nomFila(c,k,n),dispCorte(c,k),initCorte(c,k),undCorte(c,k)?"und":"lb");
+  }).join("");
+}
+
+/* Preventa → Venta: al cambiar el cerdo a descontar, las presas «Pierna/Brazo» sin libras manuales se revinculan al peso pesado de ESE cerdo */
+function cvCambiarCerdo(v){
+  cv.cerdoId=v; const c=D.cerdos.find(x=>x.id===v)||null;
+  cv.items.forEach(it=>{ if(!c||!it.presa||!it.pesoAuto||it.u!=="lb") return; const lb=initPresa(c,it.presa); if(!(lb>0)) return;
+    it.cant=it.cantLb=Math.round(lb*100)/100; if(it.precio>0) it.total=Math.round(it.cant*it.precio); });
+  cvAviso(); $("cvItems").innerHTML=cvItemsHTML(); cvTot();
+}
 const abonado = v => v.abonado||0;
 const saldo = v => Math.max(0,(v.total||0)-abonado(v));
 const estado = v => saldo(v)<=0 ? "Pagado" : abonado(v)>0 ? "Abonado" : "Pendiente";
@@ -1546,13 +1673,22 @@ function renderHistorialGastos(){
   }catch(e){}
 }
 
+/* ===== Interruptor Hueso (Sí/No) del despiece · pre="" = Registrar sacrificio · pre="e" = Editar cerdo ===== */
+const HU_PIEZAS=["pierna1","pierna2","brazo1","brazo2"];
+const huSwitch = (pre,k) => `<label class="hsw"><input type="checkbox" id="${pre}hu_${k}" onchange="huTxt(this)"><span class="hk"></span><b>🦴 Hueso: <i>No</i></b></label>`;
+function huTxt(el){ const t=el.parentNode.querySelector("i"); if(t) t.textContent=el.checked?"Sí":"No"; }
+const huVal = (pre,k) => { const e=$(pre+"hu_"+k); return !!(e&&e.checked); };
+const huSet = (pre,k,v) => { const e=$(pre+"hu_"+k); if(e){ e.checked=!!v; huTxt(e); } };
+const huMapa = pre => { const m={}; HU_PIEZAS.forEach(k=>m[k]=huVal(pre,k)); return m; };
+
 /* ===== Sacrificio ===== */
 const PZ=["c_p1","c_p2","c_b1","c_b2"], KZ=["c_k1","c_k2"];
 const formVal = k => k==="carne" ? val("cCarne") : k==="costilla" ? val("cCostilla") : k===AS_KEY ? asValor("c") : (k==="pesuna"||k==="orejas") ? fxValor("c",k) : (k==="otros"||esExtra(k)) ? xcSumaKey("c",k) : val("c_"+k);
 function buildCortesForm(){
   const inp=(id,n,h)=>`<div><label>${n}</label><input type="number" inputmode="decimal" step="0.01" id="${id}" oninput="${h}"></div>`;
+  const inpH=(id,n,h,k)=>`<div><label>${n}</label><input type="number" inputmode="decimal" step="0.01" id="${id}" oninput="${h}">${huSwitch("",k)}</div>`;
   $("cortesForm").innerHTML=
-    '<h3 style="margin-top:6px">Carne</h3><div class="g2">'+inp("c_p1","Pierna 1 (lb)","sumarPiezas()")+inp("c_p2","Pierna 2 (lb)","sumarPiezas()")+inp("c_b1","Brazo 1 (lb)","sumarPiezas()")+inp("c_b2","Brazo 2 (lb)","sumarPiezas()")+'</div>'+
+    '<h3 style="margin-top:6px">Carne</h3><div class="g2">'+inpH("c_p1","Pierna 1 (lb)","sumarPiezas()","pierna1")+inpH("c_p2","Pierna 2 (lb)","sumarPiezas()","pierna2")+inpH("c_b1","Brazo 1 (lb)","sumarPiezas()","brazo1")+inpH("c_b2","Brazo 2 (lb)","sumarPiezas()","brazo2")+'</div>'+
     '<label>Total Carne (lb)</label><input type="number" inputmode="decimal" step="0.01" id="cCarne" oninput="dbn.carneDirecta()" placeholder="Suma de las 4 piezas">'+
     '<div class="sub" style="margin:6px 0 0">Se suma solo con las 4 piezas. Si pesaste la carne junta, escribe el total directamente.</div>'+
     '<h3 style="margin-top:16px">Costilla</h3><div class="g2">'+inp("c_k1","Costilla 1 (lb) · opcional","sumarCostillas()")+inp("c_k2","Costilla 2 (lb) · opcional","sumarCostillas()")+'</div>'+
@@ -1638,7 +1774,7 @@ function guardarCerdo(){
   const ref=pend?db.collection("cerdos").doc(pend.id):db.collection("cerdos").doc(), bt=db.batch();
   /* Costo y encargado del sacrificio -> gasto «Sacrificio / Matarife» (se crea, o se actualiza el que ya estaba ligado al cerdo) */
   const sg=sincGastoSac(bt,{cid:ref.id,nombre,fecha,costo:costoS,ayuCosto:ayuCostoS,mat:matS,ayu:ayuS,pend,gProg:pend?null:gastoProgDe(nombre)});
-  bt.set(ref,{nombre,arete,pesoIngresoKg:ing?ing.kg:(pend?(pend.pesoIngresoKg==null?null:pend.pesoIngresoKg):null),fecha,canal,canalKg,sobranteKg:Math.max(val("cSobrante"),0),boreRestanteKg:Math.max(val("cBoreRest"),0),cortes,cortesNom,cortesUnd,piezas,otrosDesc,tipoSalida:enCanal?"canal":"despiece",sinPesaje:false,...sg,proyectoId:proyActivo,...(pend?{}:{creado:Date.now()})},{merge:true});
+  bt.set(ref,{nombre,arete,pesoIngresoKg:ing?ing.kg:(pend?(pend.pesoIngresoKg==null?null:pend.pesoIngresoKg):null),fecha,canal,canalKg,sobranteKg:Math.max(val("cSobrante"),0),sobranteBultos:Math.max(val("cSobrante"),0)/KG_BULTO_CONC,boreRestanteKg:Math.max(val("cBoreRest"),0),boreRestanteArrobas:Math.max(val("cBoreRest"),0)/ARROBA_KG,cortes,cortesNom,cortesUnd,piezas,hueso:enCanal?{}:huMapa(""),otrosDesc,tipoSalida:enCanal?"canal":"despiece",sinPesaje:false,...sg,proyectoId:proyActivo,...(pend?{}:{creado:Date.now()})},{merge:true});
   let np=0,nv=0;
   if(fecha){
     const pl=planFechaSac(nombre,arete,ref.id,fecha);
@@ -1665,8 +1801,9 @@ const ecForm = k => k==="carne" ? ecVal("ecCarne") : k==="costilla" ? ecVal("ecC
 const ecR = n => n>0 ? Math.round(n*100)/100 : "";
 function ecBuild(){
   const inp=(id,n,h)=>`<div><label>${n}</label><input type="number" inputmode="decimal" step="0.01" id="${id}" oninput="${h}"></div>`;
+  const inpH=(id,n,h,k)=>`<div><label>${n}</label><input type="number" inputmode="decimal" step="0.01" id="${id}" oninput="${h}">${huSwitch("e",k)}</div>`;
   $("ecCortes").innerHTML=
-    '<h3 style="margin-top:6px">Carne</h3><div class="g2">'+inp("ec_p1","Pierna 1 (lb)","ecPiezas()")+inp("ec_p2","Pierna 2 (lb)","ecPiezas()")+inp("ec_b1","Brazo 1 (lb)","ecPiezas()")+inp("ec_b2","Brazo 2 (lb)","ecPiezas()")+'</div>'+
+    '<h3 style="margin-top:6px">Carne</h3><div class="g2">'+inpH("ec_p1","Pierna 1 (lb)","ecPiezas()","pierna1")+inpH("ec_p2","Pierna 2 (lb)","ecPiezas()","pierna2")+inpH("ec_b1","Brazo 1 (lb)","ecPiezas()","brazo1")+inpH("ec_b2","Brazo 2 (lb)","ecPiezas()","brazo2")+'</div>'+
     '<label>Total Carne (lb)</label><input type="number" inputmode="decimal" step="0.01" id="ecCarne" oninput="dbn.ecCarneDir()" placeholder="Suma de las 4 piezas">'+
     '<h3 style="margin-top:16px">Costilla</h3><div class="g2">'+inp("ec_k1","Costilla 1 (lb)","ecCostillas()")+inp("ec_k2","Costilla 2 (lb)","ecCostillas()")+'</div>'+
     '<label>Total Costilla (lb)</label><input type="number" inputmode="decimal" step="0.01" id="ecCostilla" oninput="dbn.ecCostillaDir()" placeholder="Suma de las 2 piezas">'+
@@ -1737,14 +1874,25 @@ function renderStockResultante(){
   const c=D.cerdos.find(x=>x.id===ecId); if(!c){ el.innerHTML=""; return; }
   el.innerHTML=stockCabHTML("Nuevo")+stockFilasHTML(c,true);
 }
+/* Sincroniza kg ↔ bultos (concentrado) y kg → arrobas (bore) en el modal Editar Cerdo */
+function ecSobSync(q){
+  if(q==="kg") $("ecSobConcBul").value=ecR(ecVal("ecSobConc")/KG_BULTO_CONC);
+  else if(q==="bul") $("ecSobConc").value=ecR(ecVal("ecSobConcBul")*KG_BULTO_CONC);
+  $("ecSobBoreArr").textContent=peso(ecVal("ecSobBore")/ARROBA_KG);
+}
+/* Abre y llena el modal «Editar Cerdo»: precarga pesos, cortes y el alimento sobrante guardado en el cerdo */
 function editarCerdo(id){
   const c=D.cerdos.find(x=>x.id===id); if(!c) return;
   ecId=id; ecBuild();
   $("ecTitulo").textContent="✏️ Editar "+c.nombre;
   $("ecInfo").textContent=(c.arete?"Arete "+c.arete+" · ":"")+"Sacrificado el "+fechaTxt(c.fecha)+". Corrige los pesos y el stock disponible se recalcula.";
   $("ecCanal").value=ecR(kgDe(c));
+  { /* alimento sobrante guardado (kg; si solo hay bultos guardados, se convierte) */
+    const sc=+c.sobranteKg>0?+c.sobranteKg:(+c.sobranteBultos>0?+c.sobranteBultos*KG_BULTO_CONC:0), sb=+c.boreRestanteKg>0?+c.boreRestanteKg:0;
+    $("ecSobConc").value=ecR(sc); $("ecSobConcBul").value=ecR(sc/KG_BULTO_CONC); $("ecSobBore").value=ecR(sb); ecSobSync("bore"); }
   const p=c.piezas||{};
   [["ec_p1","pierna1"],["ec_p2","pierna2"],["ec_b1","brazo1"],["ec_b2","brazo2"],["ec_k1","costilla1"],["ec_k2","costilla2"]].forEach(([i,k])=>$(i).value=ecR(p[k]||0));
+  HU_PIEZAS.forEach(k=>huSet("e",k,huesoDe(c,k)===true));   /* estado de Hueso guardado junto al peso de cada pieza */
   $("ecCarne").value=ecR(initCorte(c,"carne")); $("ecCostilla").value=ecR(initCorte(c,"costilla"));
   $("ec_lomo").value=ecR(initCorte(c,"lomo"));
   /* filas dinámicas: personalizados guardados + el «Otros» antiguo (conserva su clave para no descuadrar ventas ya hechas) */
@@ -1814,7 +1962,8 @@ function ecGuardar(){
   const neg=ecClaves(c).filter(b=>(cortes[b.k]||0)<vendidoCorte(c.id,b.k)-1e-9);
   if(neg.length&&!confirm("Ya se vendió más de lo que dejaste en: "+neg.map(b=>b.n).join(", ")+".\nEl stock quedaría en negativo.\n\n¿Guardar de todos modos?")) return;
   if(!db) return toast("Configura Firebase primero");
-  const upd={canalKg,canal:canalKg*2,cortes,cortesNom,cortesUnd,piezas,otrosDesc:lega?lega.n:""};
+  const sobC=Math.max(ecVal("ecSobConc"),0), sobB=Math.max(ecVal("ecSobBore"),0);   /* alimento sobrante: queda guardado en el cerdo */
+  const upd={canalKg,canal:canalKg*2,cortes,cortesNom,cortesUnd,piezas,hueso:huMapa("e"),otrosDesc:lega?lega.n:"",sobranteKg:sobC,sobranteBultos:sobC/KG_BULTO_CONC,boreRestanteKg:sobB,boreRestanteArrobas:sobB/ARROBA_KG};
   /* update() reemplaza el mapa completo de cortes (no mezcla con claves antiguas como pierna/brazo) */
   db.collection("cerdos").doc(ecId).update(upd).catch(e=>toast("Error nube: "+(e.code||e.message)));
   Object.assign(c,upd); /* refleja el cambio al instante, aun sin red */
@@ -1854,7 +2003,7 @@ function quitarItem(i){carrito.splice(i,1);renderItems();}
 function setItem(i,k,v,re){
   if(k==="cant") v=parseFloat(v)||0;
   if(k==="precio") v=parseInt(String(v).replace(/\D/g,""))||0;
-  carrito[i][k]=v; re?renderItems():calcVenta();
+  carrito[i][k]=v; if(k==="corte") delete carrito[i].presa; re?renderItems():calcVenta();
 }
 function refrescarItems(){
   const a=document.activeElement;
@@ -1898,7 +2047,7 @@ function renderItems(){
     const c=cs.find(x=>x.id===it.cerdoId);
     return `<div class="item"><div class="ih"><b>Corte ${i+1}</b>${carrito.length>1?`<button class="sm del" onclick="quitarItem(${i})">Quitar</button>`:""}</div>
     <div class="ig">
-    <div class="full"><label>Corte</label><select onchange="setItem(${i},'corte',this.value,true)">${CORTES.filter(([k])=>!esExtra(k)||!c||k===it.corte||initCorte(c,k)>0).map(([k,n])=>`<option value="${k}"${k===it.corte?" selected":""}>${c?nomFila(c,k,n):n}${c?` (${peso(dispCorte(c,k))} ${undCorte(c,k)?"und":"lb"} disp.)`:""}</option>`).join("")}</select></div>
+    <div class="full"><label>Corte</label><select onchange="setCorteSel(${i},this.value)">${opcionesCorteHTML(c,it,[])}</select></div>
     ${(it.corte==="otros"||it.desc)?`<div class="full"><label>Descripción en el comprobante (opcional)</label><input value="${esc(it.desc||"")}" placeholder="${esc((c&&c.otrosDesc)||"Ej: Cabeza, Papada, Asadura")}" oninput="carrito[${i}].desc=this.value"></div>`:""}
     <div><label>Cantidad (lb)</label><input type="number" inputmode="decimal" step="0.01" value="${it.cant||""}" oninput="setItem(${i},'cant',this.value)"></div>
     <div><label>Precio por lb ($)</label><input class="money" inputmode="numeric" value="${it.precio?miles(it.precio):""}" oninput="setItem(${i},'precio',this.value)" placeholder="0"></div>
@@ -1936,8 +2085,9 @@ function guardarVenta(){
   /* Validación de stock: las libras de cada corte (sumadas si se repite) no pueden superar lo disponible del cerdo */
   const exceso=Object.entries(pedido).map(([key,cant])=>{const [cid,k]=key.split("|"),c=D.cerdos.find(x=>x.id===cid);return {c,k,cant,disp:Math.max(0,dispCorte(c,k))};}).filter(x=>x.cant>x.disp+1e-9);
   if(exceso.length){ const x=exceso[0]; return toast("Stock insuficiente de "+nomCorte(x.k)+" en "+x.c.nombre+": pides "+peso(x.cant)+" lb y solo hay "+peso(x.disp)+" lb"+(exceso.length>1?" (y "+(exceso.length-1)+" corte(s) más)":"")); }
+  { const m=excesoPresa(carrito,[]); if(m) return toast(m); }   /* stock por pieza: Pierna 1, Brazo 2… */
   const aviso="";
-  const items=carrito.map(it=>{const c=D.cerdos.find(x=>x.id===it.cerdoId);return{cerdoId:c.id,cerdoNombre:c.nombre,arete:c.arete||"",corte:it.corte,desc:(it.desc||"").trim(),cantidad:it.cant,precio:it.precio,subtotal:Math.round(it.cant*it.precio),...(vModo==="caliente"?{modo:"caliente",unidad:"kg"}:{modo:"despiece"})};});
+  const items=carrito.map(it=>{const c=D.cerdos.find(x=>x.id===it.cerdoId);return{cerdoId:c.id,cerdoNombre:c.nombre,arete:c.arete||"",corte:it.corte,desc:(it.desc||"").trim(),cantidad:it.cant,precio:it.precio,subtotal:Math.round(it.cant*it.precio),...(vModo!=="caliente"&&it.corte==="carne"&&esSubcarne(it.presa)?{presa:it.presa}:{}),...(vModo==="caliente"?{modo:"caliente",unidad:"kg"}:{modo:"despiece"})};});
   const total=items.reduce((a,i)=>a+i.subtotal,0),e=$("vEstado").value;
   const ab=e==="Pagado"?total:e==="Pendiente"?0:Math.min(mval("vAbono"),total);
   if(e==="Abonado"&&ab<=0) return toast("Ingresa el valor abonado");
@@ -2006,7 +2156,7 @@ function panelCerdo(c){
   if(!segDef.some(x=>x[0]===vLista)) vLista="todas";
   const lista=all.filter(v=>vLista==="todas"||(vLista==="caliente"?modosVenta(v,c.id).cal:modosVenta(v,c.id).des));
   const seg=segDef.map(([k,n,q])=>`<button class="${vLista===k?"act":""}" onclick="setListaVenta('${k}')">${n} (${q})</button>`).join("");
-  const cortes=CORTES.filter(([k])=>initCorte(c,k)>0||vendidoCorte(c.id,k)>0).map(([k,n])=>{const d=dispCorte(c,k);return `<span>${nomFila(c,k,n)}</span><b class="${d<=0?"neg":"pos"}">${peso(d)}<em> / ${peso(initCorte(c,k))} ${undCorte(c,k)?"und":"lb"}</em></b>`;}).join("");
+  const cortes=filasInventarioVenta(c);
   return `<div class="vp-head"><button class="sm" onclick="volverVentasCerdos()">← Cerdos</button><div class="vt"><h2>🐖 Ventas ${esc(c.nombre)}</h2><div class="sub" style="margin:2px 0 0">${c.arete?"Arete "+esc(c.arete)+" · ":""}Sacrificio ${fechaTxt(c.fecha)}</div></div></div>
   <div class="vmodos" style="grid-template-columns:1fr">${esCan?`<button class="vmodo cal" onclick="abrirVentaModo('caliente')"><b>🔥 Venta en caliente</b><small>Canal completa · por kilos</small></button>`:`<button class="vmodo des" onclick="abrirVentaModo('despiece')"><b>🔪 Venta por despiece</b><small>Cortes · por libras</small></button>`}</div>
   <div class="vp-cols"><div class="card"><h3>📦 Inventario disponible</h3><div class="vstock">${esCan?`<span>🔥 Canal</span><b class="${kgD<=0?"neg":"pos"}">${peso(kgD)}<em> / ${peso(kgT)} kg</em></b>`:(cortes||'<span style="grid-column:1/-1;color:var(--mu)">Sin despiece registrado</span>')}</div></div>
@@ -2068,7 +2218,7 @@ function editarVenta(id){
   const v=D.ventas.find(x=>x.id===id); if(!v) return;
   const orig=itemsDe(v);
   ev={id,orig,cliente:v.cliente||"",tel:v.telefono||"",estado:estado(v),ab:abonado(v),
-    items:orig.map(i=>({cerdoId:i.cerdoId||"",cerdoNombre:i.cerdoNombre||"",arete:i.arete||"",modo:i.modo||"",unidad:i.unidad||"",corte:i.corte,desc:i.desc||"",cant:i.cantidad||0,precio:i.precio||0,total:i.subtotal!=null?i.subtotal:Math.round((i.cantidad||0)*(i.precio||0)),ult:"precio"}))};
+    items:orig.map(i=>({cerdoId:i.cerdoId||"",cerdoNombre:i.cerdoNombre||"",arete:i.arete||"",modo:i.modo||"",unidad:i.unidad||"",presa:i.presa||"",legado:i.corte==="carne"&&!i.presa,corte:i.corte,desc:i.desc||"",cant:i.cantidad||0,precio:i.precio||0,total:i.subtotal!=null?i.subtotal:Math.round((i.cantidad||0)*(i.precio||0)),ult:"precio"}))};
   renderEV(); $("modal").classList.add("open");
 }
 function renderEV(){
@@ -2078,11 +2228,11 @@ function renderEV(){
   <div class="g2"><div><label>Cliente (vecino)</label><input id="evCli" value="${esc(ev.cliente)}" oninput="ev.cliente=this.value"></div>
   <div><label>Teléfono</label><input type="tel" inputmode="tel" id="evTel" value="${esc(ev.tel)}" oninput="ev.tel=this.value"></div></div>
   ${ev.items.map((it,i)=>{
-    const c=cs.find(x=>x.id===it.cerdoId),hot=esCaliente(it),ops=CORTES.filter(([k])=>!esExtra(k)||!c||k===it.corte||initCorte(c,k)>0); if(!ops.some(x=>x[0]===it.corte)) ops.push([it.corte,nomCorte(it.corte)]);
+    const c=cs.find(x=>x.id===it.cerdoId),hot=esCaliente(it);
     return `<div class="item"><div class="ih"><b>Corte ${i+1}</b>${ev.items.length>1?`<button class="sm del" onclick="evQuitar(${i})">Quitar</button>`:""}</div>
     <div class="ig">
     <div${hot?' class="full"':""}><label>Cerdo</label><select onchange="evItem(${i},'cerdoId',this.value,true)">${cs.map(x=>`<option value="${x.id}"${x.id===it.cerdoId?" selected":""}>${esc(x.nombre)}${x.arete?" · Arete "+esc(x.arete):""}</option>`).join("")}${it.cerdoId&&!c?`<option value="${esc(it.cerdoId)}" selected>${esc(it.cerdoNombre||"Cerdo")} (ya no existe)</option>`:""}<option value=""${it.cerdoId?"":" selected"}>Sin asignar (no descuenta inventario)</option></select></div>
-    ${hot?'<div class="full sub" style="margin:8px 0 0">🔥 Venta en caliente · Canal (por kilos)</div>':""}<div${hot?' style="display:none"':""}><label>Corte</label><select onchange="evItem(${i},'corte',this.value,true)">${ops.map(([k,n])=>`<option value="${k}"${k===it.corte?" selected":""}>${c?nomFila(c,k,n):n}${c?` (${peso(evDisp(c,k))} lb disp.)`:""}</option>`).join("")}</select></div>
+    ${hot?'<div class="full sub" style="margin:8px 0 0">🔥 Venta en caliente · Canal (por kilos)</div>':""}<div${hot?' style="display:none"':""}><label>Corte</label><select onchange="evCorteSel(${i},this.value)">${opcionesCorteHTML(c,it,ev.orig)}</select></div>
     ${(it.corte==="otros"||it.desc)?`<div class="full"><label>Descripción en el comprobante (opcional)</label><input value="${esc(it.desc||"")}" placeholder="${esc((c&&c.otrosDesc)||"Ej: Cabeza, Papada, Asadura")}" oninput="ev.items[${i}].desc=this.value"></div>`:""}
     <div><label>${hot?"Kilos (kg)":(it.unidad==="und"?"Cantidad":"Libras (lb)")}</label><input type="number" inputmode="decimal" step="0.01" id="evL${i}" value="${it.cant||""}" oninput="evSet(${i},'cant',this.value)"></div>
     <div><label>${hot?"Precio por kg ($)":(it.unidad==="und"?"Precio por unidad ($)":"Precio por lb ($)")}</label><input class="money" inputmode="numeric" id="evP${i}" value="${it.precio>0?miles(it.precio):""}" placeholder="0" oninput="evSet(${i},'precio',this.value)"></div>
@@ -2126,8 +2276,8 @@ function evGuardar(){
     const c=D.cerdos.find(x=>x.id===it.cerdoId); if(!c||esCaliente(it)||it.unidad==="und") continue;
     const b=baseCorte(it.corte),key=c.id+"|"+b; ped[key]=(ped[key]||0)+it.cant;
   }
-  const aviso=avisoStock(Object.entries(ped).map(([key,cant])=>{const [cid,k]=key.split("|"),c=D.cerdos.find(x=>x.id===cid);return {c,k,cant,disp:evDisp(c,k)};}));
-  const items=ev.items.map(it=>{const c=D.cerdos.find(x=>x.id===it.cerdoId);return{cerdoId:it.cerdoId,cerdoNombre:c?c.nombre:(it.cerdoId?it.cerdoNombre:""),arete:c?(c.arete||""):(it.cerdoId?it.arete:""),corte:it.corte,desc:(it.desc||"").trim(),cantidad:it.cant,precio:it.precio,subtotal:it.total,...(esCaliente(it)?{modo:"caliente",unidad:"kg"}:(it.unidad==="und"?{unidad:"und"}:{}))};});
+  const aviso=avisoPresa(ev.items,ev.orig)+avisoStock(Object.entries(ped).map(([key,cant])=>{const [cid,k]=key.split("|"),c=D.cerdos.find(x=>x.id===cid);return {c,k,cant,disp:evDisp(c,k)};}));
+  const items=ev.items.map(it=>{const c=D.cerdos.find(x=>x.id===it.cerdoId);return{cerdoId:it.cerdoId,cerdoNombre:c?c.nombre:(it.cerdoId?it.cerdoNombre:""),arete:c?(c.arete||""):(it.cerdoId?it.arete:""),corte:it.corte,desc:(it.desc||"").trim(),cantidad:it.cant,precio:it.precio,subtotal:it.total,...(it.corte==="carne"&&c&&esSubcarne(it.presa)&&!esCaliente(it)?{presa:it.presa}:{}),...(esCaliente(it)?{modo:"caliente",unidad:"kg"}:(it.unidad==="und"?{unidad:"und"}:{}))};});
   const total=items.reduce((a,i)=>a+i.subtotal,0);
   if(ev.estado==="Abonado"&&mval("evAb")<=0) return toast("Ingresa el valor abonado");
   const ab=ev.estado==="Pagado"?total:ev.estado==="Pendiente"?0:Math.min(mval("evAb"),total);
@@ -2700,7 +2850,7 @@ function ecClaves(c){
 }
 /* Nombre a mostrar: en "Otros" solo la descripción escrita por el usuario */
 const pvNombre = i => (i.presa&&i.presa!==PRESA_OTRO&&presaNom(i.presa))||(i.corte==="otros" ? ((i.desc||"").trim()||"Sin descripción") : (PV_PROD.find(x=>x[0]===i.corte)||[,nomCorte(i.corte)])[1]);
-const nomItem = i => (i.desc&&i.desc.trim()) ? i.desc.trim() : (esCaliente(i) ? "Canal completa (en caliente)" : i.corte==="otros" ? "Varios" : nomCorte(i.corte));
+const nomItem = i => (i.desc&&i.desc.trim()) ? i.desc.trim() : (esCaliente(i) ? "Canal completa (en caliente)" : (i.corte==="carne"&&esSubcarne(i.presa)) ? nomSubcarne(i.presa,D.cerdos.find(x=>x.id===i.cerdoId)) : i.corte==="otros" ? "Varios" : nomCorte(i.corte));
 const dispBucket = (c,b) => dispCorte(c,b.k);
 const pvAbiertas = () => D.preventas.filter(p=>p.estado!=="Despachado");
 /* ===== Reserva por Presa =====
@@ -2922,7 +3072,7 @@ let cv=null;
 function confirmarVentaPV(id){
   const p=D.preventas.find(x=>x.id===id); if(!p) return;
   const cs=[...D.cerdos].sort((x,y)=>(x.creado||0)-(y.creado||0)),c0=cs.find(x=>esCerdo(x,p.cerdo))||(norm(p.cerdo)?null:cs[0]);   /* si el encargo es de un cerdo concreto que aún no se sacrifica, NO se asigna a otro cerdo */
-  cv={id,cliente:p.cliente,tel:p.telefono||"",cerdoId:c0?c0.id:"",items:(p.items||[]).map(i=>({corte:pvCorteInv(i,c0),nombre:pvNombre(i),otros:i.corte==="otros",
+  cv={id,cliente:p.cliente,tel:p.telefono||"",cerdoId:c0?c0.id:"",items:(p.items||[]).map(i=>({corte:pvCorteInv(i,c0),presa:(esPresa(i)&&esSubcarne(i.presa)&&pvCorteInv(i,c0)==="carne")?i.presa:"",pesoAuto:esPresa(i)&&!(+i.cantidad>0),nombre:pvNombre(i),otros:i.corte==="otros",
     u:esUnid(i)?"und":"lb",                                   /* Vísceras / Chunchullo arrancan en Cantidad */
     cant:esUnid(i)?(+i.unidades>0?+i.unidades:1):Math.round(pvCant(p,i)*100)/100,
     cantLb:esUnid(i)?0:Math.round(pvCant(p,i)*100)/100,       /* libras de referencia para volver al modo lb */
@@ -2934,7 +3084,7 @@ function renderCV(){
   const cs=[...D.cerdos].sort((x,y)=>(x.creado||0)-(y.creado||0));
   $("sheet").innerHTML=`<div class="mh"><h2>✅ Confirmar venta</h2><button class="sm" onclick="cerrar()">Cerrar</button></div>
   <p class="sub"><b>${esc(cv.cliente)}</b> · elige si cada ítem se liquida por libras o por cantidad, y ajusta entrega, precio y abono antes de registrar la venta.</p>
-  <label>Descontar del inventario de</label><select onchange="cv.cerdoId=this.value;cvAviso()">${cs.map(x=>`<option value="${x.id}"${x.id===cv.cerdoId?" selected":""}>${esc(x.nombre)}${x.arete?" · Arete "+esc(x.arete):""}</option>`).join("")}<option value=""${cv.cerdoId?"":" selected"}>Sin asignar (no descuenta inventario)</option></select>
+  <label>Descontar del inventario de</label><select onchange="cvCambiarCerdo(this.value)">${cs.map(x=>`<option value="${x.id}"${x.id===cv.cerdoId?" selected":""}>${esc(x.nombre)}${x.arete?" · Arete "+esc(x.arete):""}</option>`).join("")}<option value=""${cv.cerdoId?"":" selected"}>Sin asignar (no descuenta inventario)</option></select>
   <div id="cvAviso" class="alerta" style="display:none;margin:8px 0 0">⚠️ Sin cerdo asignado: la venta no descuenta inventario ni suma al Libro/Balance de un cerdo. Solo aparecerá en «Todas las ventas» y en el Balance del lote. Elige el cerdo sacrificado para vincularla.</div>
   <div id="cvItems">${cvItemsHTML()}</div>
   <div class="kpi" style="margin-top:12px"><span>Total venta</span><b id="cvTotal">$0</b></div>
@@ -2980,9 +3130,9 @@ function guardarVentaPV(){
   if(!proyActivo) return toast("Primero crea o selecciona un proyecto");
   const c=D.cerdos.find(x=>x.id===cv.cerdoId)||null;
   if(cv.items.some(it=>!(it.cant>0)||!(it.total>0))) return toast("Completa cantidad (o libras) y precio de cada ítem");
-  let aviso=""; if(c){ const ped={}; for(const it of cv.items){ if(it.u==="und") continue; ped[it.corte]=(ped[it.corte]||0)+it.cant; }   /* lo liquidado por unidad no descuenta libras */ aviso=avisoStock(Object.entries(ped).map(([k,cant])=>({c,k,cant,disp:dispCorte(c,k)}))); }
+  let aviso=""; if(c){ const ped={}; for(const it of cv.items){ if(it.u==="und") continue; ped[it.corte]=(ped[it.corte]||0)+it.cant; }   /* lo liquidado por unidad no descuenta libras */ aviso=avisoPresa(cv.items.map(it=>({...it,cerdoId:c.id})),[])+avisoStock(Object.entries(ped).map(([k,cant])=>({c,k,cant,disp:dispCorte(c,k)}))); }
   /* cada ítem: cerdoId, corte, cantidad (lb), precio por lb y subtotal */
-  const items=cv.items.map(it=>({cerdoId:c?c.id:"",cerdoNombre:c?c.nombre:"",arete:c?(c.arete||""):"",corte:it.corte,desc:it.otros?it.nombre:"",cantidad:it.cant,precio:it.precio,subtotal:it.total,...(it.u==="und"?{unidad:"und"}:{})}));
+  const items=cv.items.map(it=>({cerdoId:c?c.id:"",cerdoNombre:c?c.nombre:"",arete:c?(c.arete||""):"",corte:it.corte,desc:it.otros?it.nombre:"",cantidad:it.cant,precio:it.precio,subtotal:it.total,...(c&&it.u!=="und"&&it.corte==="carne"&&esSubcarne(it.presa)?{presa:it.presa}:{}),...(it.u==="und"?{unidad:"und"}:{})}));
   const total=items.reduce((a,i)=>a+i.subtotal,0),ab=Math.min(mval("cvAbono"),total),f=hoy(),pid=cv.id,pv0=D.preventas.find(x=>x.id===pid)||{};
   const venta={cliente:cv.cliente,telefono:cv.tel,cerdoId:c?c.id:"",cerdoNombre:c?c.nombre:"",items,total,abonado:ab,abonos:ab>0?[{fecha:f,valor:ab}]:[],fecha:f,creado:Date.now(),preventaId:pid,origen:"preventa",fechaSacrificio:fechasSacItems(items)[0]||pv0.fechaSacrificio||"",proyectoId:proyActivo};
   /* Un solo lote atómico: la venta entra al Libro de Ventas y la preventa pasa a Despachada; o se guardan las dos, o ninguna */
@@ -3342,7 +3492,8 @@ function plantelCerdos(){
 }
 /* Un cerdo está activo en una fecha si todavía NO había sido sacrificado: Fecha_Gasto < Fecha_Sacrificio.
    Una compra hecha el mismo día del sacrificio (o después) NO se le cobra ni se promedia a ese cerdo. */
-const activoEn = (e,f) => !(e.c&&e.c.fecha&&f) || f<e.c.fecha;
+const fISO = f => String(f||"").slice(0,10);   /* fecha ISO yyyy-mm-dd (tolera "2026-10-16T..." o espacios) */
+const activoEn = (e,f) => !(e.c&&e.c.fecha&&f) || fISO(f)<fISO(e.c.fecha);
 /* Cerdos entre los que se divide una compra del día f: solo los que siguen en ceba ese día (los sacrificados antes o ese mismo día quedan en $0).
    Si ese día no queda ningún cerdo en ceba, el gasto se carga a los sacrificados ese mismo día para no perderlo de la liquidación. */
 function activosEn(pl,f){
@@ -3428,12 +3579,32 @@ function ajusteSobrante(e,pl){
    · conc = Concentrado (Comercial/Levante/Engorde): bultos × KG_BULTO_CONC → kg y bultos (el sobrante trasladado también es concentrado)
    · bore = Bore / Maíz (suplemento fresco): kilos registrados → kg y arrobas (@), nunca bultos
    e = cerdo del plantel → su cuota (misma regla de reparto que el costo); sin e → lote completo. Devuelve {conc,bore} en kg. */
+/* Liquidación de alimento por cerdo, UNA sola tabla de categorías (Concentrado y Bore) con la misma regla de fecha:
+   entra toda compra con Fecha_Compra < Fecha_Sacrificio del cerdo (cuota = compra / cerdos activos ese día) y luego se aplica el sobrante.
+   Ninguna categoría puede quedar fuera: si el cerdo no tiene compras de esa categoría simplemente queda en 0. */
+const CATS_ALIM=[
+  {cat:"Concentrado",kgDe:x=>(x.bultos||0)*KG_BULTO_CONC},
+  {cat:"Bore",kgDe:x=>x.kilos||0}
+];
+function liquidarInsumosCerdo(e,pl){
+  pl=pl||plantelCerdos();
+  const R={Concentrado:{kg:0,costo:0,compras:0},Bore:{kg:0,costo:0,compras:0}};
+  D.insumos.forEach(x=>{
+    const T=CATS_ALIM.find(t=>t.cat===conceptoIns(x)); if(!T) return;
+    const A=activosEn(pl,x.fecha); if(!A.some(q=>q.key===e.key)) return;   /* compra igual o posterior al sacrificio: no se le cobra */
+    const n=A.length||1, o=R[T.cat];
+    o.kg+=T.kgDe(x)/n; o.costo+=((x.costo||0)+(x.flete||0))/n; o.compras++;
+  });
+  const aj=ajusteSobrante(e,pl);
+  R.Concentrado.kg+=aj.kg; R.Concentrado.costo+=aj.totalC;
+  R.Bore.kg+=aj.boreKg;    R.Bore.costo+=aj.totalB;
+  return R;
+}
 function consumoAlimento(e,pl){
   const kConc=x=>conceptoIns(x)==="Concentrado"?(x.bultos||0)*KG_BULTO_CONC:0, kBore=x=>conceptoIns(x)==="Bore"?(x.kilos||0):0;
   if(!e) return {conc:D.insumos.reduce((a,x)=>a+kConc(x),0),bore:D.insumos.reduce((a,x)=>a+kBore(x),0)};
-  pl=pl||plantelCerdos(); let conc=0,bore=0;
-  D.insumos.forEach(x=>{ const A=activosEn(pl,x.fecha); if(!A.some(q=>q.key===e.key)) return; const n=A.length||1; conc+=kConc(x)/n; bore+=kBore(x)/n; });
-  { const aj=ajusteSobrante(e,pl); return {conc:conc+aj.kg,bore:bore+aj.boreKg}; }
+  const L=liquidarInsumosCerdo(e,pl||plantelCerdos());
+  return {conc:L.Concentrado.kg,bore:L.Bore.kg,costC:L.Concentrado.costo,costB:L.Bore.costo};
 }
 /* 🐖 1 lechón / 🐖 Cerdo individual (equilibra las líneas de consumo de Alimento e insumos) */
 const htmlLechones = n => n>0 ? `<small class="kcons">🐖 ${n} ${n===1?"lechón":"lechones"}</small>` : "";
@@ -3447,8 +3618,8 @@ const htmlConsumo = c => {
 /* Versión en filas para la tarjeta ampliada de Alimento e insumos (balance por cerdo) */
 const htmlConsumoFilas = c => {
   const R=[], f=n=>n.toLocaleString("es-CO",{minimumFractionDigits:1,maximumFractionDigits:2});
-  if(c.conc>1e-6) R.push(`<div class="cons-row"><span class="cn">🥣 Concentrado</span><span class="cv">${peso(c.conc)} kg<small>~${f(c.conc/KG_BULTO_CONC)} bultos</small></span></div>`);
-  if(c.bore>1e-6) R.push(`<div class="cons-row"><span class="cn">🌿 Bore / Suplemento</span><span class="cv">${peso(c.bore)} kg<small>${(c.bore/ARROBA_KG).toLocaleString("es-CO",{maximumFractionDigits:1})} @</small></span></div>`);
+  if(c.conc>1e-6) R.push(`<div class="cons-row"><span class="cn">🥣 Concentrado</span><span class="cv">${peso(c.conc)} kg<small>~${f(c.conc/KG_BULTO_CONC)} bultos${c.costC!=null?" · "+money(Math.round(c.costC)):""}</small></span></div>`);
+  if(c.bore>1e-6||(c.costB||0)>0) R.push(`<div class="cons-row"><span class="cn">🌿 Bore / Suplemento</span><span class="cv">${peso(c.bore)} kg<small>${(c.bore/ARROBA_KG).toLocaleString("es-CO",{maximumFractionDigits:1})} @${c.costB!=null?" · "+money(Math.round(c.costB)):""}</small></span></div>`);
   return R.length?`<div class="cons-list">${R.join("")}</div>`:"";
 };
 const pct1 = n => (Math.round(n*10)/10).toLocaleString("es-CO",{minimumFractionDigits:1,maximumFractionDigits:1})+"%";
@@ -3536,11 +3707,8 @@ function volumenesInversion(ez,pl){
     D.insumos.forEach(x=>{ const c=conceptoIns(x), m=(x.costo||0)+(x.flete||0);
       if(c==="Concentrado"){ kgC+=(x.bultos||0)*KG_BULTO_CONC; vC+=m; } else if(c==="Bore"){ kgB+=(x.kilos||0); vB+=m; } });
   } else {
-    const iv=inversionCerdo(ez,pl), cons=consumoAlimento(ez,pl);
-    nL=1; vL=iv.lechon; total=iv.total; kgC=cons.conc; kgB=cons.bore;
-    D.insumos.forEach(x=>{ const A=activosEn(pl,x.fecha); if(!A.some(q=>q.key===ez.key)) return; const n=A.length||1, c=conceptoIns(x), m=((x.costo||0)+(x.flete||0))/n;
-      if(c==="Concentrado") vC+=m; else if(c==="Bore") vB+=m; });
-    { const aj=ajusteSobrante(ez,pl); vC+=aj.totalC; vB+=aj.totalB; }   /* el sobrante de bore va a Bore, no a Concentrado */
+    const iv=inversionCerdo(ez,pl), L=liquidarInsumosCerdo(ez,pl);
+    nL=1; vL=iv.lechon; total=iv.total; kgC=L.Concentrado.kg; kgB=L.Bore.kg; vC=L.Concentrado.costo; vB=L.Bore.costo;   /* Concentrado y Bore: misma regla de fecha y sobrante */
   }
   vL=R(vL); vC=R(vC); vB=R(vB); total=R(total); /* cada categoría se redondea por separado antes de mostrarse */
   let otros=total-vL-vC-vB;
