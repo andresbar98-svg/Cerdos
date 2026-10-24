@@ -182,6 +182,51 @@ input:disabled{opacity:.55;cursor:not-allowed}
 .tkt span{display:block;font-size:10.5px;color:var(--mu)}.tkt b{font-size:14px;font-variant-numeric:tabular-nums}
 .tka{display:flex;gap:6px;margin-top:10px}.tka button{flex:1;background:var(--s2);border:1px solid var(--line);color:var(--tx);border-radius:8px;padding:9px 4px;font-size:12.5px;font-weight:600;white-space:nowrap}
 .tka button.wa{flex:2;background:#2fae62;border-color:#2fae62;color:#fff}
+/* ===== Ticket de Clientes y comprobantes · MODO OSCURO (grafito mate, marco punteado dorado, textos crema) ===== */
+.tkb{margin-bottom:14px;font-family:"Fredoka","Arial Rounded MT Bold",Arial,Helvetica,sans-serif;font-variant-numeric:lining-nums;color:#f3e9e2;line-height:1.15}
+.tkb .cd{position:relative;background:#211b18;border:1px solid #30282a;border-radius:16px;padding:4px;box-shadow:0 4px 14px rgba(0,0,0,.55)}
+.tkb .cd .in{border:2px dashed #c9a35c;border-radius:12px;padding:5px 6px 6px}
+.tkb .hd{display:flex;align-items:center;gap:10px;background:#1e5a2b;color:#fff;border-radius:13px;padding:5px 12px;overflow:hidden;white-space:nowrap;cursor:pointer;-webkit-tap-highlight-color:transparent;text-shadow:0 0 8px rgba(255,255,255,.4)}
+.tkb .hd svg{width:30px;height:30px;flex:0 0 auto}
+.tkb .hd .hn{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;font-size:20px;font-weight:700}
+.tkb .hd .hf{flex:0 0 auto;font-size:12px;font-weight:600;font-style:italic;opacity:.97}
+.tkb .mt{display:flex;flex-wrap:wrap;align-items:center;gap:4px;margin:5px 2px 2px}
+.tkb .mt small{display:block;width:100%;font-size:11px;font-weight:600;color:#c9b8a8;line-height:1.25}
+.tkb .tag{background:transparent;font-weight:600}
+.tkb .tag.cerdo{margin-left:0;color:#f0c36a;border-color:rgba(240,195,106,.7)}
+.tkb .tag.Pagado{color:#7fd1a0;border-color:#7fd1a0}.tkb .tag.Abonado{color:#f0c36a;border-color:#f0c36a}.tkb .tag.Pendiente{color:#ef7b7b;border-color:#ef7b7b}
+.tkb .r{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:3px;padding:2px 9px;background:#2b2421;border:1px solid #3d332e;border-radius:12px}
+.tkb .r .t{font-size:15.5px;font-weight:700;white-space:nowrap;color:#f6ead8}.tkb .r .a{font-size:17px;font-weight:700;white-space:nowrap;color:#fff3dc}
+.tkb .r.g{background:rgba(95,179,110,.16);border:1.5px solid rgba(127,209,160,.55);padding:4px 10px}.tkb .r.g .t,.tkb .r.g .a{color:#8be0a6}
+.tkb .r.n{background:rgba(239,123,123,.16);border:1.5px solid rgba(239,123,123,.55);padding:4px 10px}.tkb .r.n .t,.tkb .r.n .a{color:#ff9393}
+.tkb .r.g .t,.tkb .r.n .t{font-size:17px}.tkb .r.g .a,.tkb .r.n .a{font-size:21px}
+.tkb .sbf{display:flex;align-items:baseline;justify-content:space-between;gap:6px;margin:3px 0 0;padding:3px 6px 3px 8px;background:#2b2421;border-left:3px solid #c9964f;border-radius:0 8px 8px 0;font-size:12.5px;font-weight:400;line-height:1.25;color:#e8c9a0}
+.tkb .sbf .sl{min-width:0;white-space:normal}
+.tkb .sbf .sl b{margin-right:.45em;font-weight:600;color:#f6ead8;white-space:nowrap}
+.tkb .sbf .sl i{font-style:normal;font-weight:400;color:#e0b27a;white-space:nowrap}
+.tkb .sbf .sv{flex:0 0 auto;white-space:nowrap;font-weight:700;color:#fff3dc;font-variant-numeric:tabular-nums}
+.tkb .sbd{display:block;box-sizing:border-box;max-width:100%;margin:0 0 0 16px;padding:0 6px 0 7px;background:#2b2421;border-left:3px solid #8a6a3a;border-radius:0 8px 8px 0;font-size:11px;font-weight:400;line-height:1.25;color:#d9b98a;white-space:normal;overflow-wrap:anywhere}
+.tkb .lg{margin-top:6px;text-align:center;font-size:12.5px;font-weight:700;font-style:italic;color:#e6d5bf;line-height:1.2}
+.tkb .tka{margin-top:8px}
+/* ---- Tarjeta compacta de Clientes: MISMA letra del Historial de gastos (la fuente del sistema, heredada del body) + Totales en 3 columnas ---- */
+.tkb,.vrec{font-family:inherit;font-variant-numeric:normal;letter-spacing:normal}
+.tkb{font-size:14px}
+.tkb .hd,.tkb .hd .hn,.tkb .hd .hf{font-family:inherit;font-style:normal;letter-spacing:normal}
+.tkb .hd .hn{font-size:20px;font-weight:700;line-height:1.1}
+.tkb .hd .hf{font-size:12.5px;font-weight:600;opacity:1}
+.tkb .mt small{font-size:11.5px}
+.tkb .sbf{font-size:13px}.tkb .sbd{font-size:11.5px}.tkb .lg{font-size:12.5px;font-style:normal}
+.tkb .tot3{display:grid;grid-template-columns:repeat(3,1fr);margin-top:5px;padding:4px 0;background:#2b2421;border:1px solid #3d332e;border-radius:12px;text-align:center}
+.tkb .tot3>div{min-width:0;padding:0 4px;border-left:1px solid #3d332e}
+.tkb .tot3>div:first-child{border-left:0}
+.tkb .tot3 span{display:block;font-size:11.5px;font-weight:600;color:#c9b8a8;line-height:1.2}
+.tkb .tot3 b{display:block;font-size:16px;font-weight:700;color:#fff3dc;white-space:nowrap;font-variant-numeric:tabular-nums;line-height:1.2}
+.tkb .tot3 .g b{color:#8be0a6}.tkb .tot3 .n b{color:#ff9393}
+body.lectura .tkb .tka{display:none}
+/* Modo lectura: Clientes y Ventas se muestran como lista del Historial de gastos (una fila compacta por venta); fuera de lectura se ven los recibos completos */
+.hgv{display:none;cursor:pointer;-webkit-tap-highlight-color:transparent}
+body.lectura .hgv{display:block}
+body.lectura .tkb,body.lectura .vrec{display:none}   /* modo lectura: recibo limpio, sin botones */
 /* Comprobante con fondo de granja (3 franjas: título · medio elástico · cerdito) */
 .rc{position:relative;width:360px;margin:12px auto 0;overflow:hidden;border-radius:16px;background:#74b94d;font-family:"Fredoka","Arial Rounded MT Bold",Arial,Helvetica,sans-serif;font-variant-numeric:lining-nums;color:#3a1c0b;line-height:1.15}
 .rc.rc-img{border-radius:0;margin:0}
@@ -540,20 +585,28 @@ nav button,.navback,#btnProy,header button{position:relative;z-index:1000;pointe
 /* ===== Barra de compartir PNG | PDF ===== */
 .share-bar{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 0 14px}
 .share-bar .btn{margin:0;font-size:15px;padding:14px 8px}
-/* ===== Modo lectura (ojo) ===== */
-.kpi-row{display:flex;gap:10px;align-items:stretch;margin-bottom:12px}
-.kpi-row .kpi{flex:1 1 auto;min-width:0}
-.ojo-btn{flex:0 0 auto;width:52px;min-height:48px;display:flex;align-items:center;justify-content:center;padding:0;border-radius:var(--r);border:1px solid var(--line);background:var(--s1);color:var(--mu);cursor:pointer}
-.ojo-btn svg{width:24px;height:24px}
+/* ===== Modo lectura (ojo) · botón de icono discreto, igual al del Historial de gastos ===== */
+.sec-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 10px}
+.sec-head h2{margin:0;min-width:0}
+.kpi-row{margin-bottom:12px}
+.kpi-row .kpi{min-width:0}
+/* Estilo base compartido (Clientes, Ventas e Historial de gastos) */
+.ojo-btn,.deye{display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;width:40px;height:40px;min-height:0;margin:0;padding:0;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.06);color:var(--mu);line-height:1;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:color .2s,background-color .2s,border-color .2s,box-shadow .2s}
+.ojo-btn svg{width:20px;height:20px}
 .ojo-btn .ey-off{display:none}
-body.lectura .ojo-btn{background:var(--ac);color:#2a1a12;border-color:var(--ac)}
+.ojo-btn:active,.deye:active{background:rgba(255,255,255,.14)}
+/* Activo: el ojo se tacha y se ilumina suavemente */
+body.lectura .ojo-btn{color:var(--ac);background:rgba(232,160,122,.14);border-color:rgba(232,160,122,.5);box-shadow:0 0 10px rgba(232,160,122,.28)}
 body.lectura .ojo-btn .ey-on{display:none}
 body.lectura .ojo-btn .ey-off{display:block}
 body.lectura .ro-hide{display:none!important}
+/* Dentro de la barra "Venta por despiece / en caliente" */
 .vmodo-box{flex-direction:row;align-items:stretch;padding:0;gap:0}
 .vmodo-box .vm-main{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:3px;text-align:left;background:none;border:0;font:inherit;color:inherit;padding:12px;cursor:pointer}
-.vmodo-box .ojo-btn{align-self:center;margin:0 10px 0 0;width:44px;min-height:44px;background:rgba(255,255,255,.6);border-color:rgba(42,26,18,.18);color:#2a1a12}
-body.lectura .vmodo-box .ojo-btn{background:#2a1a12;border-color:#2a1a12;color:#fff}
+.vmodo-box .ojo-btn{align-self:center;margin:0 10px 0 0;width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,.25);border-color:rgba(42,26,18,.14);color:rgba(42,26,18,.68)}
+.vmodo-box .ojo-btn svg{width:19px;height:19px}
+.vmodo-box .ojo-btn:active{background:rgba(255,255,255,.45)}
+body.lectura .vmodo-box .ojo-btn{background:rgba(255,255,255,.6);border-color:rgba(42,26,18,.28);color:#2a1a12;box-shadow:0 0 0 3px rgba(255,255,255,.3)}
 
 .vp-cols{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;align-items:start}.vp-cols>.card{margin:0;padding:11px;min-width:0}
 .vstock{display:grid;grid-template-columns:1fr auto;gap:6px 8px;font-size:12.5px;align-items:baseline}.vstock b{text-align:right;font-variant-numeric:tabular-nums}.vstock em{font-style:normal;color:var(--mu);font-weight:400;font-size:11px}
@@ -671,11 +724,11 @@ body.lectura .vmodo-box .ojo-btn{background:#2a1a12;border-color:#2a1a12;color:#
 
 <!-- ============ DEUDORES ============ -->
 <section id="deudores">
-  <h2 style="margin-bottom:10px">Clientes y comprobantes</h2>
+  <div class="sec-head"><h2>Clientes y comprobantes</h2><button type="button" class="ojo-btn" onclick="toggleLectura()" aria-pressed="false" aria-label="Modo lectura: ocultar Editar, Eliminar y Abonar" title="Modo lectura"><svg class="ey-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg><svg class="ey-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/><path d="M3 3l18 18"/></svg></button></div>
   <div class="share-bar"><button class="btn wa" onclick="compartirVentas()" aria-label="Compartir reporte de Clientes y Ventas como imagen PNG">🖼️ PNG</button><button class="btn pdf" onclick="pdfVentas()" aria-label="Exportar reporte de Clientes y Ventas en PDF">📄 PDF</button></div>
   <div class="chips"><button class="chip act" data-f="todos">Todos</button><button class="chip" data-f="pagados">Pagados</button><button class="chip" data-f="deudores">Deudores</button></div>
   <div class="vfil" id="cFiltroCerdo" style="margin:0 0 12px"></div>
-  <div class="kpi-row"><div class="kpi"><span id="dLbl">Por cobrar</span><b id="dTot" class="wa-c">$0</b></div><button type="button" class="ojo-btn" onclick="toggleLectura()" aria-pressed="false" aria-label="Modo lectura: ocultar Editar, Eliminar y Abonar" title="Modo lectura"><svg class="ey-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg><svg class="ey-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/><path d="M3 3l18 18"/></svg></button></div>
+  <div class="kpi-row"><div class="kpi"><span id="dLbl">Por cobrar</span><b id="dTot" class="wa-c">$0</b></div></div>
   <div id="listaClientes"></div>
 </section>
 
@@ -2185,7 +2238,7 @@ function recVenta(v,cid){
   const x=cid?ventaCerdo(v,cid):{items:itemsDe(v),total:v.total||0,saldo:saldo(v),abonado:abonado(v),mixta:false};
   const est=x.saldo<=0?"Pagado":x.abonado>0?"Abonado":"Pendiente";
   const its=x.items.map(i=>`<div class="tkl"><span>${esc(nomItem(i))}<em>${peso(i.cantidad)} ${uItem(i)} × ${money(i.precio)}</em></span><b>${money(subItem(i))}</b></div>`).join("");
-  return `<div class="vrec"><div class="vh" onclick="recibo('${v.id}')"><div><b>${esc(v.cliente)}</b>${tagModo(v,cid)}${cid?"":tagsCerdo(v)}<small>${fechaTxt(v.fecha)}${v.telefono?" · "+esc(v.telefono):""}</small></div><span class="tag ${est}">${est}</span></div>
+  return hgVenta(v,cid)+`<div class="vrec"><div class="vh" onclick="recibo('${v.id}')"><div><b>${esc(v.cliente)}</b>${tagModo(v,cid)}${cid?"":tagsCerdo(v)}<small>${fechaTxt(v.fecha)}${v.telefono?" · "+esc(v.telefono):""}</small></div><span class="tag ${est}">${est}</span></div>
   <div style="padding-top:4px">${its}</div>${x.mixta?'<div class="sub" style="margin:4px 0 0">La venta incluye otros cerdos; aquí solo se cuenta la parte de este.</div>':""}
   <div class="vtot"><span>Total<b>${money(x.total)}</b></span><span>Abonado<b>${money(x.abonado)}</b></span><span>Saldo<b class="${x.saldo>0?"neg":"pos"}">${x.saldo>0?money(x.saldo):"$0 ✓"}</b></span></div>
   <div class="vacts"><button class="sm wa ico" onclick="enviarWA('${v.id}')" aria-label="Compartir recibo por WhatsApp" title="Compartir recibo por WhatsApp"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M12.04 2a9.9 9.9 0 0 0-8.5 14.9L2 22l5.25-1.38A9.9 9.9 0 1 0 12.04 2zm0 1.8a8.1 8.1 0 1 1-4.3 15l-.3-.18-3.1.82.83-3-.2-.32A8.1 8.1 0 0 1 12.04 3.8zM8.6 7.4c-.2 0-.5.07-.75.35-.25.27-.97.95-.97 2.3s1 2.7 1.13 2.88c.14.18 1.94 3.1 4.8 4.2 2.38.93 2.86.75 3.38.7.52-.04 1.67-.68 1.9-1.34.24-.66.24-1.22.17-1.34-.07-.12-.26-.2-.55-.34-.28-.15-1.67-.82-1.93-.92-.26-.1-.45-.14-.64.14-.19.28-.73.92-.9 1.1-.16.2-.33.22-.6.07-.3-.14-1.2-.44-2.28-1.4-.84-.75-1.4-1.67-1.57-1.95-.16-.29-.02-.44.12-.58.13-.13.28-.33.42-.5.14-.16.19-.28.28-.47.1-.19.05-.35-.02-.5-.07-.14-.64-1.55-.88-2.12-.23-.55-.47-.48-.64-.49z"/></svg></button><button class="sm ro-hide" onclick="editarVenta('${v.id}')">✏️ Editar</button><button class="sm del ro-hide" onclick="eliminarVenta('${v.id}')">🗑️ Eliminar</button></div></div>`;
@@ -2393,15 +2446,35 @@ function fechasLinea(v,fc){
   return a.join(" • ");
 }
 
+/* Fila de lectura (modo 👁️): misma plantilla del Historial de gastos (.hg-it): fecha + chip del cerdo arriba, cliente y productos a la izquierda, total en naranja a la derecha */
+function hgVenta(v,cid){
+  const x=cid?ventaCerdo(v,cid):{items:itemsDe(v),total:v.total||0,saldo:saldo(v),abonado:abonado(v)};
+  const est=x.saldo<=0?"Pagado":x.abonado>0?"Abonado":"Pendiente";
+  let cs=cerdosInfoVenta(v); if(cid) cs=cs.filter(c=>c.id===cid);
+  const chip=cs.length?cs.map(c=>esc(c.nombre)).join(", "):"Sin cerdo";
+  const prods=desgloseVentas(x.items).map(l=>esc(l.t)+" "+esc(l.q)).join(" • ");
+  const fl=x.saldo>0?`${est} • abonado ${money(x.abonado)} + saldo ${money(x.saldo)}`:"Pagado ✓";
+  return `<div class="hg-it hgv" onclick="recibo('${v.id}')"><div class="hg-top"><span>📅 ${fechaTxt(v.fecha)}</span><span class="hg-cat">🐖 ${chip}</span></div>
+  <div class="hg-mid"><div class="hg-n"><b>${esc(v.cliente)}</b>${prods?" • "+prods:""}</div><b class="hg-v">${money(x.total)}</b></div>
+  <small class="hg-fl">${fl}</small></div>`;
+}
+const fechaCortaTk = f => { const q=String(f||"").split("-"); if(q.length!==3||!(+q[1]>=1&&+q[1]<=12)) return fechaNum(f); const m=MES_CORTO[+q[1]-1]; return (+q[2])+" "+m.charAt(0).toUpperCase()+m.slice(1)+" "+q[0]; };   /* 2026-10-23 → 23 Oct. 2026 */
 function tarjetaVenta(v){
+  /* Ticket de Clientes: misma plantilla del Balance por cerdo (tarjeta crema con marco punteado, encabezado verde, filas de venta con desglose ↳) */
   const fc=cFiltroCerdo, p=fc?ventaCerdo(v,fc):null, cz=fc?D.cerdos.find(x=>x.id===fc):null;
-  const s=p?p.saldo:saldo(v), est=p?(s<=0?"Pagado":p.abonado>0?"Abonado":"Pendiente"):estado(v), fs=fechasSacVenta(v);
-  const its=(p?p.items:itemsDe(v)).map(i=>`<div class="tkl"><span>${esc(nomItem(i))}<em>${peso(i.cantidad)} ${uItem(i)} × ${money(i.precio)}</em></span><b>${money(Math.round((i.cantidad||0)*(i.precio||0)))}</b></div>`).join("");
-  const tot=p?p.total:v.total, ab=p?p.abonado:abonado(v);
-  const nota=p&&p.mixta?`<div class="sub" style="margin:6px 0 0">Esta venta incluye también otros cerdos; aquí solo se cuenta la parte de ${esc(cz?cz.nombre:"este cerdo")}.</div>`:"";
-  return `<div class="tk"><div class="tkh" onclick="recibo('${v.id}')"><div><b>${esc(v.cliente)}</b>${badgesCerdo(v,fc)}<small class="tkc">${fechasLinea(v,fc)}</small></div><span class="tag ${est}">${est}</span></div>
-  ${its}${nota}
-  <div class="tkt"><div><span>Total</span><b>${money(tot)}</b></div><div><span>Abonado</span><b>${money(ab)}</b></div><div><span>Saldo</span><b class="${s>0?"neg":"pos"}">${s>0?money(s):"Pagado ✓"}</b></div></div>
+  const s=p?p.saldo:saldo(v), est=p?(s<=0?"Pagado":p.abonado>0?"Abonado":"Pendiente"):estado(v);
+  const its=p?p.items:itemsDe(v), tot=p?p.total:v.total, ab=p?p.abonado:abonado(v);
+  const lineas=desgloseVentas(its).map(x=>`<div class="sbf"><span class="sl"><b>• ${esc(x.t)}</b>${x.q?`<i>${esc(x.q)}</i>`:""}</span><span class="sv">${money(Math.round(x.v))}</span></div>`
+    +(x.det&&x.det.length>=2?x.det:[]).map(t=>`<div class="sbd">${esc(t)}</div>`).join("")).join("");   /* ↳ solo si la carne tiene 2 o más sub-cortes */
+  const nota=p&&p.mixta?`<div class="lg">Esta venta incluye también otros cerdos; aquí solo se cuenta la parte de ${esc(cz?cz.nombre:"este cerdo")}.</div>`:"";
+  const tot3=`<div class="tot3"><div><span>Total</span><b>${money(tot)}</b></div><div><span>Abonado</span><b>${money(ab)}</b></div><div class="${s>0?"n":"g"}"><span>Saldo</span><b>${s>0?money(s):money(0)+" ✓"}</b></div></div>`;
+  return hgVenta(v,fc)+`<div class="tkb"><div class="cd"><div class="in">
+  <div class="hd" role="button" onclick="recibo('${v.id}')">${SVG.cara(false)}<b class="hn">${esc(v.cliente)}</b><i class="hf">${esc(fechaCortaTk(v.fecha))}</i></div>
+  <div class="mt">${badgesCerdo(v,fc)}<span class="tag ${est}">${est}</span></div>
+  ${lineas}
+  ${tot3}
+  ${nota}
+  </div></div>
   <div class="tka"><button class="wa ico" onclick="enviarWA('${v.id}')" aria-label="Compartir por WhatsApp" title="Compartir por WhatsApp"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M12.04 2a9.9 9.9 0 0 0-8.5 14.9L2 22l5.25-1.38A9.9 9.9 0 1 0 12.04 2zm0 1.8a8.1 8.1 0 1 1-4.3 15l-.3-.18-3.1.82.83-3-.2-.32A8.1 8.1 0 0 1 12.04 3.8zM8.6 7.4c-.2 0-.5.07-.75.35-.25.27-.97.95-.97 2.3s1 2.7 1.13 2.88c.14.18 1.94 3.1 4.8 4.2 2.38.93 2.86.75 3.38.7.52-.04 1.67-.68 1.9-1.34.24-.66.24-1.22.17-1.34-.07-.12-.26-.2-.55-.34-.28-.15-1.67-.82-1.93-.92-.26-.1-.45-.14-.64.14-.19.28-.73.92-.9 1.1-.16.2-.33.22-.6.07-.3-.14-1.2-.44-2.28-1.4-.84-.75-1.4-1.67-1.57-1.95-.16-.29-.02-.44.12-.58.13-.13.28-.33.42-.5.14-.16.19-.28.28-.47.1-.19.05-.35-.02-.5-.07-.14-.64-1.55-.88-2.12-.23-.55-.47-.48-.64-.49z"/></svg></button>${s>0?`<button class="abn ro-hide" onclick="abrirAbono('${v.id}')">💵 Abonar</button>`:""}<button class="ro-hide" onclick="editarVenta('${v.id}')">✏️ Editar</button><button class="del ro-hide" onclick="eliminarVenta('${v.id}')">🗑️ Eliminar</button></div></div>`;
 }
 /* Lista de ventas según los filtros activos de Clientes (cerdo + Todos/Pagados/Deudores); m(v) = parte de la venta que cuenta */
@@ -3548,7 +3621,22 @@ function activosEn(pl,f,incl){
   const a=pl.filter(q=>incl?activoEnInc(q,f):activoEn(q,f));
   return a.length?a:pl.filter(q=>q.c&&q.c.fecha&&f&&f===q.c.fecha);
 }
-const activosIns = (pl,x) => { const c=conceptoIns(x); return ((c==="Bore"||c==="Concentrado")&&eqAlim(c))?pl:activosEn(pl,x.fecha); };   /* Bore/Conc con restante: partes iguales entre todos los cerdos */
+/* ===== Corte exacto por MOMENTO del sacrificio (Concentrado y Bore) =====
+   Una compra solo le cuenta a un cerdo sacrificado si se registró ANTES de su sacrificio:
+   · fecha de compra anterior a la fecha de sacrificio → cuenta;
+   · fecha posterior → no cuenta;
+   · MISMA fecha → cuenta solo si la compra se registró antes que el sacrificio (x.creado <= cerdo.creado); una compra hecha ese día DESPUÉS de la matanza
+     NO se acumula al cerdo sacrificado (ni cambia su cuota ni la de ningún otro cerdo ya sacrificado). Sin marca de tiempo (registros antiguos) se mantiene la regla por fecha.
+   Así el Concentrado y el Bore de un cerdo sacrificado quedan CONGELADOS: ninguna compra posterior los altera. */
+const TOL_SESION = 10*60*1000;   /* cerdos sacrificados con menos de 10 min de diferencia = un mismo evento de sacrificio */
+const vivoEnCompra = (q,x) => {
+  const f=q.c&&q.c.fecha; if(!f||!x.fecha) return true;               /* cerdo sin sacrificar: sigue en ceba */
+  const fx=fISO(x.fecha), fs=fISO(f);
+  if(fx<fs) return true; if(fx>fs) return false;
+  const tx=+x.creado||0, ts=+q.c.creado||0;                           /* mismo día: decide el orden de registro */
+  return !(tx>0&&ts>0)||tx<=ts;
+};
+const activosIns = (pl,x) => { const c=conceptoIns(x); return (c==="Bore"||c==="Concentrado")?pl.filter(q=>vivoEnCompra(q,x)):activosEn(pl,x.fecha); };   /* Concentrado/Bore: solo los cerdos vivos AL MOMENTO de la compra, sin respaldo hacia cerdos ya sacrificados; el resto de gastos conserva la regla por fecha */
 const cobraA = (e,f,pl) => activosEn(pl,f).some(q=>q.key===e.key);
 /* Gasto «Sacrificio / Matarife» ligado a cerdos concretos → {mio,n}: se carga DIRECTO al cerdo sacrificado (o en partes iguales entre los
    que cubre ese mismo gasto), NUNCA se prorratea como el alimento. null = no es sacrificio o es un registro antiguo sin cerdo ligado. */
@@ -3594,25 +3682,48 @@ const KG_BULTO_CONC = 40; /* peso de un bulto de concentrado (kg) */
    (consumo neto = kg asignados − kg sobrantes) y se valora al precio promedio $/kg del concentrado comprado hasta esa fecha, así que su costo baja
    en proporción. Esos mismos kg (y su valor) pasan, en partes iguales, al inventario de los cerdos que siguen en ceba (si no queda ninguno, no se mueve).
    El sobrante nunca supera los kg de concentrado asignados a ese cerdo (el neto no baja de 0). */
-/* ===== Liquidación EQUITATIVA de Bore (y de Concentrado cuando hay sobrante registrado) =====
-   Consumido = Total comprado − Restante/Sobrante registrado en los sacrificios (kg y $ al precio promedio $/kg de lo comprado, flete incluido).
-   Cada cerdo del lote (todos, vivos o sacrificados) recibe EXACTAMENTE: Consumido total ÷ total de cerdos del lote. */
+/* ===== Liquidación de Bore / Concentrado CONGELADA a la fecha de sacrificio =====
+   · Cada compra se reparte en partes iguales SOLO entre los cerdos vivos a la fecha de la compra (Fecha_Compra <= Fecha_Sacrificio, ver activosIns).
+     Un cerdo ya sacrificado no recibe nada de las compras posteriores a su sacrificio: su liquidación queda fija.
+   · Consumido hasta la fecha F = Total comprado hasta F (fecha <= F) − Restante/Sobrante registrado en el sacrificio de F (kg y $ al precio promedio
+     $/kg de lo comprado hasta F, flete incluido). Ese descuento se reparte entre los cerdos vivos en F (incluidos los sacrificados ese día). */
 const restoAlim = (c,cat) => cat==="Bore" ? Math.max(+c.boreRestanteKg||0,0) : (+c.sobranteKg>0?+c.sobranteKg:Math.max((+c.sobranteBultos||0)*KG_BULTO_CONC,0));
-const eqAlim = cat => cat==="Bore" || (cat==="Concentrado" && D.cerdos.some(c=>restoAlim(c,cat)>0));
-function liqLote(cat){
-  const T=CATS_ALIM.find(t=>t.cat===cat); let kg=0,costo=0,rest=0,fecha="";
-  D.insumos.forEach(x=>{ if(conceptoIns(x)===cat){ kg+=T.kgDe(x); costo+=(x.costo||0)+(x.flete||0); } });
-  D.cerdos.forEach(c=>{ const r=restoAlim(c,cat); if(r>0){ rest+=r; if((c.fecha||"")>fecha) fecha=c.fecha||""; } });
-  rest=Math.min(rest,kg);                                   /* el restante nunca supera lo comprado */
-  return {kg,costo,rest,restCosto:kg>0?rest*(costo/kg):0,fecha,consumidoKg:kg-rest,consumidoCosto:costo-(kg>0?rest*(costo/kg):0)};
+/* Restantes por fecha de sacrificio → [{fecha,key,kg,costo}]. key = fecha ISO de corte ("9999-12-31" si el cerdo no tiene fecha: se aplica a los que siguen vivos).
+   El restante acumulado nunca supera lo comprado hasta esa fecha. */
+function restantesAlim(cat){
+  const T=CATS_ALIM.find(t=>t.cat===cat), compras=[], ev=[], ses=[]; let acum=0;
+  D.insumos.forEach(x=>{ if(conceptoIns(x)===cat) compras.push({f:fISO(x.fecha),cr:+x.creado||0,kg:T.kgDe(x),costo:(x.costo||0)+(x.flete||0)}); });
+  /* Cerdos con restante, en orden de fecha y de registro; los registrados con pocos minutos de diferencia el mismo día forman UN evento de sacrificio */
+  D.cerdos.map(c=>({c,r:restoAlim(c,cat)})).filter(o=>o.r>0)
+    .sort((a,b)=>(fISO(a.c.fecha)||"9999-12-31").localeCompare(fISO(b.c.fecha)||"9999-12-31")||(+a.c.creado||0)-(+b.c.creado||0))
+    .forEach(o=>{
+      const k=fISO(o.c.fecha)||"9999-12-31", t=+o.c.creado||0, u=ses[ses.length-1];
+      if(u&&u.key===k&&(t===0||u.tMax===0||t-u.tMax<=TOL_SESION)){ u.r+=o.r; u.tMax=Math.max(u.tMax,t); if(t>0) u.tMin=u.tMin>0?Math.min(u.tMin,t):t; }
+      else ses.push({key:k,r:o.r,tMin:t,tMax:t});
+    });
+  ses.forEach(u=>{
+    let kg=0,costo=0;   /* total comprado HASTA el momento del sacrificio: fechas anteriores + las del mismo día registradas antes de la matanza */
+    compras.forEach(q=>{ if(q.f<u.key||(q.f===u.key&&(!(q.cr>0&&u.tMax>0)||q.cr<=u.tMax))){ kg+=q.kg; costo+=q.costo; } });
+    const rest=Math.min(u.r,Math.max(kg-acum,0));
+    if(rest>0){ ev.push({fecha:u.key==="9999-12-31"?"":u.key,key:u.key,tMin:u.tMin,tMax:u.tMax,kg:rest,costo:kg>0?rest*(costo/kg):0}); acum+=rest; }
+  });
+  return ev;
 }
+/* ¿El cerdo q seguía en ceba cuando ocurrió el corte ev? (no sacrificado antes de ese evento; mismo día: por momento de registro) */
+const vivoEnCorte = (q,ev) => {
+  const f=q.c&&q.c.fecha; if(!f||!ev.key) return true;
+  const fs=fISO(f); if(ev.key<fs) return true; if(ev.key>fs) return false;
+  const tq=+q.c.creado||0; return !(tq>0&&ev.tMin>0)||tq>=ev.tMin-TOL_SESION;
+};
 function ajusteSobrante(e,pl){
-  pl=pl||plantelCerdos(); const N=Math.max(pl.length,1), items=[]; let total=0,totalC=0,totalB=0,kgC=0,kgB=0;
+  pl=pl||plantelCerdos(); const items=[]; let total=0,totalC=0,totalB=0,kgC=0,kgB=0;
   ["Concentrado","Bore"].forEach(cat=>{
-    if(!eqAlim(cat)) return; const L=liqLote(cat); if(!(L.rest>0)) return;
-    const m=-L.restCosto/N, km=-L.rest/N;                   /* parte del restante que se le descuenta a cada cerdo */
-    items.push({fecha:L.fecha,cat,monto:m,kg:Math.abs(km),kgNeto:km}); total+=m;
-    if(cat==="Bore"){ totalB+=m; kgB+=km; } else { totalC+=m; kgC+=km; }
+    restantesAlim(cat).forEach(ev=>{
+      const A=pl.filter(q=>vivoEnCorte(q,ev)); if(!A.some(q=>q.key===e.key)) return;   /* el cerdo ya estaba sacrificado antes de ese corte: no le toca */
+      const n=A.length||1, m=-ev.costo/n, km=-ev.kg/n;                                    /* parte del restante que se le descuenta a cada cerdo vivo en esa fecha */
+      items.push({fecha:ev.fecha,cat,monto:m,kg:Math.abs(km),kgNeto:km}); total+=m;
+      if(cat==="Bore"){ totalB+=m; kgB+=km; } else { totalC+=m; kgC+=km; }
+    });
   });
   return {items,total,kg:kgC,totalC,totalB,boreKg:kgB};   /* kg = concentrado (compatibilidad) · boreKg = bore */
 }
@@ -3621,7 +3732,7 @@ function ajusteSobrante(e,pl){
    · bore = Bore / Maíz (suplemento fresco): kilos registrados → kg y arrobas (@), nunca bultos
    e = cerdo del plantel → su cuota (misma regla de reparto que el costo); sin e → lote completo. Devuelve {conc,bore} en kg. */
 /* Liquidación de alimento por cerdo, UNA sola tabla de categorías (Concentrado y Bore) con la misma regla de fecha:
-   entra toda compra con Fecha_Compra < Fecha_Sacrificio del cerdo (cuota = compra / cerdos activos ese día) y luego se aplica el sobrante.
+   entra toda compra con Fecha_Compra <= Fecha_Sacrificio del cerdo (cuota = compra / cerdos vivos ese día) y luego se aplica el sobrante de cada corte.
    Ninguna categoría puede quedar fuera: si el cerdo no tiene compras de esa categoría simplemente queda en 0. */
 const CATS_ALIM=[
   {cat:"Concentrado",kgDe:x=>(x.bultos||0)*KG_BULTO_CONC},
@@ -3632,7 +3743,7 @@ function liquidarInsumosCerdo(e,pl){
   const R={Concentrado:{kg:0,costo:0,compras:0},Bore:{kg:0,costo:0,compras:0}};
   D.insumos.forEach(x=>{
     const T=CATS_ALIM.find(t=>t.cat===conceptoIns(x)); if(!T) return;
-    const A=activosIns(pl,x); if(!A.some(q=>q.key===e.key)) return;   /* compra igual o posterior al sacrificio: no se le cobra */
+    const A=activosIns(pl,x); if(!A.some(q=>q.key===e.key)) return;   /* compra posterior al sacrificio de este cerdo: no se le cobra */
     const n=A.length||1, o=R[T.cat];
     o.kg+=T.kgDe(x)/n; o.costo+=((x.costo||0)+(x.flete||0))/n; o.compras++;
   });
@@ -3691,7 +3802,7 @@ function renderResumen(){
     const sacF=cz&&cz.fecha;
     const leyenda=cz
       ? (sacF?`<b>Alimento e insumos congelados a la fecha de sacrificio (${fechaLargaCO(sacF)})</b>`:`<b>Alimento e insumos repartidos entre los cerdos vivos de cada compra</b>`)
-        +`<br><small>Cada compra de alimento se divide en partes iguales entre los cerdos que siguen en ceba ese día (las compras del día del sacrificio o posteriores no se le cobran a este cerdo); el sacrificio (matador + ayudante) se carga completo a este cerdo.${iv.excluidas?` ${iv.excluidas===1?"1 compra del día del sacrificio o posterior no se suma":iv.excluidas+" compras del día del sacrificio o posteriores no se suman"}.`:""}</small>`
+        +`<br><small>Cada compra de alimento se divide en partes iguales entre los cerdos que siguen en ceba ese día (las compras de Concentrado o Bore registradas después de su sacrificio, aun el mismo día, no se le cobran: su consumo queda congelado); el sacrificio (matador + ayudante) se carga completo a este cerdo.${iv.excluidas?` ${iv.excluidas===1?"1 compra posterior al sacrificio no se suma":iv.excluidas+" compras posteriores al sacrificio no se suman"}.`:""}</small>`
       : `<b>Aún en ceba: el alimento se sigue sumando proporcionalmente hasta su día de sacrificio</b><br><small>Cada compra se divide en partes iguales entre los cerdos vivos ese día. Llevas ${iv.compras} ${iv.compras===1?"compra":"compras"} de alimento asignadas.</small>`;
     $("rInvLbl").textContent="Inversión asignada a "+ez.nombre; $("rInv").textContent=money(iv.total);
     $("rLech").textContent=money(iv.lechon); $("rLechN").innerHTML='<small class="kcons">🐖 Cerdo individual</small>';
