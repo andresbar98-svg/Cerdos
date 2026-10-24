@@ -348,6 +348,7 @@ input[readonly]{opacity:.7}
 .ycard .ydel{flex:0 0 auto;background:transparent;border:1px solid #ff6fa5;color:#ff6fa5;border-radius:6px;padding:10px 16px;font-size:13px;font-weight:600}
 .ycard .ydel:active{background:rgba(255,111,165,.12)}
 .nuevo-btn{margin:0 0 14px;font-size:16px;padding:15px}
+.pv-botonera{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 0 14px}.pv-botonera .nuevo-btn{margin:0;padding:14px 6px;font-size:14.5px;line-height:1.2;min-width:0}
 .btn.verde{background:#22e06b;color:#06210f;border:0;box-shadow:0 0 14px rgba(34,224,107,.25)}
 .lc{border-left:4px solid #22e06b}
 .lc .acts2{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}.lc .acts2 .sm{flex:1;padding:9px 6px;font-size:12.5px;white-space:nowrap}
@@ -504,7 +505,7 @@ nav button,.navback,#btnProy,header button{position:relative;z-index:1000;pointe
 .dchips{display:flex;flex-wrap:wrap;gap:6px;padding:0 10px 10px}.dchips button{background:var(--s2);border:1px solid var(--line);color:var(--tx);border-radius:20px;padding:7px 11px;font-size:12.5px;font-weight:600}
 .d-bal{border-top:5px solid #7fd1a0}.d-inv{border-top:5px solid #e8a07a}.d-ven{border-top:5px solid #f0c36a}.d-ceb{border-top:5px solid #8fb7ff}
 /* ===== Historial de gastos (👁️) ===== */
-.d-inv{position:relative}.d-inv .dtop{padding-right:46px}
+.d-inv,.d-ven{position:relative}.d-inv .dtop{padding-right:46px}.d-ven .dtop{padding-right:46px}
 .deye{position:absolute;top:10px;right:38px;width:42px;height:42px;display:flex;align-items:center;justify-content:center;font-size:20px;line-height:1;background:rgba(255,255,255,.08);border:1px solid var(--line);border-radius:12px;color:var(--tx);cursor:pointer;z-index:2;padding:0}.deye:active{background:rgba(255,255,255,.16)}
 .hg-sum{display:grid;grid-template-columns:1fr 1.4fr;gap:8px;margin:8px 0}
 .hg-sum div{background:var(--s1);border:1px solid var(--line);border-radius:12px;padding:8px;text-align:center;min-width:0}
@@ -525,6 +526,25 @@ nav button,.navback,#btnProy,header button{position:relative;z-index:1000;pointe
 .hg-chips .ico-cat{width:18px;height:18px;vertical-align:-4px}
 .hg-cat .ico-cat{width:16px;height:16px;vertical-align:-3px}
 .tag.enceba{color:var(--ok);border-color:var(--ok)}.tag.fin{color:var(--mu);border-color:var(--line)}
+/* ===== Pagos / Deudores (acceso rápido) ===== */
+.deye.dpagb{width:42px;height:42px;background:rgba(239,123,123,.16);border-color:var(--er)}
+.deye.dpagb.ok{background:rgba(127,209,160,.12);border-color:var(--ok)}
+.dpagb .dbdg{position:absolute;top:-6px;right:-6px;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--er);color:#1b1613;font:800 11px/18px system-ui,sans-serif;text-align:center;font-style:normal;box-sizing:border-box}
+.pg-sum{display:grid;grid-template-columns:1fr 1.4fr;gap:8px;margin:8px 0}
+.pg-sum div{background:var(--s1);border:1px solid var(--line);border-radius:12px;padding:8px;text-align:center;min-width:0}
+.pg-sum span{display:block;color:var(--mu);font-size:11px}.pg-sum b{display:block;font-size:17px;margin-top:2px;overflow-wrap:anywhere}
+.pg-sum b.neg{color:var(--er)}
+.pg-it{background:var(--s1);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:8px}
+.pg-top{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:8px}
+.pg-c{display:flex;flex-wrap:wrap;justify-content:center;gap:4px}.pg-c .tag{white-space:nowrap;font-size:11px;padding:2px 7px;margin:0}
+.pg-n{font-size:15px;line-height:1.25;min-width:0;overflow-wrap:anywhere}
+.pg-s{color:var(--er);font-weight:800;font-size:15px;white-space:nowrap}
+.pg-d{display:block;color:var(--mu);font-size:11.5px;margin-top:4px;line-height:1.35}
+.pg-acts{display:flex;gap:8px;margin-top:10px}
+.pg-acts button{flex:1;border-radius:10px;padding:10px 6px;font-size:13px;font-weight:700;white-space:nowrap;border:1px solid var(--line)}
+.pg-acts .pg-ab{background:var(--ac);border-color:var(--ac);color:#1b1613}
+.pg-acts .pg-wa{background:var(--s2);color:var(--ok);border-color:var(--ok)}
+.pg-vacio{text-align:center;color:var(--mu);padding:26px 10px;font-size:14px}
 .sheet{overscroll-behavior:contain}
 /* Tarjeta de gasto (insumos): izquierda flexible (producto + cantidad + proveedor + fecha) y derecha compacta (total + desglose en 2 lineas) */
 /* Modal de insumos: filas de 2 columnas (.g2 = display:grid; grid-template-columns:1fr 1fr; gap:10px). Los desplegables bajan a 13px para que sus textos quepan en media fila. */
@@ -692,9 +712,9 @@ body.lectura .vmodo-box .ojo-btn{background:rgba(255,255,255,.6);border-color:rg
 
 <!-- ============ PREVENTA ============ -->
 <section id="preventa">
-  <button class="btn verde nuevo-btn" onclick="abrirNuevo('mEncargo')">➕ Nuevo Encargo</button>
-  <button class="btn sec nuevo-btn" onclick="abrirProgSac()">📅 Programar Sacrificio</button>
+  <div class="pv-botonera"><button class="btn verde nuevo-btn" onclick="abrirNuevo('mEncargo')">➕ Nuevo Encargo</button><button class="btn sec nuevo-btn" onclick="abrirProgSac()">📅 Programar Sacrificio</button></div>
   <div class="card"><h3>📅 Sacrificios programados</h3><div id="pvProgLista"></div></div>
+  <div class="card" id="pvRealCard" style="display:none"><h3>✅ Sacrificios realizados</h3><div id="pvRealLista"></div></div>
   <div id="pvAlerta" style="margin-top:12px"></div>
 
   <div class="chips"><button class="pchip act" data-f="apartado">Apartados</button><button class="pchip" data-f="despachado">Despachados</button><button class="pchip" data-f="todos">Todos</button></div>
@@ -820,6 +840,12 @@ body.lectura .vmodo-box .ojo-btn{background:rgba(255,255,255,.6);border-color:rg
     <div id="vAbonoBox" style="display:none"><label>Valor abonado ($)</label><input class="money" inputmode="numeric" id="vAbono" oninput="dbn.calcVenta()" placeholder="0"></div>
     <div class="sub" style="margin:8px 0 0">Saldo pendiente: <b id="vSaldo" class="neg">$0</b></div>
     <button class="btn" onclick="guardarVenta()">Registrar venta</button>
+</div></div>
+
+<div class="modal" id="mPagos" onclick="if(event.target===this)cerrarForm('mPagos')"><div class="sheet">
+  <div class="mh"><h2>💵 Pagos pendientes</h2><button class="sm" onclick="cerrarForm('mPagos')">Cerrar</button></div>
+  <div class="pg-sum" id="pgSum"></div>
+  <div id="pgLista"></div>
 </div></div>
 
 <div class="modal" id="mAbono"><div class="sheet">
@@ -2633,6 +2659,57 @@ function abonosDet(v){
   lista.forEach(a=>{ run-=(a.valor||0); out.push({fecha:a.fecha,valor:a.valor,saldo:Math.max(0,run),txt:"Abono "+fechaNum(a.fecha)+": "+money(a.valor||0)+" | Saldo: "+money(Math.max(0,run))}); });
   return out;
 }
+
+/* ===== Pagos / Deudores: acceso rápido desde la tarjeta VENTAS Y SACRIFICIOS ===== */
+const pgKey = n => String(n||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim().toLowerCase().replace(/\s+/g," ");
+/* Cartera "Por cobrar": ventas con saldo > 0 agrupadas por cliente (la más antigua primero dentro de cada cliente) */
+function carteraPorCobrar(){
+  const m=new Map();
+  [...D.ventas].sort((a,b)=>String(a.fecha||"").localeCompare(String(b.fecha||""))||(a.creado||0)-(b.creado||0)).forEach(v=>{
+    const s=saldo(v); if(s<=0) return;
+    const k=pgKey(v.cliente)||("v"+v.id);
+    if(!m.has(k)) m.set(k,{k,cliente:v.cliente||"Sin nombre",tel:"",ventas:[],saldo:0,total:0,abonado:0});
+    const c=m.get(k); c.ventas.push(v); c.saldo+=s; c.total+=(v.total||0); c.abonado+=abonado(v);
+    if(!c.tel&&v.telefono) c.tel=v.telefono;
+  });
+  return [...m.values()].sort((a,b)=>b.saldo-a.saldo);
+}
+/* Cerdo(s) de las ventas pendientes del cliente (sin repetir): 🐖 Cerdo #1 */
+function pgCerdos(c){
+  const m=new Map();
+  c.ventas.forEach(v=>{ let l=[]; try{ l=cerdosInfoVenta(v); }catch(e){} l.forEach(x=>{ if(x&&x.nombre) m.set(x.id||x.nombre,x.nombre); }); });
+  return m.size?[...m.values()].map(n=>`<span class="tag cerdo">🐖 ${esc(n)}</span>`).join(""):`<span class="tag cerdo">🐖 Sin cerdo</span>`;
+}
+function abrirPagos(){
+  $("mPagos").classList.add("open"); renderPagos();
+  const sh=$("mPagos").querySelector(".sheet"); if(sh) sh.scrollTop=0;
+}
+function renderPagos(){
+  try{
+    const md=$("mPagos"); if(!md||!md.classList.contains("open")) return;   /* solo se pinta con el modal abierto */
+    const l=carteraPorCobrar(), tot=l.reduce((a,c)=>a+c.saldo,0);
+    $("pgSum").innerHTML=`<div><span>Clientes con saldo</span><b>${l.length}</b></div><div><span>Total por cobrar</span><b class="${tot>0?"neg":""}">${money(tot)}</b></div>`;
+    $("pgLista").innerHTML=l.length?l.map(c=>{
+      const ult=c.ventas[c.ventas.length-1], v0=c.ventas[0];
+      const det=c.ventas.length>1
+        ?`${c.ventas.length} ventas pendientes · la más antigua ${esc(fechaTxt(v0.fecha))}<br>Total ${money(c.total)} · Abonado ${money(c.abonado)}`
+        :`Venta del ${esc(fechaTxt(ult.fecha))}<br>Total ${money(c.total)} · Abonado ${money(c.abonado)}`;
+      return `<div class="pg-it"><div class="pg-top"><b class="pg-n">${esc(c.cliente)}</b><span class="pg-c">${pgCerdos(c)}</span><span class="pg-s">Saldo: ${money(c.saldo)}</span></div>
+  <small class="pg-d">${det}</small>
+  <div class="pg-acts"><button class="pg-ab" data-v="${esc(v0.id)}" onclick="pagosAbonar(this.dataset.v)">💵 Registrar Abono</button><button class="pg-wa" data-k="${esc(c.k)}" onclick="pagosWA(this.dataset.k)">💬 WhatsApp</button></div></div>`;
+    }).join(""):'<div class="pg-vacio">🎉 No hay saldos pendientes.<br>Todos los clientes están al día.</div>';
+  }catch(e){}
+}
+/* Abona de inmediato: abre el formulario de abono de la venta pendiente más antigua del cliente (el modal de Pagos queda detrás y se actualiza al guardar) */
+function pagosAbonar(id){ abrirAbono(id); }
+/* Recordatorio / cuenta de cobro por WhatsApp (texto) con el saldo total del cliente */
+function pagosWA(k){
+  const c=carteraPorCobrar().find(x=>x.k===k); if(!c) return toast("Este cliente ya no tiene saldo pendiente");
+  const det=c.ventas.map(v=>`• ${fechaTxt(v.fecha)}: total ${money(v.total)} · abonado ${money(abonado(v))} · saldo ${money(saldo(v))}`).join("\n");
+  const t=`🐖 *Cuenta de cobro*\nHola ${c.cliente}, te recordamos que tienes un saldo pendiente de *${money(c.saldo)}*.\n\n*Detalle:*\n${det}\n\n*Total a pagar: ${money(c.saldo)}*\n\nCuando puedas, por favor realiza tu pago. ¡Gracias por tu compra! 🙏`;
+  let tel=(c.tel||"").replace(/\D/g,""); if(tel.length===10) tel="57"+tel;
+  window.open((tel?`https://wa.me/${tel}`:"https://wa.me/")+"?text="+encodeURIComponent(t),"_blank");
+}
 /* ---- Abonar desde la tarjeta del cliente ---- */
 let abonoId=null;
 function abrirAbono(id){
@@ -3269,7 +3346,7 @@ function guardarVentaPV(){
 }
 function textoPV(p){
   const det=(p.items||[]).map(i=>{const q=pvCant(p,i); return `• ${pvNombre(i)}${esPresa(i)?" (presa)":""}: ${esPresa(i)&&!(q>0)?"peso por definir en despiece":peso(q)+" lb"}`;}).join("\n");
-  return `🐖 *Encargo / Preventa*\nCliente: ${p.cliente}\nFecha: ${fechaTxt(p.fecha)}${p.cerdo?`\nCerdo: ${cerdoTxt(p.cerdo)}`:""}${p.fechaSacrificio?`\nSacrificio programado: ${fechaTxt(p.fechaSacrificio)}`:""}\n\n*Detalle:*\n${det}\n\nEstado: ${p.estado==="Despachado"?"Despachado / Entregado":"Apartado"}\n\n¡Gracias por apartar con nosotros!`;
+  return `🐖 *Encargo / Preventa*\nCliente: ${p.cliente}\nFecha: ${fechaTxt(p.fecha)}${p.cerdo?`\nCerdo: ${cerdoTxt(p.cerdo)}`:""}${p.fechaSacrificio?`\nSacrificio ${hoy()>p.fechaSacrificio?"realizado":"programado"}: ${fechaTxt(p.fechaSacrificio)}`:""}\n\n*Detalle:*\n${det}\n\nEstado: ${p.estado==="Despachado"?"Despachado / Entregado":"Apartado"}\n\n¡Gracias por apartar con nosotros!`;
 }
 async function enviarPV(id){
   const p=D.preventas.find(x=>x.id===id); if(!p) return;
@@ -3455,11 +3532,28 @@ function quitarProgSac(nombre){
   bt.commit().catch(err=>toast("Error nube: "+err.code));
   renderAll(); toast("Programación quitada · "+nombre);
 }
+/* Estado del sacrificio: "Realizado" si el cerdo ya fue procesado/sacrificado o su fecha ya pasó; "Programado" solo si la fecha es hoy o futura y sigue pendiente */
+function sacRealizado(e,f){
+  if(pvCierre(e.nombre,e.arete)==="procesado") return true;
+  return !!f&&hoy()>f;
+}
+/* Etiqueta única por fecha: pasó → ✅ Realizado · mismo día → 🔴 Preventa cerrada · futura → 🟢 Preventa abierta • 🕒 Programado */
+function sacEstadoTxt(e,f){
+  if(sacRealizado(e,f)) return "✅ Realizado";
+  if(hoy()>=f) return "🔴 Preventa cerrada";
+  return "🟢 Preventa abierta • 🕒 Programado";
+}
 function renderProgSac(){
   const box=$("pvProgLista"); if(!box) return;
-  const l=plantelCerdos().map(e=>({e,f:sacProgDe(e.nombre)})).filter(x=>x.f).sort((a,b)=>a.f.localeCompare(b.f));
-  box.innerHTML=l.length?l.map(({e,f})=>{ const c=pvCierre(e.nombre,e.arete);
-    return `<div class="row"><div><b>${esc(e.nombre)}</b>${e.arete?` <small>Arete ${esc(e.arete)}</small>`:""}<small>📅 ${esc(fechaTxt(f))} · ${c?"🔴 Preventa cerrada":"🟢 Preventa abierta"}</small>${(()=>{const d=sacProgDatos(e.nombre);return d&&(d.costo>0||d.matarife)?`<small>🔪 ${esc([d.costo>0?money(d.costo):"",d.matarife||""].filter(Boolean).join(" · "))}</small>`:"";})()}</div>${c==="procesado"?"":`<span style="display:flex;gap:6px;flex-wrap:wrap"><button class="sm pri" data-n="${esc(e.nombre)}" onclick="abrirSacrificioDe(this.dataset.n)">🔪 Registrar</button><button class="sm del" data-n="${esc(e.nombre)}" onclick="quitarProgSac(this.dataset.n)">Quitar</button></span>`}</div>`; }).join(""):'<div class="empty">Aún no hay sacrificios programados.</div>';
+  const todos=plantelCerdos().map(e=>({e,f:sacProgDe(e.nombre)})).filter(x=>x.f);
+  const prog=todos.filter(x=>!sacRealizado(x.e,x.f)).sort((a,b)=>a.f.localeCompare(b.f));      /* pendientes: el más próximo primero */
+  const real=todos.filter(x=>sacRealizado(x.e,x.f)).sort((a,b)=>b.f.localeCompare(a.f));       /* realizados: el más reciente primero */
+  const fila=({e,f})=>{ const c=pvCierre(e.nombre,e.arete);
+    return `<div class="row"><div><b>${esc(e.nombre)}</b>${e.arete?` <small>Arete ${esc(e.arete)}</small>`:""}<small>📅 ${esc(fechaTxt(f))} • ${sacEstadoTxt(e,f)}</small>${(()=>{const d=sacProgDatos(e.nombre);return d&&(d.costo>0||d.matarife)?`<small>🔪 ${esc([d.costo>0?money(d.costo):"",d.matarife||""].filter(Boolean).join(" · "))}</small>`:"";})()}</div>${c==="procesado"?"":`<span style="display:flex;gap:6px;flex-wrap:wrap"><button class="sm pri" data-n="${esc(e.nombre)}" onclick="abrirSacrificioDe(this.dataset.n)">🔪 Registrar</button><button class="sm del" data-n="${esc(e.nombre)}" onclick="quitarProgSac(this.dataset.n)">Quitar</button></span>`}</div>`; };
+  box.innerHTML=prog.length?prog.map(fila).join(""):'<div class="empty">Aún no hay sacrificios programados.</div>';
+  const cr=$("pvRealCard"), br=$("pvRealLista");
+  if(cr) cr.style.display=real.length?"":"none";
+  if(br) br.innerHTML=real.map(fila).join("");
 }
 /* Fecha de sacrificio por cerdo: auto-llenado desde los encargos abiertos del mismo cerdo */
 let fechaAuto=false;
@@ -5288,7 +5382,7 @@ function renderPanel(){
     const ven=D.ventas.reduce((a,v)=>a+(v.total||0),0), cob=D.ventas.reduce((a,v)=>a+saldo(v),0), u=ven-inv;
     const tot=cerdosBase().length, sac=D.cerdos.length, vivos=tot?cerdosVivos().length:0;
     const apart=(D.preventas||[]).filter(x=>x.estado==="Apartado").length;
-    const dias=diasCeba(p), fin=p.estado==="Finalizado";
+    const dias=diasCeba(p), fin=p.estado==="Finalizado", pgN=carteraPorCobrar().length;
     const mini=(a,b)=>`<div><span>${a}</span><b>${b}</b></div>`;
     const h=`<div class="dhead"><h2>🐖 ${esc(p.nombre)}</h2><span class="tag ${fin?"fin":"enceba"}">${fin?"⚪ Finalizado":"🟢 En ceba"}</span></div>
 <div class="dtile d-inv"><button class="dcard" onclick="irA('inversion')" aria-label="Inversión y gastos">
@@ -5301,6 +5395,7 @@ function renderPanel(){
   <div class="dtop"><span class="dico">🥩</span><span class="dtit">VENTAS Y SACRIFICIOS</span><span class="dgo">›</span></div>
   <div class="dbig">${sac}${tot?" de "+tot:""}</div><div class="dlbl">cerdos sacrificados · canal y despiece</div>
   <div class="dmini">${mini("Ventas",money(ven))}${mini("Por cobrar",money(cob))}${mini("Preventas",apart)}</div></button>
+  <button class="deye dpagb${pgN?"":" ok"}" onclick="abrirPagos()" aria-label="Pagos pendientes" title="Pagos pendientes">💵${pgN?`<i class="dbdg">${pgN}</i>`:""}</button>
   <div class="dchips"><button onclick="abrirNuevo('mSacrificio')">＋ Sacrificio</button><button onclick="abrirNuevo('mVenta')">＋ Venta</button><button onclick="irA('ventas')">Ventas</button><button onclick="irA('preventa')">Preventa</button><button onclick="irA('deudores')">Clientes</button><button onclick="irRendimiento()">Ganancia por cerdo</button></div></div>
 <div class="dtile d-ceb"><button class="dcard" onclick="irA('ceba')" aria-label="Estado del lote y ceba">
   <div class="dtop"><span class="dico">🐖</span><span class="dtit">ESTADO DEL LOTE / CEBA</span><span class="dgo">›</span></div>
@@ -5334,7 +5429,7 @@ function irRendimiento(){
   irA("resumen");
   setTimeout(()=>{ const e=$("rendimiento"); if(e) window.scrollTo({top:Math.max(0,e.getBoundingClientRect().top+window.scrollY-140),behavior:"smooth"}); },80);
 }
-function renderAll(){filtrarProyecto();registrarCortesExtra();renderInversion();renderInventario();refrescarItems();renderVentas();renderDeudores();renderResumen();renderPreventas();llenarCNombre();infoFechaSac();panelPVSac();try{xcSyncPreventa();}catch(e){}estadoBtnSacrificio();renderHistorico();renderPanel();renderHistorialGastos();renderCeba();renderInicio();asegurarInicial();sanearDespiece();try{ccSync();}catch(e){}}
+function renderAll(){filtrarProyecto();registrarCortesExtra();renderInversion();renderInventario();refrescarItems();renderVentas();renderDeudores();renderResumen();renderPreventas();llenarCNombre();infoFechaSac();panelPVSac();try{xcSyncPreventa();}catch(e){}estadoBtnSacrificio();renderHistorico();renderPanel();renderHistorialGastos();renderPagos();renderCeba();renderInicio();asegurarInicial();sanearDespiece();try{ccSync();}catch(e){}}
 
 /* ===== Arranque ===== */
 function net(){const on=navigator.onLine,l=$("ledNet");l.className="led "+(on?"on":"");l.querySelector("span").textContent=on?"En línea":"Sin red";}
